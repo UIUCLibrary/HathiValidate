@@ -335,7 +335,7 @@ def find_errors_ocr(path) -> result.ResultSummary:
         base, ext = os.path.splitext(entry.name)
         if ext.lower() != ".xml":
             return False
-        if base == "marc":
+        if base.lower() == "marc":
             return False
 
         return True

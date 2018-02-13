@@ -4,8 +4,12 @@ import org.ds.*
 
 pipeline {
     agent {
-        label "Windows"
+        label "Windows&&DevPi"
     }
+    options {
+        disableConcurrentBuilds()  //each branch has 1 job running at a time
+    }
+
     environment {
         mypy_args = "--junit-xml=mypy.xml"
         //pytest_args = "--junitxml=reports/junit-{env:OS:UNKNOWN_OS}-{envname}.xml --junit-prefix={env:OS:UNKNOWN_OS}  --basetemp={envtmpdir}"
@@ -352,12 +356,11 @@ pipeline {
         //             }
         //             bat "devpi test HathiValidate"
         //         }
-
         //     }
         // }
         stage("Deploying to Devpi") {
             when {
-                expression { params.DEPLOY_DEVPI == true }
+                expression { params.DEPLOY_DEVPI == true && (env.BRANCH_NAME == "master" || env.BRANCH_NAME == "dev")}
             }
             steps {
                 bat "${tool 'Python3.6.3_Win64'} -m devpi use http://devpy.library.illinois.edu"
@@ -378,7 +381,7 @@ pipeline {
         }
         stage("Test Devpi packages") {
             when {
-                expression { params.DEPLOY_DEVPI == true }
+                expression { params.DEPLOY_DEVPI == true && (env.BRANCH_NAME == "master" || env.BRANCH_NAME == "dev")}
             }
             steps {
                 parallel(

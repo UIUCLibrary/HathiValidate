@@ -4,7 +4,6 @@ import sys
 from setuptools.config import read_configuration
 from cx_Freeze import setup, Executable
 import pytest
-# import hathi_validate
 import platform
 
 def get_project_metadata():
