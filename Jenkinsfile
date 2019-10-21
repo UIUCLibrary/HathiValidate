@@ -318,8 +318,8 @@ pipeline {
             }
             environment{
                 PATH = "${WORKSPACE}\\venv\\Scripts;${tool 'CPython-3.6'};${PATH}"
-                PKG_NAME = pythonPackageName(toolName: "CPython-3.6")
-                PKG_VERSION = pythonPackageVersion(toolName: "CPython-3.6")
+                PKG_NAME = get_package_name("DIST-INFO", "HathiValidate.dist-info/METADATA")
+                PKG_VERSION = get_package_version("DIST-INFO", "HathiValidate.dist-info/METADATA")
                 DEVPI = credentials("DS_devpi")
             }
             stages{
