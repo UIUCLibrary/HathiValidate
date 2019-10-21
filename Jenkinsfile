@@ -29,6 +29,30 @@ def test_devpi(DevpiPath, DevpiIndex, packageName, PackageRegex, certsDir="certs
     bat "${DevpiPath} test --index ${DevpiIndex} --verbose ${packageName} -s ${PackageRegex} --clientdir ${certsDir} --tox-args=\"-vv\""
 }
 
+def get_package_version(stashName, metadataFile){
+    ws {
+        unstash "${stashName}"
+        script{
+            def props = readProperties interpolate: true, file: "${metadataFile}"
+            deleteDir()
+            return props.Version
+        }
+    }
+}
+
+def get_package_name(stashName, metadataFile){
+    ws {
+        unstash "${stashName}"
+        script{
+            def props = readProperties interpolate: true, file: "${metadataFile}"
+            deleteDir()
+            return props.Name
+        }
+    }
+}
+
+
+
 pipeline {
     agent {
         label "Windows && Python3"
