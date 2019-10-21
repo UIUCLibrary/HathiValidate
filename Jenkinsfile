@@ -159,10 +159,6 @@ pipeline {
                 }
             }
             post {
-                success{
-                    bat "tree /A /f >logs/workspace_files_${NODE_NAME}.log"
-//                    }
-                }
                 failure {
                     deleteDir()
                 }
