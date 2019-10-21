@@ -110,6 +110,24 @@ pipeline {
                        }
                     }
                 }
+                stage("Getting Distribution Info"){
+                    environment{
+                        PATH = "${tool 'CPython-3.7'};$PATH"
+                    }
+                    steps{
+                        dir("source"){
+                            bat "python setup.py dist_info"
+                        }
+                    }
+                    post{
+                        success{
+                            dir("source"){
+                                stash includes: "HathiValidate.dist-info/**", name: 'DIST-INFO'
+                                archiveArtifacts artifacts: "HathiValidate.dist-info/**"
+                            }
+                        }
+                    }
+                }
                 stage("Creating virtualenv for building"){
                     environment{
                         PATH = "${tool 'CPython-3.7'};$PATH"
