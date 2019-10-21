@@ -252,12 +252,13 @@ pipeline {
                         stage("MyPy"){
                             steps{
                                 dir("source") {
-                                    bat "${WORKSPACE}\\venv\\Scripts\\mypy.exe -p hathi_validate --junit-xml=${WORKSPACE}/reports/junit-${env.NODE_NAME}-mypy.xml --html-report ${WORKSPACE}/reports/mypy_html"
+                                    catchError(buildResult: "SUCCESS", message: 'MyPy found issues', stageResult: "UNSTABLE") {
+                                        bat "${WORKSPACE}\\venv\\Scripts\\mypy.exe -p hathi_validate --html-report ${WORKSPACE}/reports/mypy_html"
+                                    }
                                 }
                             }
                             post{
                                 always {
-                                    junit "reports/junit-${env.NODE_NAME}-mypy.xml"
                                     publishHTML([allowMissing: true, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'reports/mypy_html', reportFiles: 'index.html', reportName: 'MyPy', reportTitles: ''])
                                 }
                             }
