@@ -68,8 +68,7 @@ pipeline {
     }
 
     environment {
-        PKG_NAME = pythonPackageName(toolName: "CPython-3.6")
-        PKG_VERSION = pythonPackageVersion(toolName: "CPython-3.6")
+
         DEVPI = credentials("DS_devpi")
     }
     parameters {
@@ -183,6 +182,10 @@ pipeline {
                     }
                 }
                 stage("Docs"){
+                    environment{
+                        PKG_NAME = get_package_name("DIST-INFO", "HathiValidate.dist-info/METADATA")
+                        PKG_VERSION = get_package_version("DIST-INFO", "HathiValidate.dist-info/METADATA")
+                    }
                     steps{
                         echo "Building docs on ${env.NODE_NAME}"
                             dir("build/lib"){
@@ -318,6 +321,8 @@ pipeline {
             }
             environment{
                 PATH = "${WORKSPACE}\\venv\\Scripts;${tool 'CPython-3.6'};${PATH}"
+                PKG_NAME = pythonPackageName(toolName: "CPython-3.6")
+                PKG_VERSION = pythonPackageVersion(toolName: "CPython-3.6")
             }
             stages{
                 stage("Upload to DevPi staging") {
