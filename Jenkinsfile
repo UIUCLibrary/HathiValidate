@@ -83,6 +83,9 @@ pipeline {
     }
     stages {
         stage("Configure") {
+            environment{
+                PATH="C:\\Users\\ContainerAdministrator\\AppData\\Roaming\\Python\\Python37\\Scripts;${PATH}"
+            }
             stages{
                 stage("Purge all existing data in workspace"){
                     when{
@@ -164,6 +167,9 @@ pipeline {
             }
         }
         stage("Build"){
+            environment{
+                PATH="C:\\Users\\ContainerAdministrator\\AppData\\Roaming\\Python\\Python37\\Scripts;${PATH}"
+            }
             stages{
                 stage("Python Package"){
                     steps {
@@ -199,6 +205,9 @@ pipeline {
             }
         }
         stage("Tests") {
+            environment{
+                PATH="C:\\Users\\ContainerAdministrator\\AppData\\Roaming\\Python\\Python37\\Scripts;${PATH}"
+            }
             stages{
                 stage("Installing Python Testing Packages"){
                     steps{
