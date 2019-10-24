@@ -172,8 +172,8 @@ pipeline {
                             script{
                                 def DOC_ZIP_FILENAME = "${env.PKG_NAME}-${env.PKG_VERSION}.doc.zip"
                                 zip archive: true, dir: "build/docs/html", glob: '', zipFile: "dist/${DOC_ZIP_FILENAME}"
+                                stash includes: "build/docs/**,dist/${DOC_ZIP_FILENAME}", name: "DOCUMENTATION"
                             }
-                            stash includes: "build/docs/**,dist/${DOC_ZIP_FILENAME}", name: "DOCUMENTATION"
                         }
                     }
                 }
