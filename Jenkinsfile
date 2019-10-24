@@ -145,7 +145,7 @@ pipeline {
                     post{
                         success{
                             bat "(if not exist logs mkdir logs) && pip.exe list > logs\\pippackages${NODE_NAME}.log"
-                            archiveArtifacts artifacts: "logs/pippackages_venv_*.log", allowEmptyArchive: true
+                            archiveArtifacts artifacts: "logs/pippackages*.log", allowEmptyArchive: true
                         }
                         cleanup{
                             cleanWs(
