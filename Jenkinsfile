@@ -112,7 +112,8 @@ pipeline {
                 stage("Getting Distribution Info"){
                     steps{
                         dir("source"){
-                            bat "pip install wheel && python setup.py dist_info"
+                            bat "pip install wheel"
+                            bat "python setup.py dist_info"
                         }
                     }
                     post{
