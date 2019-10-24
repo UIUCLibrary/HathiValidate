@@ -55,11 +55,17 @@ def get_package_name(stashName, metadataFile){
 
 pipeline {
     agent {
-      docker {
-              label 'Windows&&Docker&&aws'
-              image 'python:3.7'
+      dockerfile {
+        filename 'ci/docker/build_windows/Dockerfile'
       }
     }
+
+    // agent {
+    //   docker {
+    //           label 'Windows&&Docker&&aws'
+    //           image 'python:3.7'
+    //   }
+    // }
 
     options {
         disableConcurrentBuilds()  //each branch has 1 job running at a time
