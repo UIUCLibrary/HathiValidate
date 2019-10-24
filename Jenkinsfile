@@ -125,21 +125,8 @@ pipeline {
                         }
                     }
                 }
-                stage("Creating virtualenv for building"){
+                stage("Installing Python Dependencies"){
                     steps{
-                        // echo "Create a virtualenv on ${NODE_NAME}"
-                        // bat(
-                        //     script: "python -m venv venv",
-                        //     label: "Create virtualenv at ${WORKSPACE}/venv"
-                        // )
-                        // script {
-                        //     try {
-                        //         bat "call venv\\Scripts\\python.exe -m pip install -U pip>=18.1"
-                        //     }
-                        //     catch (exc) {
-                        //         bat "call venv\\Scripts\\python.exe -m pip install -U pip>=18.1 --no-cache-dir"
-                        //     }
-                        // }
                         bat "pip install sphinx -r source\\requirements.txt"
                     }
                     post{
