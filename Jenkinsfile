@@ -54,20 +54,7 @@ def get_package_name(stashName, metadataFile){
 
 
 pipeline {
-    agent {
-      dockerfile {
-        filename 'ci/docker/build_windows/Dockerfile'
-        dir 'source'
-        label 'Windows&&Docker'
-      }
-    }
-
-    // agent {
-    //   docker {
-    //           label 'Windows&&Docker&&aws'
-    //           image 'python:3.7'
-    //   }
-    // }
+    agent none
 
     options {
         disableConcurrentBuilds()  //each branch has 1 job running at a time
@@ -91,6 +78,14 @@ pipeline {
     }
     stages {
         stage("Configure") {
+            agent {
+              dockerfile {
+                filename 'ci/docker/build_windows/Dockerfile'
+                dir 'source'
+                label 'Windows&&Docker'
+              }
+            }
+
             stages{
                 stage("Purge all existing data in workspace"){
                     when{
@@ -120,7 +115,6 @@ pipeline {
                 stage("Getting Distribution Info"){
                     steps{
                         dir("source"){
-                            //bat "certutil -generateSSTFromWU roots.sst && certutil -addstore -f root roots.sst && del roots.sst"
                             bat "python setup.py dist_info"
                         }
                     }
@@ -133,24 +127,6 @@ pipeline {
                         }
                     }
                 }
-                //stage("Installing Python Dependencies"){
-                //    steps{
-                //        bat "pip install sphinx -r source\\requirements.txt"
-                //    }
-                //    post{
-                //        success{
-                //            bat "(if not exist logs mkdir logs) && pip.exe list > logs\\pippackages${NODE_NAME}.log"
-                //            archiveArtifacts artifacts: "logs/pippackages*.log", allowEmptyArchive: true
-                //        }
-                //        cleanup{
-                //            cleanWs(
-                //                patterns: [
-                //                        [pattern: 'logs/pippackages*.log', type: 'INCLUDE']
-                //                    ]
-                //                )
-                //        }
-                //    }
-                //}
             }
             post {
                 failure {
@@ -159,6 +135,14 @@ pipeline {
             }
         }
         stage("Build"){
+            agent {
+                  dockerfile {
+                    filename 'ci/docker/build_windows/Dockerfile'
+                    dir 'source'
+                    label 'Windows&&Docker'
+                  }
+                }
+
             stages{
                 stage("Python Package"){
                     steps {
@@ -189,12 +173,20 @@ pipeline {
                                 def DOC_ZIP_FILENAME = "${env.PKG_NAME}-${env.PKG_VERSION}.doc.zip"
                                 zip archive: true, dir: "build/docs/html", glob: '', zipFile: "dist/${DOC_ZIP_FILENAME}"
                             }
+                            stash includes: "build/docs/**,dist/${DOC_ZIP_FILENAME}", name: "DOCUMENTATION"
                         }
                     }
                 }
             }
         }
         stage("Tests") {
+            agent {
+                  dockerfile {
+                    filename 'ci/docker/build_windows/Dockerfile'
+                    dir 'source'
+                    label 'Windows&&Docker'
+                  }
+            }
             stages{
                 stage("Installing Python Testing Packages"){
                     steps{
@@ -267,6 +259,13 @@ pipeline {
             }
         }
         stage("Packaging") {
+            agent {
+                  dockerfile {
+                    filename 'ci/docker/build_windows/Dockerfile'
+                    dir 'source'
+                    label 'Windows&&Docker'
+                  }
+            }
             stages{
                 stage("Building packages"){
 
@@ -303,20 +302,26 @@ pipeline {
                 timestamps()
             }
             environment{
-                PATH = "${WORKSPACE}\\venv\\Scripts;${tool 'CPython-3.6'};${PATH}"
+                PATH = "${tool 'CPython-3.6'};${PATH}"
                 PKG_NAME = get_package_name("DIST-INFO", "HathiValidate.dist-info/METADATA")
                 PKG_VERSION = get_package_version("DIST-INFO", "HathiValidate.dist-info/METADATA")
                 DEVPI = credentials("DS_devpi")
             }
             stages{
                 stage("Upload to DevPi staging") {
+                    agent {
+                        label 'Windows&&Python3&&!aws'
+                    }
                     steps {
-                        bat "pip install devpi-client"
-                        bat "devpi use https://devpi.library.illinois.edu && devpi login ${env.DEVPI_USR} --password ${env.DEVPI_PSW} && devpi use /${env.DEVPI_USR}/${env.BRANCH_NAME}_staging && devpi upload --from-dir dist"
+                        unstash "DOCUMENTATION"
+                        bat "python -m venv venv"
+                        bat "venv\\pip install devpi-client"
+                        bat "venv\\devpi use https://devpi.library.illinois.edu && devpi login ${env.DEVPI_USR} --password ${env.DEVPI_PSW} && devpi use /${env.DEVPI_USR}/${env.BRANCH_NAME}_staging && devpi upload --from-dir dist"
 
                     }
                 }
                 stage("Test DevPi packages") {
+
                     parallel {
                         stage("Source Distribution: .zip") {
                             agent {
@@ -462,10 +467,14 @@ pipeline {
         stage("Deploy"){
             parallel {
                 stage("Deploy Online Documentation") {
+                    agent{
+                        label "!aws"
+                    }
                     when{
                         equals expected: true, actual: params.DEPLOY_DOCS
                     }
                     steps{
+                        unstash "DOCUMENTATION"
                         dir("build/docs/html/"){
                             input 'Update project documentation?'
                             sshPublisher(
