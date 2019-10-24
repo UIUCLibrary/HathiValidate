@@ -85,26 +85,7 @@ pipeline {
                 label 'Windows&&Docker'
               }
             }
-
             stages{
-                stage("Purge all existing data in workspace"){
-                    when{
-                        equals expected: true, actual: params.FRESH_WORKSPACE
-                    }
-                    steps {
-                        deleteDir()
-                        bat "dir"
-                        echo "Cloning source"
-                        dir("source"){
-                            checkout scm
-                        }
-                    }
-                    post{
-                        success {
-                            bat "dir /s /B"
-                        }
-                    }
-                }
                 stage("Stashing important files for later"){
                     steps{
                        dir("source"){
@@ -224,7 +205,6 @@ pipeline {
                         stage("Run Tox"){
                             environment{
                                 TOXENV="py"
-                            //    PATH = "${WORKSPACE}\\venv\\Scripts;${tool 'CPython-3.6'};${tool 'CPython-3.7'};$PATH"
                             }
                             when{
                                 equals expected: true, actual: params.TEST_RUN_TOX
