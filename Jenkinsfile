@@ -175,6 +175,15 @@ pipeline {
                                 stash includes: "build/docs/**,dist/${DOC_ZIP_FILENAME}", name: "DOCUMENTATION"
                             }
                         }
+                        cleanup{
+                            cleanWs(
+                                deleteDirs: true,
+                                patterns: [
+                                    [pattern: 'build/docs/**', type: 'INCLUDE'],
+                                    [pattern: 'dist/*.doc.zip', type: 'INCLUDE']
+                                ]
+                            )
+                        }
                     }
                 }
             }
