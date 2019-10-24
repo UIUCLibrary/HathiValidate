@@ -225,9 +225,10 @@ pipeline {
                             }
                         }
                         stage("Run Tox"){
-                            //environment{
+                            environment{
+                                TOXENV="py"
                             //    PATH = "${WORKSPACE}\\venv\\Scripts;${tool 'CPython-3.6'};${tool 'CPython-3.7'};$PATH"
-                            //}
+                            }
                             when{
                                 equals expected: true, actual: params.TEST_RUN_TOX
                             }
