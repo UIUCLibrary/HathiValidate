@@ -306,6 +306,16 @@ pipeline {
                     }
                 }
             }
+            post{
+                cleanup{
+                    cleanWs(
+                        deleteDirs: true,
+                        patterns: [
+                                [pattern: 'dist', type: 'INCLUDE']
+                            ]
+                    )
+                }
+            }
         }
         stage("Deploying to Devpi") {
             when {
@@ -332,6 +342,7 @@ pipeline {
                         label 'Windows&&Python3&&!aws'
                     }
                     steps {
+                        unstash "dist"
                         unstash "DOCUMENTATION"
                         bat "python -m venv venv"
                         bat "venv\\pip install devpi-client"
