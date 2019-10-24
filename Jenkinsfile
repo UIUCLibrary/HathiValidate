@@ -58,6 +58,7 @@ pipeline {
       dockerfile {
         filename 'ci/docker/build_windows/Dockerfile'
         dir 'source'
+        label 'Windows&&Docker'
       }
     }
 
