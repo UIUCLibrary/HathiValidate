@@ -162,6 +162,7 @@ pipeline {
             stages{
                 stage("Python Package"){
                     steps {
+                        bat "(if not exist logs mkdir logs)"
                         dir("source"){
                             bat "python.exe setup.py build -b ${WORKSPACE}\\build"
                         }
