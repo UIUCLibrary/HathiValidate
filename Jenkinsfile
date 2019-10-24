@@ -133,24 +133,24 @@ pipeline {
                         }
                     }
                 }
-                stage("Installing Python Dependencies"){
-                    steps{
-                        bat "pip install sphinx -r source\\requirements.txt"
-                    }
-                    post{
-                        success{
-                            bat "(if not exist logs mkdir logs) && pip.exe list > logs\\pippackages${NODE_NAME}.log"
-                            archiveArtifacts artifacts: "logs/pippackages*.log", allowEmptyArchive: true
-                        }
-                        cleanup{
-                            cleanWs(
-                                patterns: [
-                                        [pattern: 'logs/pippackages*.log', type: 'INCLUDE']
-                                    ]
-                                )
-                        }
-                    }
-                }
+                //stage("Installing Python Dependencies"){
+                //    steps{
+                //        bat "pip install sphinx -r source\\requirements.txt"
+                //    }
+                //    post{
+                //        success{
+                //            bat "(if not exist logs mkdir logs) && pip.exe list > logs\\pippackages${NODE_NAME}.log"
+                //            archiveArtifacts artifacts: "logs/pippackages*.log", allowEmptyArchive: true
+                //        }
+                //        cleanup{
+                //            cleanWs(
+                //                patterns: [
+                //                        [pattern: 'logs/pippackages*.log', type: 'INCLUDE']
+                //                    ]
+                //                )
+                //        }
+                //    }
+                //}
             }
             post {
                 failure {
