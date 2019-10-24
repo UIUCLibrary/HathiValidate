@@ -324,8 +324,8 @@ pipeline {
                         unstash "dist"
                         unstash "DOCUMENTATION"
                         bat "python -m venv venv"
-                        bat "venv\\pip install devpi-client"
-                        bat "venv\\devpi use https://devpi.library.illinois.edu && devpi login ${env.DEVPI_USR} --password ${env.DEVPI_PSW} && devpi use /${env.DEVPI_USR}/${env.BRANCH_NAME}_staging && devpi upload --from-dir dist"
+                        bat "venv\\Scripts\\pip install devpi-client"
+                        bat "venv\\Scripts\\devpi use https://devpi.library.illinois.edu && devpi login ${env.DEVPI_USR} --password ${env.DEVPI_PSW} && devpi use /${env.DEVPI_USR}/${env.BRANCH_NAME}_staging && devpi upload --from-dir dist"
 
                     }
                 }
