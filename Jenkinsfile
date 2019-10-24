@@ -521,16 +521,16 @@ pipeline {
              cleanWs(
                 deleteDirs: true,
                 patterns: [
-                    [pattern: 'dist', type: 'INCLUDE'],
-                    [pattern: 'reports', type: 'INCLUDE'],
+                    //[pattern: 'dist', type: 'INCLUDE'],
+                    //[pattern: 'reports', type: 'INCLUDE'],
                     [pattern: 'logs', type: 'INCLUDE'],
                     //[pattern: 'certs', type: 'INCLUDE'],
                     //[pattern: '*tmp', type: 'INCLUDE'],
                     //[pattern: "source", type: 'INCLUDE'],
                     //[pattern: "source/.git", type: 'EXCLUDE'],
-                    [pattern: ".tox", type: 'INCLUDE'],
-                    [pattern: "build", type: 'INCLUDE'],
-                    [pattern: ".pytest_cache", type: 'INCLUDE']
+                    //[pattern: ".tox", type: 'INCLUDE'],
+                    //[pattern: "build", type: 'INCLUDE'],
+                    //[pattern: ".pytest_cache", type: 'INCLUDE']
                     ]
              )
         }
