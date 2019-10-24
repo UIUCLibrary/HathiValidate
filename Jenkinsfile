@@ -55,8 +55,12 @@ def get_package_name(stashName, metadataFile){
 
 pipeline {
     agent {
-        label "Windows && Python3"
+      docker {
+              label 'Windows&&Docker&&aws'
+              image 'python:3.7'
+      }
     }
+
     options {
         disableConcurrentBuilds()  //each branch has 1 job running at a time
         timeout(60)  // Timeout after 60 minutes. This shouldn't take this long but it hangs for some reason
@@ -106,9 +110,6 @@ pipeline {
                     }
                 }
                 stage("Getting Distribution Info"){
-                    environment{
-                        PATH = "${tool 'CPython-3.7'};$PATH"
-                    }
                     steps{
                         dir("source"){
                             bat "python setup.py dist_info"
@@ -124,9 +125,6 @@ pipeline {
                     }
                 }
                 stage("Creating virtualenv for building"){
-                    environment{
-                        PATH = "${tool 'CPython-3.7'};$PATH"
-                    }
                     steps{
                         echo "Create a virtualenv on ${NODE_NAME}"
                         bat(
@@ -225,25 +223,25 @@ pipeline {
                                 }
                             }
                         }
-                        stage("Run Tox"){
-                            environment{
-                                PATH = "${WORKSPACE}\\venv\\Scripts;${tool 'CPython-3.6'};${tool 'CPython-3.7'};$PATH"
-                            }
-                            when{
-                                equals expected: true, actual: params.TEST_RUN_TOX
-                            }
-                            steps {
-                                dir("source"){
-                                    script{
-                                        try{
-                                            bat "tox --parallel=auto --parallel-live --workdir ${WORKSPACE}\\.tox -vv"
-                                        } catch (exc) {
-                                            bat "tox --parallel=auto --parallel-live --workdir ${WORKSPACE}\\.tox --recreate -vv"
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                        // stage("Run Tox"){
+                        //     environment{
+                        //         PATH = "${WORKSPACE}\\venv\\Scripts;${tool 'CPython-3.6'};${tool 'CPython-3.7'};$PATH"
+                        //     }
+                        //     when{
+                        //         equals expected: true, actual: params.TEST_RUN_TOX
+                        //     }
+                        //     steps {
+                        //         dir("source"){
+                        //             script{
+                        //                 try{
+                        //                     bat "tox --parallel=auto --parallel-live --workdir ${WORKSPACE}\\.tox -vv"
+                        //                 } catch (exc) {
+                        //                     bat "tox --parallel=auto --parallel-live --workdir ${WORKSPACE}\\.tox --recreate -vv"
+                        //                 }
+                        //             }
+                        //         }
+                        //     }
+                        // }
                         stage("MyPy"){
                             steps{
                                 dir("source") {
