@@ -315,11 +315,11 @@ pipeline {
                 PKG_VERSION = get_package_version("DIST-INFO", "HathiValidate.dist-info/METADATA")
                 DEVPI = credentials("DS_devpi")
             }
+            agent {
+                label 'Windows&&Python3&&!aws'
+            }
             stages{
                 stage("Upload to DevPi staging") {
-                    agent {
-                        label 'Windows&&Python3&&!aws'
-                    }
                     steps {
                         unstash "dist"
                         unstash "DOCUMENTATION"
