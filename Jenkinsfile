@@ -127,30 +127,30 @@ pipeline {
                 }
                 stage("Creating virtualenv for building"){
                     steps{
-                        echo "Create a virtualenv on ${NODE_NAME}"
-                        bat(
-                            script: "python -m venv venv",
-                            label: "Create virtualenv at ${WORKSPACE}/venv"
-                        )
-                        script {
-                            try {
-                                bat "call venv\\Scripts\\python.exe -m pip install -U pip>=18.1"
-                            }
-                            catch (exc) {
-                                bat "call venv\\Scripts\\python.exe -m pip install -U pip>=18.1 --no-cache-dir"
-                            }
-                        }
-                        bat "venv\\Scripts\\pip.exe install sphinx -r source\\requirements.txt"
+                        // echo "Create a virtualenv on ${NODE_NAME}"
+                        // bat(
+                        //     script: "python -m venv venv",
+                        //     label: "Create virtualenv at ${WORKSPACE}/venv"
+                        // )
+                        // script {
+                        //     try {
+                        //         bat "call venv\\Scripts\\python.exe -m pip install -U pip>=18.1"
+                        //     }
+                        //     catch (exc) {
+                        //         bat "call venv\\Scripts\\python.exe -m pip install -U pip>=18.1 --no-cache-dir"
+                        //     }
+                        // }
+                        bat "pip install sphinx -r source\\requirements.txt --user"
                     }
                     post{
                         success{
-                            bat "(if not exist logs mkdir logs) && venv\\Scripts\\pip.exe list > logs\\pippackages_venv_${NODE_NAME}.log"
+                            bat "(if not exist logs mkdir logs) && pip.exe list > logs\\pippackages${NODE_NAME}.log"
                             archiveArtifacts artifacts: "logs/pippackages_venv_*.log", allowEmptyArchive: true
                         }
                         cleanup{
                             cleanWs(
                                 patterns: [
-                                        [pattern: 'logs/pippackages_venv*.log', type: 'INCLUDE']
+                                        [pattern: 'logs/pippackages*.log', type: 'INCLUDE']
                                     ]
                                 )
                         }
@@ -168,7 +168,7 @@ pipeline {
                 stage("Python Package"){
                     steps {
                         dir("source"){
-                            bat "${WORKSPACE}\\venv\\Scripts\\python.exe setup.py build -b ${WORKSPACE}\\build"
+                            bat "python.exe setup.py build -b ${WORKSPACE}\\build"
                         }
                     }
                 }
@@ -180,7 +180,7 @@ pipeline {
                     steps{
                         echo "Building docs on ${env.NODE_NAME}"
                             dir("build/lib"){
-                                bat "${WORKSPACE}\\venv\\Scripts\\sphinx-build.exe -b html ${WORKSPACE}\\source\\docs\\source ${WORKSPACE}\\build\\docs\\html -d ${WORKSPACE}\\build\\docs\\doctrees -w ${WORKSPACE}/logs/build_sphinx.log"
+                                bat "sphinx-build.exe -b html ${WORKSPACE}\\source\\docs\\source ${WORKSPACE}\\build\\docs\\html -d ${WORKSPACE}\\build\\docs\\doctrees -w ${WORKSPACE}/logs/build_sphinx.log"
                             }
                     }
                     post{
@@ -203,7 +203,7 @@ pipeline {
                 stage("Installing Python Testing Packages"){
                     steps{
                         bat(
-                            script: 'venv\\Scripts\\pip.exe install "tox>=3.8.2,<3.10" pytest-runner mypy lxml pytest pytest-cov flake8',
+                            script: 'pip.exe install tox pytest-runner mypy lxml pytest pytest-cov flake8',
                             label : "Install test packages"
                             )
                     }
@@ -213,7 +213,7 @@ pipeline {
                         stage("PyTest"){
                             steps{
                                 dir("source"){
-                                    bat "${WORKSPACE}\\venv\\Scripts\\python -m pytest --junitxml=${WORKSPACE}/reports/junit-${env.NODE_NAME}-pytest.xml --junit-prefix=${env.NODE_NAME}-pytest --cov-report html:${WORKSPACE}/reports/coverage/ --cov=hathi_validate" //  --basetemp={envtmpdir}"
+                                    bat "python -m pytest --junitxml=${WORKSPACE}/reports/junit-${env.NODE_NAME}-pytest.xml --junit-prefix=${env.NODE_NAME}-pytest --cov-report html:${WORKSPACE}/reports/coverage/ --cov=hathi_validate" //  --basetemp={envtmpdir}"
                                 }
 
                             }
@@ -247,7 +247,7 @@ pipeline {
                             steps{
                                 dir("source") {
                                     catchError(buildResult: "SUCCESS", message: 'MyPy found issues', stageResult: "UNSTABLE") {
-                                        bat "${WORKSPACE}\\venv\\Scripts\\mypy.exe -p hathi_validate --html-report ${WORKSPACE}/reports/mypy_html"
+                                        bat "mypy.exe -p hathi_validate --html-report ${WORKSPACE}/reports/mypy_html"
                                     }
                                 }
                             }
@@ -260,7 +260,7 @@ pipeline {
                         stage("Documentation"){
                             steps{
                                 dir("source"){
-                                    bat "${WORKSPACE}\\venv\\Scripts\\sphinx-build.exe -b doctest docs\\source ${WORKSPACE}\\build\\docs -d ${WORKSPACE}\\build\\docs\\doctrees -v"
+                                    bat "sphinx-build.exe -b doctest docs\\source ${WORKSPACE}\\build\\docs -d ${WORKSPACE}\\build\\docs\\doctrees -v"
                                 }
                             }
 
@@ -271,18 +271,13 @@ pipeline {
         }
         stage("Packaging") {
             stages{
-                stage("Installing Packaging Tools"){
-                    steps{
-                        bat "${WORKSPACE}\\venv\\Scripts\\pip install wheel"
-                    }
-                }
                 stage("Building packages"){
 
                     parallel {
                         stage("Source and Wheel formats"){
                             steps{
                                 dir("source"){
-                                    bat "${WORKSPACE}\\venv\\scripts\\python.exe setup.py sdist --format zip -d ${WORKSPACE}\\dist bdist_wheel -d ${WORKSPACE}\\dist"
+                                    bat "python.exe setup.py sdist --format zip -d ${WORKSPACE}\\dist bdist_wheel -d ${WORKSPACE}\\dist"
                                 }
 
                             }
