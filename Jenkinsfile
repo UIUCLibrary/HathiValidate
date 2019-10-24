@@ -57,6 +57,7 @@ pipeline {
     agent {
       dockerfile {
         filename 'source/ci/docker/build_windows/Dockerfile'
+        dir 'source'
       }
     }
 
