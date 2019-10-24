@@ -83,6 +83,12 @@ pipeline {
     }
     stages {
         stage("Configure") {
+            agent {
+              docker {
+                      label 'Windows&&Docker&&aws'
+                      image 'python:3.7'
+              }
+            }
             stages{
                 stage("Purge all existing data in workspace"){
                     when{
