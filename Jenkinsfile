@@ -342,7 +342,7 @@ pipeline {
                                 skipDefaultCheckout(true)
                             }
                             environment {
-                                PATH = "${tool 'CPython-3.6'};${tool 'CPython-3.7'};$PATH"
+                                PATH = "${WORKSPACE}\\venv\\Scripts\\;${tool 'CPython-3.6'};${tool 'CPython-3.7'};$PATH"
                             }
                             stages{
                                 stage("Building DevPi Testing venv for .zip package"){
