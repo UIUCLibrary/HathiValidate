@@ -224,25 +224,25 @@ pipeline {
                                 }
                             }
                         }
-                        // stage("Run Tox"){
-                        //     environment{
-                        //         PATH = "${WORKSPACE}\\venv\\Scripts;${tool 'CPython-3.6'};${tool 'CPython-3.7'};$PATH"
-                        //     }
-                        //     when{
-                        //         equals expected: true, actual: params.TEST_RUN_TOX
-                        //     }
-                        //     steps {
-                        //         dir("source"){
-                        //             script{
-                        //                 try{
-                        //                     bat "tox --parallel=auto --parallel-live --workdir ${WORKSPACE}\\.tox -vv"
-                        //                 } catch (exc) {
-                        //                     bat "tox --parallel=auto --parallel-live --workdir ${WORKSPACE}\\.tox --recreate -vv"
-                        //                 }
-                        //             }
-                        //         }
-                        //     }
-                        // }
+                        stage("Run Tox"){
+                            //environment{
+                            //    PATH = "${WORKSPACE}\\venv\\Scripts;${tool 'CPython-3.6'};${tool 'CPython-3.7'};$PATH"
+                            //}
+                            when{
+                                equals expected: true, actual: params.TEST_RUN_TOX
+                            }
+                            steps {
+                                dir("source"){
+                                    script{
+                                        try{
+                                            bat "tox --parallel=auto --parallel-live --workdir ${WORKSPACE}\\.tox -vv"
+                                        } catch (exc) {
+                                            bat "tox --parallel=auto --parallel-live --workdir ${WORKSPACE}\\.tox --recreate -vv"
+                                        }
+                                    }
+                                }
+                            }
+                        }
                         stage("MyPy"){
                             steps{
                                 dir("source") {
