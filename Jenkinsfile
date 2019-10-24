@@ -56,7 +56,7 @@ def get_package_name(stashName, metadataFile){
 pipeline {
     agent {
       dockerfile {
-        filename 'ci/docker/build_windows/Dockerfile'
+        filename 'source/ci/docker/build_windows/Dockerfile'
       }
     }
 
