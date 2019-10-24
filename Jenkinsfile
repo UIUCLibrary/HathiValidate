@@ -120,7 +120,7 @@ pipeline {
                 stage("Getting Distribution Info"){
                     steps{
                         dir("source"){
-                            bat "certutil -generateSSTFromWU roots.sst && certutil -addstore -f root roots.sst && del roots.sst"
+                            //bat "certutil -generateSSTFromWU roots.sst && certutil -addstore -f root roots.sst && del roots.sst"
                             bat "python setup.py dist_info"
                         }
                     }
