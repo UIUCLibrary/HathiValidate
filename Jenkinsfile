@@ -232,9 +232,7 @@ pipeline {
                             steps{
                                 dir("source") {
                                     catchError(buildResult: "SUCCESS", message: 'MyPy found issues', stageResult: "UNSTABLE") {
-                                        tee("${WORKSPACE}/reports/mypy.log") {
-                                            bat "mypy.exe -p hathi_validate --html-report ${WORKSPACE}/reports/mypy_html"
-                                        }
+                                        bat "mypy.exe -p hathi_validate --html-report ${WORKSPACE}/reports/mypy_html > ${WORKSPACE}/reports/mypy.log"
                                     }
                                 }
                             }
