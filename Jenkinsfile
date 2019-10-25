@@ -191,6 +191,7 @@ pipeline {
                             script: 'pip.exe install tox pytest-runner mypy lxml pytest pytest-cov flake8',
                             label : "Install test packages"
                             )
+                        bat "(if not exist logs mkdir logs)"
                     }
                 }
                 stage("Run tests"){
@@ -232,7 +233,7 @@ pipeline {
                             steps{
                                 dir("source") {
                                     catchError(buildResult: "SUCCESS", message: 'MyPy found issues', stageResult: "UNSTABLE") {
-                                        bat "mypy.exe -p hathi_validate --html-report ${WORKSPACE}/reports/mypy_html > ${WORKSPACE}/reports/mypy.log"
+                                        bat "mypy.exe -p hathi_validate --html-report ${WORKSPACE}/reports/mypy_html > ${WORKSPACE}/logs/mypy.log"
                                     }
                                 }
                             }
