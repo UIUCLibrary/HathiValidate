@@ -232,13 +232,16 @@ pipeline {
                             steps{
                                 dir("source") {
                                     catchError(buildResult: "SUCCESS", message: 'MyPy found issues', stageResult: "UNSTABLE") {
-                                        bat "mypy.exe -p hathi_validate --html-report ${WORKSPACE}/reports/mypy_html"
+                                        tee("${WORKSPACE}/reports/mypy.log") {
+                                            bat "mypy.exe -p hathi_validate --html-report ${WORKSPACE}/reports/mypy_html"
+                                        }
                                     }
                                 }
                             }
                             post{
                                 always {
                                     publishHTML([allowMissing: true, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'reports/mypy_html', reportFiles: 'index.html', reportName: 'MyPy', reportTitles: ''])
+                                    recordIssues sourceDirectory: 'source', tools: [myPy(pattern: 'reports/mypy.log')]
                                 }
                             }
                         }
