@@ -240,7 +240,7 @@ pipeline {
                             post{
                                 always {
                                     publishHTML([allowMissing: true, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'reports/mypy_html', reportFiles: 'index.html', reportName: 'MyPy', reportTitles: ''])
-                                    recordIssues sourceDirectory: 'source', tools: [myPy(pattern: 'reports/mypy.log')]
+                                    recordIssues sourceDirectory: 'source', tools: [myPy(pattern: 'logs/mypy.log')]
                                 }
                             }
                         }
