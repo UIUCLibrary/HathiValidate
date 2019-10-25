@@ -242,7 +242,7 @@ pipeline {
                                     publishHTML([allowMissing: true, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'reports/mypy_html', reportFiles: 'index.html', reportName: 'MyPy', reportTitles: ''])
                                     stash includes: "logs/mypy.log", name: "MYPY_LOGS"
                                     ws(dir:"issues"){
-                                        checkout SCM
+                                        checkout scm
                                         unstash "MYPY_LOGS"
                                         recordIssues sourceDirectory: 'source', tools: [myPy(pattern: 'logs/mypy.log')]
 
