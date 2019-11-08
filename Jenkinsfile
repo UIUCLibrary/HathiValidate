@@ -58,7 +58,6 @@ pipeline {
 
     options {
         disableConcurrentBuilds()  //each branch has 1 job running at a time
-        checkoutToSubdirectory("source")
         buildDiscarder logRotator(artifactDaysToKeepStr: '10', artifactNumToKeepStr: '10')
     }
     triggers {
@@ -79,7 +78,6 @@ pipeline {
             agent {
               dockerfile {
                 filename 'ci/docker/build_windows/Dockerfile'
-                dir 'source'
                 label 'Windows&&Docker'
               }
             }
@@ -89,9 +87,7 @@ pipeline {
                         timeout(2)
                     }
                     steps{
-                       dir("source"){
-                            stash includes: 'deployment.yml', name: "Deployment"
-                       }
+                        stash includes: 'deployment.yml', name: "Deployment"
                     }
                 }
                 stage("Getting Distribution Info"){
@@ -99,16 +95,12 @@ pipeline {
                         timeout(4)
                     }
                     steps{
-                        dir("source"){
-                            bat "python setup.py dist_info"
-                        }
+                        bat "python setup.py dist_info"
                     }
                     post{
                         success{
-                            dir("source"){
-                                stash includes: "HathiValidate.dist-info/**", name: 'DIST-INFO'
-                                archiveArtifacts artifacts: "HathiValidate.dist-info/**"
-                            }
+                            stash includes: "HathiValidate.dist-info/**", name: 'DIST-INFO'
+                            archiveArtifacts artifacts: "HathiValidate.dist-info/**"
                         }
                     }
                 }
@@ -123,7 +115,6 @@ pipeline {
             agent {
                   dockerfile {
                     filename 'ci/docker/build_windows/Dockerfile'
-                    dir 'source'
                     label 'Windows&&Docker'
                   }
                 }
@@ -135,9 +126,7 @@ pipeline {
                 stage("Python Package"){
                     steps {
                         bat "(if not exist logs mkdir logs)"
-                        dir("source"){
-                            bat "python.exe setup.py build -b ${WORKSPACE}\\build"
-                        }
+                        bat "python.exe setup.py build -b ${WORKSPACE}\\build"
                     }
                 }
                 stage("Docs"){
@@ -148,7 +137,7 @@ pipeline {
                     steps{
                         echo "Building docs on ${env.NODE_NAME}"
                             dir("build/lib"){
-                                bat "sphinx-build.exe -b html ${WORKSPACE}\\source\\docs\\source ${WORKSPACE}\\build\\docs\\html -d ${WORKSPACE}\\build\\docs\\doctrees -w ${WORKSPACE}/logs/build_sphinx.log"
+                                bat "sphinx-build.exe -b html ${WORKSPACE}\\docs\\source ${WORKSPACE}\\build\\docs\\html -d ${WORKSPACE}\\build\\docs\\doctrees -w ${WORKSPACE}/logs/build_sphinx.log"
                             }
                     }
                     post{
@@ -180,7 +169,6 @@ pipeline {
             agent {
                   dockerfile {
                     filename 'ci/docker/build_windows/Dockerfile'
-                    dir 'source'
                     label 'Windows&&Docker'
                   }
             }
@@ -201,9 +189,7 @@ pipeline {
                     parallel {
                         stage("PyTest"){
                             steps{
-                                dir("source"){
-                                    bat "python -m pytest --junitxml=${WORKSPACE}/reports/junit-${env.NODE_NAME}-pytest.xml --junit-prefix=${env.NODE_NAME}-pytest --cov-report html:${WORKSPACE}/reports/coverage/ --cov=hathi_validate" //  --basetemp={envtmpdir}"
-                                }
+                                bat "python -m pytest --junitxml=${WORKSPACE}/reports/junit-${env.NODE_NAME}-pytest.xml --junit-prefix=${env.NODE_NAME}-pytest --cov-report html:${WORKSPACE}/reports/coverage/ --cov=hathi_validate" //  --basetemp={envtmpdir}"
 
                             }
                             post {
@@ -221,37 +207,31 @@ pipeline {
                                 equals expected: true, actual: params.TEST_RUN_TOX
                             }
                             steps {
-                                dir("source"){
-                                    script{
-                                        try{
-                                            bat "tox --parallel=auto --parallel-live --workdir ${WORKSPACE}\\.tox -vv"
-                                        } catch (exc) {
-                                            bat "tox --parallel=auto --parallel-live --workdir ${WORKSPACE}\\.tox --recreate -vv"
-                                        }
+                                script{
+                                    try{
+                                        bat "tox --parallel=auto --parallel-live --workdir ${WORKSPACE}\\.tox -vv"
+                                    } catch (exc) {
+                                        bat "tox --parallel=auto --parallel-live --workdir ${WORKSPACE}\\.tox --recreate -vv"
                                     }
                                 }
                             }
                         }
                         stage("MyPy"){
                             steps{
-                                dir("source") {
-                                    catchError(buildResult: "SUCCESS", message: 'MyPy found issues', stageResult: "UNSTABLE") {
-                                        bat "mypy.exe -p hathi_validate --html-report ${WORKSPACE}/reports/mypy_html > ${WORKSPACE}/logs/mypy.log"
-                                    }
+                                catchError(buildResult: "SUCCESS", message: 'MyPy found issues', stageResult: "UNSTABLE") {
+                                    bat "mypy.exe -p hathi_validate --html-report ${WORKSPACE}/reports/mypy_html > ${WORKSPACE}/logs/mypy.log"
                                 }
                             }
                             post{
                                 always {
                                     publishHTML([allowMissing: true, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'reports/mypy_html', reportFiles: 'index.html', reportName: 'MyPy', reportTitles: ''])
-                                    recordIssues sourceDirectory: 'source', tools: [myPy(pattern: 'logs/mypy.log')]
+                                    recordIssues tools: [myPy(pattern: 'logs/mypy.log')]
                                 }
                             }
                         }
                         stage("Documentation"){
                             steps{
-                                dir("source"){
-                                    bat "sphinx-build.exe -b doctest docs\\source ${WORKSPACE}\\build\\docs -d ${WORKSPACE}\\build\\docs\\doctrees -v"
-                                }
+                                bat "sphinx-build.exe -b doctest docs\\source ${WORKSPACE}\\build\\docs -d ${WORKSPACE}\\build\\docs\\doctrees -v"
                             }
 
                         }
@@ -260,12 +240,7 @@ pipeline {
             }
             post{
                 cleanup{
-                    cleanWs(
-                        deleteDirs: true,
-                        patterns: [
-                                [pattern: 'source', type: 'EXCLUDE']
-                            ]
-                    )
+                    cleanWs notFailBuild: true
                 }
             }
         }
@@ -273,7 +248,6 @@ pipeline {
             agent {
                   dockerfile {
                     filename 'ci/docker/build_windows/Dockerfile'
-                    dir 'source'
                     label 'Windows&&Docker'
                   }
             }
@@ -286,9 +260,7 @@ pipeline {
                     parallel {
                         stage("Source and Wheel formats"){
                             steps{
-                                dir("source"){
-                                    bat "python.exe setup.py sdist --format zip -d ${WORKSPACE}\\dist bdist_wheel -d ${WORKSPACE}\\dist"
-                                }
+                                bat "python.exe setup.py sdist --format zip -d ${WORKSPACE}\\dist bdist_wheel -d ${WORKSPACE}\\dist"
 
                             }
                             post{
