@@ -83,11 +83,11 @@ pipeline {
                 label 'Windows&&Docker'
               }
             }
-            options{
-                timeout(4)
-            }
             stages{
                 stage("Stashing important files for later"){
+                    options{
+                        timeout(2)
+                    }
                     steps{
                        dir("source"){
                             stash includes: 'deployment.yml', name: "Deployment"
@@ -95,6 +95,9 @@ pipeline {
                     }
                 }
                 stage("Getting Distribution Info"){
+                    options{
+                        timeout(4)
+                    }
                     steps{
                         dir("source"){
                             bat "python setup.py dist_info"
