@@ -293,6 +293,7 @@ pipeline {
                         equals expected: "dev", actual: env.BRANCH_NAME
                     }
                 }
+                beforeAgent true
             }
             options{
                 timestamps()
@@ -469,6 +470,7 @@ pipeline {
                     }
                     when{
                         equals expected: true, actual: params.DEPLOY_DOCS
+                        beforeAgent true
                     }
                     steps{
                         unstash "DOCUMENTATION"
