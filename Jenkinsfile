@@ -153,13 +153,7 @@ pipeline {
                             }
                         }
                         cleanup{
-                            cleanWs(
-                                deleteDirs: true,
-                                patterns: [
-                                    [pattern: 'build/docs/**', type: 'INCLUDE'],
-                                    [pattern: 'dist/*.doc.zip', type: 'INCLUDE']
-                                ]
-                            )
+                            cleanWs notFailBuild: true
                         }
                     }
                 }
@@ -275,12 +269,7 @@ pipeline {
             }
             post{
                 cleanup{
-                    cleanWs(
-                        deleteDirs: true,
-                        patterns: [
-                                [pattern: 'dist', type: 'INCLUDE']
-                            ]
-                    )
+                    cleanWs notFailBuild: true
                 }
             }
         }
@@ -366,9 +355,7 @@ pipeline {
 
                             post {
                                 cleanup{
-                                        cleanWs deleteDirs: true, patterns: [
-                                            [pattern: 'certs', type: 'INCLUDE']
-                                        ]
+                                        cleanWs notFailBuild: true
                                     }
                             }
 
