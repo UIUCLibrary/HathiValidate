@@ -547,6 +547,9 @@ pipeline {
                             stash includes: 'dist/*.whl', name: "wheel"
                             stash includes: 'dist/*.zip', name: "sdist"
                         }
+                        success{
+                            archiveArtifacts artifacts: "dist/*.whl,dist/*.tar.gz,dist/*.zip", fingerprint: true
+                        }
                         cleanup{
                             cleanWs notFailBuild: true
                         }
@@ -638,11 +641,6 @@ pipeline {
                             }
                         }
                     }
-                }
-            }
-            post{
-                success{
-                    archiveArtifacts artifacts: "dist/*.whl,dist/*.tar.gz,dist/*.zip", fingerprint: true
                 }
             }
         }
