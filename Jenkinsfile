@@ -139,7 +139,7 @@ def CONFIGURATIONS = [
                             wheel: [
                                 dockerfile: [
                                     filename: 'ci/docker/python/windows/Dockerfile',
-                                    additionalBuildArgs: '--build-arg PYTHON_DOCKER_IMAGE_BASE=python:3.7'
+                                    additionalBuildArgs: '--build-arg PYTHON_DOCKER_IMAGE_BASE=python:3.7',
                                     label: 'windows && docker',
                                 ]
                             ]
@@ -239,7 +239,7 @@ def CONFIGURATIONS = [
                             wheel: [
                                 dockerfile: [
                                     filename: 'ci/docker/python/windows/Dockerfile',
-                                    additionalBuildArgs: '--build-arg PYTHON_DOCKER_IMAGE_BASE=python:3.8'
+                                    additionalBuildArgs: '--build-arg PYTHON_DOCKER_IMAGE_BASE=python:3.8',
                                     label: 'windows && docker',
                                 ]
                             ]
