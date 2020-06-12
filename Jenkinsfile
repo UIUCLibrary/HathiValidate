@@ -63,7 +63,7 @@ def CONFIGURATIONS = [
                     ],
                     pkgRegex: [
                         wheel: "*cp36*.whl",
-                        sdist: "uiucprescon.ocr-*.zip"
+                        sdist: "*.zip"
                     ]
                 ],
                 linux: [
@@ -102,18 +102,18 @@ def CONFIGURATIONS = [
                         ]
                     ],
                     pkgRegex: [
-                        wheel: "*cp36*.whl",
-                        sdist: "uiucprescon.ocr-*.zip"
+                        wheel: "*.whl",
+                        sdist: "*.zip"
                     ]
                 ]
             ],
             tox_env: "py36",
             devpiSelector: [
                 sdist: "zip",
-                wheel: "36.*whl",
+                wheel: "*.whl",
             ],
             pkgRegex: [
-                wheel: "*cp36*.whl",
+                wheel: "*.whl",
                 sdist: "*.zip"
             ]
         ],
@@ -162,7 +162,7 @@ def CONFIGURATIONS = [
                         ]
                     ],
                     pkgRegex: [
-                        wheel: "*cp37*.whl",
+                        wheel: "*.whl",
                         sdist: "*.zip"
                     ]
                 ],
@@ -202,18 +202,18 @@ def CONFIGURATIONS = [
                         ]
                     ],
                     pkgRegex: [
-                        wheel: "*cp37*.whl",
-                        sdist: "uiucprescon.ocr-*.zip"
+                        wheel: "*.whl",
+                        sdist: "*.zip"
                     ]
                 ]
             ],
             tox_env: "py37",
             devpiSelector: [
                 sdist: "zip",
-                wheel: "37.*whl",
+                wheel: "*.whl",
             ],
             pkgRegex: [
-                wheel: "*cp37*.whl",
+                wheel: "*.whl",
                 sdist: "*.zip"
             ]
         ],
@@ -263,8 +263,8 @@ def CONFIGURATIONS = [
 
                     ],
                     pkgRegex: [
-                        wheel: "*cp38*.whl",
-                        sdist: "uiucprescon.ocr-*.zip"
+                        wheel: "*.whl",
+                        sdist: "*.zip"
                     ]
                 ],
                 linux: [
@@ -303,18 +303,18 @@ def CONFIGURATIONS = [
                         ]
                     ],
                     pkgRegex: [
-                        wheel: "*cp38*.whl",
-                        sdist: "uiucprescon.ocr-*.zip"
+                        wheel: "*.whl",
+                        sdist: "*.zip"
                     ]
                 ]
             ],
             tox_env: "py38",
             devpiSelector: [
                 sdist: "zip",
-                wheel: "38.*whl",
+                wheel: "*.whl",
             ],
             pkgRegex: [
-                wheel: "*cp38*.whl",
+                wheel: "*.whl",
                 sdist: "*.zip"
             ]
         ],
