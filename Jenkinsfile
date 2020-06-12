@@ -25,7 +25,7 @@ def CONFIGURATIONS = [
                             dockerfile: [
                                 filename: 'ci/docker/python/windows/Dockerfile',
                                 label: 'Windows&&Docker',
-                                additionalBuildArgs: '--build-arg PYTHON_INSTALLER_URL=https://www.python.org/ftp/python/3.6.8/python-3.6.8-amd64.exe --build-arg CHOCOLATEY_SOURCE'
+                                additionalBuildArgs: '--build-arg PYTHON_DOCKER_IMAGE_BASE=python:3.6-windowsservercore'
                             ]
                         ],
                         test:[
@@ -33,14 +33,14 @@ def CONFIGURATIONS = [
                                 dockerfile: [
                                     filename: 'ci/docker/python/windows/Dockerfile',
                                     label: 'Windows&&Docker',
-                                    additionalBuildArgs: '--build-arg PYTHON_DOCKER_IMAGE_BASE=python:3.6-windowsservercore --build-arg CHOCOLATEY_SOURCE'
+                                    additionalBuildArgs: '--build-arg PYTHON_DOCKER_IMAGE_BASE=python:3.6-windowsservercore'
                                 ]
                             ],
                             sdist: [
                                 dockerfile: [
                                     filename: 'ci/docker/python/windows/Dockerfile',
                                     label: 'Windows&&Docker',
-                                    additionalBuildArgs: '--build-arg PYTHON_INSTALLER_URL=https://www.python.org/ftp/python/3.6.8/python-3.6.8-amd64.exe --build-arg CHOCOLATEY_SOURCE'
+                                    additionalBuildArgs: '--build-arg PYTHON_DOCKER_IMAGE_BASE=python:3.6-windowsservercore'
                                 ]
                             ]
                         ],
@@ -125,7 +125,7 @@ def CONFIGURATIONS = [
                             dockerfile: [
                                 filename: 'ci/docker/python/windows/Dockerfile',
                                 label: 'Windows&&Docker',
-                                additionalBuildArgs: '--build-arg PYTHON_INSTALLER_URL=https://www.python.org/ftp/python/3.7.5/python-3.7.5-amd64.exe --build-arg CHOCOLATEY_SOURCE'
+                                additionalBuildArgs: '--build-arg PYTHON_DOCKER_IMAGE_BASE=python:3.7'
                             ]
                         ],
                         test: [
@@ -133,13 +133,13 @@ def CONFIGURATIONS = [
                                 dockerfile: [
                                     filename: 'ci/docker/python/windows/Dockerfile',
                                     label: 'Windows&&Docker',
-                                    additionalBuildArgs: '--build-arg PYTHON_INSTALLER_URL=https://www.python.org/ftp/python/3.7.5/python-3.7.5-amd64.exe --build-arg CHOCOLATEY_SOURCE'
+                                    additionalBuildArgs: '--build-arg PYTHON_DOCKER_IMAGE_BASE=python:3.7'
                                 ]
                             ],
                             wheel: [
                                 dockerfile: [
                                     filename: 'ci/docker/python/windows/Dockerfile',
-                                    additionalBuildArgs: '--build-arg PYTHON_DOCKER_IMAGE_BASE=python:3.7',
+                                    additionalBuildArgs: '--build-arg PYTHON_DOCKER_IMAGE_BASE=python:3.7'
                                     label: 'windows && docker',
                                 ]
                             ]
@@ -225,7 +225,7 @@ def CONFIGURATIONS = [
                             dockerfile: [
                                 filename: 'ci/docker/python/windows/Dockerfile',
                                 label: 'Windows&&Docker',
-                                additionalBuildArgs: '--build-arg PYTHON_INSTALLER_URL=https://www.python.org/ftp/python/3.8.3/python-3.8.3-amd64.exe --build-arg CHOCOLATEY_SOURCE'
+                                additionalBuildArgs: '--build-arg PYTHON_DOCKER_IMAGE_BASE=python:3.8'
                             ]
                         ],
                         test: [
@@ -233,13 +233,13 @@ def CONFIGURATIONS = [
                                 dockerfile: [
                                     filename: 'ci/docker/python/windows/Dockerfile',
                                     label: 'Windows&&Docker',
-                                    additionalBuildArgs: '--build-arg PYTHON_INSTALLER_URL=https://www.python.org/ftp/python/3.8.3/python-3.8.3-amd64.exe --build-arg CHOCOLATEY_SOURCE'
+                                    additionalBuildArgs: '--build-arg PYTHON_DOCKER_IMAGE_BASE=python:3.8'
                                 ]
                             ],
                             wheel: [
                                 dockerfile: [
                                     filename: 'ci/docker/python/windows/Dockerfile',
-                                    additionalBuildArgs: '--build-arg PYTHON_DOCKER_IMAGE_BASE=python:3.8',
+                                    additionalBuildArgs: '--build-arg PYTHON_DOCKER_IMAGE_BASE=python:3.8'
                                     label: 'windows && docker',
                                 ]
                             ]
