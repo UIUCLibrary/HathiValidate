@@ -81,7 +81,7 @@ def CONFIGURATIONS = [
             tox_env: "py36",
             devpiSelector: [
                 sdist: "zip",
-                wheel: "*.whl",
+                wheel: "whl",
             ],
             pkgRegex: [
                 wheel: "*.whl",
@@ -152,7 +152,7 @@ def CONFIGURATIONS = [
             tox_env: "py37",
             devpiSelector: [
                 sdist: "zip",
-                wheel: "*.whl",
+                wheel: "whl",
             ],
             pkgRegex: [
                 wheel: "*.whl",
@@ -224,7 +224,7 @@ def CONFIGURATIONS = [
             tox_env: "py38",
             devpiSelector: [
                 sdist: "zip",
-                wheel: "*.whl",
+                wheel: "whl",
             ],
             pkgRegex: [
                 wheel: "*.whl",
