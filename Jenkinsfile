@@ -76,10 +76,10 @@ pipeline {
     stages {
         stage("Getting Distribution Info"){
             agent {
-              dockerfile {
-                filename 'ci/docker/python/linux/Dockerfile'
-                label 'linux && docker'
-              }
+                dockerfile {
+                    filename 'ci/docker/python/linux/Dockerfile'
+                    label 'linux && docker'
+                }
             }
             steps{
                 timeout(4){
@@ -106,8 +106,6 @@ pipeline {
                         timeout(4){
                             sh "python setup.py build -b build"
                         }
-//                         bat "(if not exist logs mkdir logs)"
-//                         bat "python.exe setup.py build -b ${WORKSPACE}\\build"
                     }
                 }
                 stage("Docs"){
@@ -148,81 +146,79 @@ pipeline {
             }
         }
         stage("Tests") {
-            agent {
-                  dockerfile {
-                    filename 'ci/docker/python/windows/Dockerfile'
-                    label 'Windows&&Docker'
-                  }
-            }
-            options{
-                timeout(4)
-            }
-            stages{
-                stage("Installing Python Testing Packages"){
+            parallel {
+                stage("PyTest"){
+                    agent {
+                        dockerfile {
+                            filename 'ci/docker/python/linux/Dockerfile'
+                            label 'linux && docker'
+                        }
+                    }
                     steps{
-                        bat(
-                            script: 'pip.exe install tox pytest-runner mypy lxml pytest pytest-cov flake8',
-                            label : "Install test packages"
-                            )
-                        bat "(if not exist logs mkdir logs)"
+                        sh "python -m pytest --junitxml=reports/junit-${env.NODE_NAME}-pytest.xml --junit-prefix=${env.NODE_NAME}-pytest --cov-report html:reports/coverage/ --cov=hathi_validate" //  --basetemp={envtmpdir}"
+
                     }
-                }
-                stage("Run tests"){
-                    parallel {
-                        stage("PyTest"){
-                            steps{
-                                bat "python -m pytest --junitxml=${WORKSPACE}/reports/junit-${env.NODE_NAME}-pytest.xml --junit-prefix=${env.NODE_NAME}-pytest --cov-report html:${WORKSPACE}/reports/coverage/ --cov=hathi_validate" //  --basetemp={envtmpdir}"
-
-                            }
-                            post {
-                                always{
-                                    junit "reports/junit-${env.NODE_NAME}-pytest.xml"
-                                    publishHTML([allowMissing: true, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'reports/coverage', reportFiles: 'index.html', reportName: 'Coverage', reportTitles: ''])
-                                }
-                            }
-                        }
-                        stage("Run Tox"){
-                            environment{
-                                TOXENV="py"
-                            }
-                            when{
-                                equals expected: true, actual: params.TEST_RUN_TOX
-                            }
-                            steps {
-                                script{
-                                    try{
-                                        bat "tox --parallel=auto --parallel-live --workdir ${WORKSPACE}\\.tox -vv"
-                                    } catch (exc) {
-                                        bat "tox --parallel=auto --parallel-live --workdir ${WORKSPACE}\\.tox --recreate -vv"
-                                    }
-                                }
-                            }
-                        }
-                        stage("MyPy"){
-                            steps{
-                                catchError(buildResult: "SUCCESS", message: 'MyPy found issues', stageResult: "UNSTABLE") {
-                                    bat "mypy.exe -p hathi_validate --html-report ${WORKSPACE}/reports/mypy_html > ${WORKSPACE}/logs/mypy.log"
-                                }
-                            }
-                            post{
-                                always {
-                                    publishHTML([allowMissing: true, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'reports/mypy_html', reportFiles: 'index.html', reportName: 'MyPy', reportTitles: ''])
-                                    recordIssues tools: [myPy(pattern: 'logs/mypy.log')]
-                                }
-                            }
-                        }
-                        stage("Documentation"){
-                            steps{
-                                bat "sphinx-build.exe -b doctest docs\\source ${WORKSPACE}\\build\\docs -d ${WORKSPACE}\\build\\docs\\doctrees -v"
-                            }
-
+                    post {
+                        always{
+                            junit "reports/junit-${env.NODE_NAME}-pytest.xml"
+                            publishHTML([allowMissing: true, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'reports/coverage', reportFiles: 'index.html', reportName: 'Coverage', reportTitles: ''])
                         }
                     }
                 }
-            }
-            post{
-                cleanup{
-                    cleanWs notFailBuild: true
+                stage("Run Tox"){
+                    agent {
+                        dockerfile {
+                            filename 'ci/docker/python/linux/Dockerfile'
+                            label 'linux && docker'
+                        }
+                    }
+                    environment{
+                        TOXENV="py"
+                    }
+                    when{
+                        equals expected: true, actual: params.TEST_RUN_TOX
+                    }
+                    steps {
+                        sh "tox --workdir .tox -vv"
+//                         script{
+//                             try{
+//                                 bat "tox --parallel=auto --parallel-live --workdir ${WORKSPACE}\\.tox -vv"
+//                             } catch (exc) {
+//                                 bat "tox --parallel=auto --parallel-live --workdir ${WORKSPACE}\\.tox --recreate -vv"
+//                             }
+//                         }
+                    }
+                }
+                stage("MyPy"){
+                    agent {
+                        dockerfile {
+                            filename 'ci/docker/python/linux/Dockerfile'
+                            label 'linux && docker'
+                        }
+                    }
+                    steps{
+                        catchError(buildResult: "SUCCESS", message: 'MyPy found issues', stageResult: "UNSTABLE") {
+                            sh "mypy -p hathi_validate --html-report reports/mypy_html > logs/mypy.log"
+                        }
+                    }
+                    post{
+                        always {
+                            publishHTML([allowMissing: true, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'reports/mypy_html', reportFiles: 'index.html', reportName: 'MyPy', reportTitles: ''])
+                            recordIssues tools: [myPy(pattern: 'logs/mypy.log')]
+                        }
+                    }
+                }
+                stage("Documentation"){
+                    agent {
+                        dockerfile {
+                            filename 'ci/docker/python/linux/Dockerfile'
+                            label 'linux && docker'
+                        }
+                    }
+                    steps{
+                        sh "python -m sphinx -b doctest docs/source build/docs -d build/docs/doctrees -v"
+                    }
+
                 }
             }
         }
