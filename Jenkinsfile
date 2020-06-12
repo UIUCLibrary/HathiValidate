@@ -622,19 +622,19 @@ pipeline {
                                         }
                                     }
                                 }
-                            }
-                        }
-                        post{
-                            cleanup{
-                                cleanWs(
-                                    notFailBuild: true,
-                                    deleteDirs: true,
-                                    patterns: [
-                                            [pattern: 'dist', type: 'INCLUDE'],
-                                            [pattern: 'build', type: 'INCLUDE'],
-                                            [pattern: '.tox', type: 'INCLUDE'],
-                                        ]
-                                )
+                                post{
+                                    cleanup{
+                                        cleanWs(
+                                            notFailBuild: true,
+                                            deleteDirs: true,
+                                            patterns: [
+                                                    [pattern: 'dist', type: 'INCLUDE'],
+                                                    [pattern: 'build', type: 'INCLUDE'],
+                                                    [pattern: '.tox', type: 'INCLUDE'],
+                                                ]
+                                        )
+                                    }
+                                }
                             }
                         }
                     }
