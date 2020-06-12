@@ -467,6 +467,9 @@ pipeline {
                     }
                 }
                 stage("Testing Packages"){
+                    options{
+                        timestamps()
+                    }
                     matrix{
                         axes {
                             axis {
@@ -525,12 +528,12 @@ pipeline {
                                             if(isUnix()){
                                                 sh(
                                                     label: "Testing ${it}",
-                                                    script: "tox --installpkg=${it.path} -e py"
+                                                    script: "tox --installpkg=${it.path} -e py -v"
                                                     )
                                             } else {
                                                 bat(
                                                     label: "Testing ${it}",
-                                                    script: "tox --installpkg=${it.path} -e py"
+                                                    script: "tox --installpkg=${it.path} -e py -v"
                                                 )
                                             }
                                         }
