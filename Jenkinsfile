@@ -94,33 +94,39 @@ pipeline {
             }
         }
         stage("Build"){
-            agent {
-                  dockerfile {
-                    filename 'ci/docker/python/windows/Dockerfile'
-                    label 'Windows&&Docker'
-                  }
-                }
-            options{
-                timeout(4)
-            }
-
-            stages{
+            parallel{
                 stage("Python Package"){
+                    agent {
+                        dockerfile {
+                            filename 'ci/docker/python/linux/Dockerfile'
+                            label 'linux && docker'
+                        }
+                    }
                     steps {
-                        bat "(if not exist logs mkdir logs)"
-                        bat "python.exe setup.py build -b ${WORKSPACE}\\build"
+                        timeout(4){
+                            sh "python setup.py build -b build"
+                        }
+//                         bat "(if not exist logs mkdir logs)"
+//                         bat "python.exe setup.py build -b ${WORKSPACE}\\build"
                     }
                 }
                 stage("Docs"){
+                    agent {
+                        dockerfile {
+                            filename 'ci/docker/python/linux/Dockerfile'
+                            label 'linux && docker'
+                        }
+                    }
                     environment{
                         PKG_NAME = get_package_name("DIST-INFO", "HathiValidate.dist-info/METADATA")
                         PKG_VERSION = get_package_version("DIST-INFO", "HathiValidate.dist-info/METADATA")
                     }
                     steps{
                         echo "Building docs on ${env.NODE_NAME}"
-                            dir("build/lib"){
-                                bat "sphinx-build.exe -b html ${WORKSPACE}\\docs\\source ${WORKSPACE}\\build\\docs\\html -d ${WORKSPACE}\\build\\docs\\doctrees -w ${WORKSPACE}/logs/build_sphinx.log"
-                            }
+                        sh(script: """mkdir -p logs
+                                      python -m sphinx -b html docs/source build/docs/html -d build/docs/doctrees -w logs/build_sphinx.log
+                                   """
+                        )
                     }
                     post{
                         always {
