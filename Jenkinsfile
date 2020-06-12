@@ -77,7 +77,7 @@ pipeline {
         stage("Configure") {
             agent {
               dockerfile {
-                filename 'ci/docker/build_windows/Dockerfile'
+                filename 'ci/docker/python/windows/Dockerfile'
                 label 'Windows&&Docker'
               }
             }
@@ -114,7 +114,7 @@ pipeline {
         stage("Build"){
             agent {
                   dockerfile {
-                    filename 'ci/docker/build_windows/Dockerfile'
+                    filename 'ci/docker/python/windows/Dockerfile'
                     label 'Windows&&Docker'
                   }
                 }
@@ -162,7 +162,7 @@ pipeline {
         stage("Tests") {
             agent {
                   dockerfile {
-                    filename 'ci/docker/build_windows/Dockerfile'
+                    filename 'ci/docker/python/windows/Dockerfile'
                     label 'Windows&&Docker'
                   }
             }
@@ -241,7 +241,7 @@ pipeline {
         stage("Packaging") {
             agent {
                   dockerfile {
-                    filename 'ci/docker/build_windows/Dockerfile'
+                    filename 'ci/docker/python/windows/Dockerfile'
                     label 'Windows&&Docker'
                   }
             }
