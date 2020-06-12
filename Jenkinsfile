@@ -37,8 +37,8 @@ def CONFIGURATIONS = [
                         ],
                         devpi: [
                             dockerfile: [
-                                filename: 'ci/docker/deploy/devpi/test/windows/whl/Dockerfile',
-                                label: 'Windows&&Docker',
+                                filename: 'ci/docker/python/windows/DockerfileDockerfile',
+                                label: 'Windows && Docker',
                                 additionalBuildArgs: '--build-arg PYTHON_DOCKER_IMAGE_BASE=python:3.6-windowsservercore'
                             ]
                         ]
@@ -108,8 +108,8 @@ def CONFIGURATIONS = [
                         ],
                         devpi: [
                             dockerfile: [
-                                filename: 'ci/docker/deploy/devpi/test/windows/whl/Dockerfile',
-                                label: 'Windows&&Docker',
+                                filename: 'ci/docker/python/windows/Dockerfile',
+                                label: 'Windows && Docker',
                                 additionalBuildArgs: '--build-arg PYTHON_DOCKER_IMAGE_BASE=python:3.7'
                             ]
                         ]
@@ -173,14 +173,14 @@ def CONFIGURATIONS = [
                         test: [
                             dockerfile: [
                                 filename: 'ci/docker/python/windows/Dockerfile',
-                                label: 'Windows&&Docker',
+                                label: 'Windows && Docker',
                                 additionalBuildArgs: '--build-arg PYTHON_DOCKER_IMAGE_BASE=python:3.8'
                             ]
                         ],
                         devpi: [
                             dockerfile: [
-                                filename: 'ci/docker/deploy/devpi/test/windows/whl/Dockerfile',
-                                label: 'Windows&&Docker',
+                                filename: 'ci/docker/python/windows/Dockerfile',
+                                label: 'Windows && Docker',
                                 additionalBuildArgs: '--build-arg PYTHON_DOCKER_IMAGE_BASE=python:3.8'
                             ]
                         ]
@@ -343,15 +343,15 @@ pipeline {
                     }
                     post{
                         always {
-                                archiveArtifacts artifacts: "logs/build_sphinx.log", allowEmptyArchive: true
-                        }
-                        success{
-                            publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'build/docs/html', reportFiles: 'index.html', reportName: 'Documentation', reportTitles: ''])
+                            archiveArtifacts artifacts: "logs/build_sphinx.log", allowEmptyArchive: true
                             script{
                                 def DOC_ZIP_FILENAME = "${env.PKG_NAME}-${env.PKG_VERSION}.doc.zip"
                                 zip archive: true, dir: "build/docs/html", glob: '', zipFile: "dist/${DOC_ZIP_FILENAME}"
                                 stash includes: "build/docs/**,dist/${DOC_ZIP_FILENAME}", name: "DOCUMENTATION"
                             }
+                        }
+                        success{
+                            publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'build/docs/html', reportFiles: 'index.html', reportName: 'Documentation', reportTitles: ''])
                         }
                         cleanup{
                             cleanWs notFailBuild: true
@@ -427,7 +427,7 @@ pipeline {
                         }
                     }
                 }
-                stage("Documentation"){
+                stage("Doctest"){
                     agent {
                         dockerfile {
                             filename 'ci/docker/python/linux/Dockerfile'
@@ -556,7 +556,183 @@ pipeline {
                 }
             }
         }
-        stage("Deploying to Devpi") {
+//         stage("Deploying to Devpi") {
+//             when {
+//                 allOf{
+//                     equals expected: true, actual: params.DEPLOY_DEVPI
+//                     anyOf {
+//                         equals expected: "master", actual: env.BRANCH_NAME
+//                         equals expected: "dev", actual: env.BRANCH_NAME
+//                     }
+//                 }
+//                 beforeAgent true
+//             }
+//             options{
+//                 timestamps()
+//             }
+//             environment{
+//                 PATH = "${tool 'CPython-3.6'};${PATH}"
+//                 PKG_NAME = get_package_name("DIST-INFO", "HathiValidate.dist-info/METADATA")
+//                 PKG_VERSION = get_package_version("DIST-INFO", "HathiValidate.dist-info/METADATA")
+//                 DEVPI = credentials("DS_devpi")
+//             }
+//             agent {
+//                 label 'Windows&&Python3&&!aws'
+//             }
+//             stages{
+//                 stage("Upload to DevPi staging") {
+//                     steps {
+//                         unstash "dist"
+//                         unstash "DOCUMENTATION"
+//                         bat "python -m venv venv"
+//                         bat "venv\\Scripts\\pip install devpi-client"
+//                         bat "venv\\Scripts\\devpi use https://devpi.library.illinois.edu && venv\\Scripts\\devpi login ${env.DEVPI_USR} --password ${env.DEVPI_PSW} && venv\\Scripts\\devpi use /${env.DEVPI_USR}/${env.BRANCH_NAME}_staging && venv\\Scripts\\devpi upload --from-dir dist"
+//
+//                     }
+//                 }
+//                 stage("Test DevPi packages") {
+//
+//                     parallel {
+//                         stage("Source Distribution: .zip") {
+//                             agent {
+//                                 node {
+//                                     label "Windows && Python3"
+//                                 }
+//                             }
+//                             options {
+//                                 skipDefaultCheckout(true)
+//                             }
+//                             environment {
+//                                 PATH = "${WORKSPACE}\\venv\\Scripts\\;${tool 'CPython-3.6'};${tool 'CPython-3.7'};$PATH"
+//                             }
+//                             stages{
+//                                 stage("Building DevPi Testing venv for .zip package"){
+//                                     steps{
+//                                         lock("system_python_${NODE_NAME}"){
+//                                             bat "python -m venv venv"
+//                                         }
+//                                         bat "venv\\Scripts\\python.exe -m pip install pip --upgrade && venv\\Scripts\\pip.exe install setuptools --upgrade && venv\\Scripts\\pip.exe install \"tox<3.7\" detox devpi-client"
+//                                     }
+//                                 }
+//                                 stage("Testing DevPi zip Package"){
+//                                     options{
+//                                         timeout(20)
+//                                     }
+//                                     steps {
+//                                         echo "Testing Source tar.gz package in devpi"
+//
+//                                         devpiTest(
+//                                             devpiExecutable: "${powershell(script: '(Get-Command devpi).path', returnStdout: true).trim()}",
+//                                             url: "https://devpi.library.illinois.edu",
+//                                             index: "${env.BRANCH_NAME}_staging",
+//                                             pkgName: "${env.PKG_NAME}",
+//                                             pkgVersion: "${env.PKG_VERSION}",
+//                                             pkgRegex: "zip",
+//                                             detox: false
+//                                         )
+//                                         echo "Finished testing Source Distribution: .zip"
+//                                     }
+//
+//                                 }
+//                             }
+//
+//                             post {
+//                                 cleanup{
+//                                         cleanWs notFailBuild: true
+//                                     }
+//                             }
+//
+//                         }
+//                         stage("Built Distribution: .whl") {
+//                             agent {
+//                                 node {
+//                                     label "Windows && Python3"
+//                                 }
+//                             }
+//                             environment {
+//                                 PATH = "${tool 'CPython-3.6'};${tool 'CPython-3.6'}\\Scripts;${tool 'CPython-3.7'};$PATH"
+//                             }
+//                             options {
+//                                 skipDefaultCheckout(true)
+//                             }
+//                             stages{
+//                                 stage("Creating venv to Test Whl"){
+//                                     steps {
+//                                         lock("system_python_${NODE_NAME}"){
+//                                             bat "if not exist venv\\36 mkdir venv\\36"
+//                                             bat "\"${tool 'CPython-3.6'}\\python.exe\" -m venv venv\\36"
+//                                             bat "if not exist venv\\37 mkdir venv\\37"
+//                                             bat "\"${tool 'CPython-3.7'}\\python.exe\" -m venv venv\\37"
+//                                         }
+//                                         bat "venv\\36\\Scripts\\python.exe -m pip install pip --upgrade && venv\\36\\Scripts\\pip.exe install setuptools --upgrade && venv\\36\\Scripts\\pip.exe install \"tox<3.7\" devpi-client"
+//                                     }
+//
+//                                 }
+//                                 stage("Testing DevPi .whl Package"){
+//                                     options{
+//                                         timeout(20)
+//                                     }
+//                                     environment{
+//                                        PATH = "${WORKSPACE}\\venv\\36\\Scripts;${tool 'CPython-3.6'};${tool 'CPython-3.6'}\\Scripts;${tool 'CPython-3.7'};$PATH"
+//                                     }
+//                                     steps {
+//                                         echo "Testing Whl package in devpi"
+//                                         devpiTest(
+// //                                                devpiExecutable: "venv\\36\\Scripts\\devpi.exe",
+//                                             devpiExecutable: "${powershell(script: '(Get-Command devpi).path', returnStdout: true).trim()}",
+//                                             url: "https://devpi.library.illinois.edu",
+//                                             index: "${env.BRANCH_NAME}_staging",
+//                                             pkgName: "${env.PKG_NAME}",
+//                                             pkgVersion: "${env.PKG_VERSION}",
+//                                             pkgRegex: "whl",
+//                                             detox: false
+//                                             )
+//
+//                                         echo "Finished testing Built Distribution: .whl"
+//                                     }
+//                                 }
+//
+//                             }
+//                         }
+//                     }
+//                 }
+//                 stage("Deploy to DevPi Production") {
+//                     when {
+//                         allOf{
+//                             equals expected: true, actual: params.DEPLOY_DEVPI_PRODUCTION
+//                             branch "master"
+//                         }
+//                     }
+//                     steps {
+//                         script {
+//                             input "Release ${env.PKG_NAME} ${env.PKG_VERSION} to DevPi Production?"
+//                             withCredentials([usernamePassword(credentialsId: 'DS_devpi', usernameVariable: 'DEVPI_USERNAME', passwordVariable: 'DEVPI_PASSWORD')]) {
+//                                 bat "venv\\Scripts\\devpi.exe login ${DEVPI_USERNAME} --password ${DEVPI_PASSWORD}"
+//                                 bat "venv\\Scripts\\devpi.exe use /${DEVPI_USERNAME}/${env.BRANCH_NAME}_staging"
+//                                 bat "venv\\Scripts\\devpi.exe push ${env.PKG_NAME}==${env.PKG_VERSION} production/release"
+//                             }
+//                         }
+//                     }
+//                 }
+//
+//             }
+//             post {
+//                 success {
+//                     echo "it Worked. Pushing file to ${env.BRANCH_NAME} index"
+//                     script {
+//                         withCredentials([usernamePassword(credentialsId: 'DS_devpi', usernameVariable: 'DEVPI_USERNAME', passwordVariable: 'DEVPI_PASSWORD')]) {
+//                             bat "venv\\Scripts\\devpi.exe login ${DEVPI_USERNAME} --password ${DEVPI_PASSWORD}"
+//                             bat "venv\\Scripts\\devpi.exe use /${DEVPI_USERNAME}/${env.BRANCH_NAME}_staging"
+//                             bat "venv\\Scripts\\devpi.exe push ${env.PKG_NAME}==${env.PKG_VERSION} ${DEVPI_USERNAME}/${env.BRANCH_NAME}"
+//                         }
+//                     }
+//                 }
+//                 cleanup{
+//                     remove_from_devpi("venv\\Scripts\\devpi.exe", "${env.PKG_NAME}", "${env.PKG_VERSION}", "/${env.DEVPI_USR}/${env.BRANCH_NAME}_staging", "${env.DEVPI_USR}", "${env.DEVPI_PSW}")
+//                 }
+//             }
+//         }
+        stage("Deploy to Devpi"){
             when {
                 allOf{
                     equals expected: true, actual: params.DEPLOY_DEVPI
@@ -567,131 +743,114 @@ pipeline {
                 }
                 beforeAgent true
             }
-            options{
-                timestamps()
-            }
+            agent none
             environment{
-                PATH = "${tool 'CPython-3.6'};${PATH}"
-                PKG_NAME = get_package_name("DIST-INFO", "HathiValidate.dist-info/METADATA")
-                PKG_VERSION = get_package_version("DIST-INFO", "HathiValidate.dist-info/METADATA")
                 DEVPI = credentials("DS_devpi")
             }
-            agent {
-                label 'Windows&&Python3&&!aws'
+            options{
+                lock("HathiValidate-devpi")
             }
             stages{
-                stage("Upload to DevPi staging") {
+                stage("Deploy to Devpi Staging") {
+                    agent {
+                        dockerfile {
+                            filename 'ci/docker/python/linux/Dockerfile'
+                            label 'linux && docker'
+                            additionalBuildArgs '--build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
+                          }
+                    }
                     steps {
-                        unstash "dist"
-                        unstash "DOCUMENTATION"
-                        bat "python -m venv venv"
-                        bat "venv\\Scripts\\pip install devpi-client"
-                        bat "venv\\Scripts\\devpi use https://devpi.library.illinois.edu && venv\\Scripts\\devpi login ${env.DEVPI_USR} --password ${env.DEVPI_PSW} && venv\\Scripts\\devpi use /${env.DEVPI_USR}/${env.BRANCH_NAME}_staging && venv\\Scripts\\devpi upload --from-dir dist"
-
+                        timeout(5){
+                            unstash "wheel"
+                            unstash "sdist"
+                            unstash "DOCUMENTATION"
+                            sh(
+                                label: "Connecting to DevPi Server",
+                                script: 'devpi use https://devpi.library.illinois.edu --clientdir ${WORKSPACE}/devpi && devpi login $DEVPI_USR --password $DEVPI_PSW --clientdir ${WORKSPACE}/devpi'
+                            )
+                            sh(
+                                label: "Uploading to DevPi Staging",
+                                script: """devpi use /${env.DEVPI_USR}/${env.BRANCH_NAME}_staging --clientdir ${WORKSPACE}/devpi
+    devpi upload --from-dir dist --clientdir ${WORKSPACE}/devpi"""
+                            )
+                        }
                     }
                 }
                 stage("Test DevPi packages") {
-
-                    parallel {
-                        stage("Source Distribution: .zip") {
-                            agent {
-                                node {
-                                    label "Windows && Python3"
-                                }
+                    matrix {
+                        axes {
+                            axis {
+                                name 'PYTHON_VERSION'
+                                values '3.6','3.7', '3.8'
                             }
-                            options {
-                                skipDefaultCheckout(true)
+                            axis {
+                                name 'FORMAT'
+                                values "wheel", 'sdist'
                             }
-                            environment {
-                                PATH = "${WORKSPACE}\\venv\\Scripts\\;${tool 'CPython-3.6'};${tool 'CPython-3.7'};$PATH"
+                            axis {
+                                name 'PLATFORM'
+                                values(
+                                    "windows",
+                                    "linux"
+                                )
                             }
-                            stages{
-                                stage("Building DevPi Testing venv for .zip package"){
-                                    steps{
-                                        lock("system_python_${NODE_NAME}"){
-                                            bat "python -m venv venv"
-                                        }
-                                        bat "venv\\Scripts\\python.exe -m pip install pip --upgrade && venv\\Scripts\\pip.exe install setuptools --upgrade && venv\\Scripts\\pip.exe install \"tox<3.7\" detox devpi-client"
-                                    }
-                                }
-                                stage("Testing DevPi zip Package"){
-                                    options{
-                                        timeout(20)
-                                    }
-                                    steps {
-                                        echo "Testing Source tar.gz package in devpi"
-
-                                        devpiTest(
-                                            devpiExecutable: "${powershell(script: '(Get-Command devpi).path', returnStdout: true).trim()}",
-                                            url: "https://devpi.library.illinois.edu",
-                                            index: "${env.BRANCH_NAME}_staging",
-                                            pkgName: "${env.PKG_NAME}",
-                                            pkgVersion: "${env.PKG_VERSION}",
-                                            pkgRegex: "zip",
-                                            detox: false
-                                        )
-                                        echo "Finished testing Source Distribution: .zip"
-                                    }
-
-                                }
-                            }
-
-                            post {
-                                cleanup{
-                                        cleanWs notFailBuild: true
-                                    }
-                            }
-
                         }
-                        stage("Built Distribution: .whl") {
-                            agent {
-                                node {
-                                    label "Windows && Python3"
+                        excludes{
+                             exclude {
+                                 axis {
+                                     name 'PLATFORM'
+                                     values 'linux'
+                                 }
+                                 axis {
+                                     name 'FORMAT'
+                                     values 'wheel'
+                                 }
+                             }
+                        }
+                        agent none
+                        stages{
+                            stage("Testing DevPi Package"){
+                                agent {
+                                  dockerfile {
+                                    filename "${CONFIGURATIONS[PYTHON_VERSION].os[PLATFORM].agents.devpi.dockerfile.filename}"
+                                    additionalBuildArgs "${CONFIGURATIONS[PYTHON_VERSION].os[PLATFORM].agents.devpi.dockerfile.additionalBuildArgs}"
+                                    label "${CONFIGURATIONS[PYTHON_VERSION].os[PLATFORM].agents.devpi.dockerfile.label}"
+                                  }
                                 }
-                            }
-                            environment {
-                                PATH = "${tool 'CPython-3.6'};${tool 'CPython-3.6'}\\Scripts;${tool 'CPython-3.7'};$PATH"
-                            }
-                            options {
-                                skipDefaultCheckout(true)
-                            }
-                            stages{
-                                stage("Creating venv to Test Whl"){
-                                    steps {
-                                        lock("system_python_${NODE_NAME}"){
-                                            bat "if not exist venv\\36 mkdir venv\\36"
-                                            bat "\"${tool 'CPython-3.6'}\\python.exe\" -m venv venv\\36"
-                                            bat "if not exist venv\\37 mkdir venv\\37"
-                                            bat "\"${tool 'CPython-3.7'}\\python.exe\" -m venv venv\\37"
-                                        }
-                                        bat "venv\\36\\Scripts\\python.exe -m pip install pip --upgrade && venv\\36\\Scripts\\pip.exe install setuptools --upgrade && venv\\36\\Scripts\\pip.exe install \"tox<3.7\" devpi-client"
-                                    }
+                                steps{
+                                    unstash "DIST-INFO"
+                                    script{
+                                        def props = readProperties interpolate: true, file: "pyhathiprep.dist-info/METADATA"
 
-                                }
-                                stage("Testing DevPi .whl Package"){
-                                    options{
-                                        timeout(20)
-                                    }
-                                    environment{
-                                       PATH = "${WORKSPACE}\\venv\\36\\Scripts;${tool 'CPython-3.6'};${tool 'CPython-3.6'}\\Scripts;${tool 'CPython-3.7'};$PATH"
-                                    }
-                                    steps {
-                                        echo "Testing Whl package in devpi"
-                                        devpiTest(
-//                                                devpiExecutable: "venv\\36\\Scripts\\devpi.exe",
-                                            devpiExecutable: "${powershell(script: '(Get-Command devpi).path', returnStdout: true).trim()}",
-                                            url: "https://devpi.library.illinois.edu",
-                                            index: "${env.BRANCH_NAME}_staging",
-                                            pkgName: "${env.PKG_NAME}",
-                                            pkgVersion: "${env.PKG_VERSION}",
-                                            pkgRegex: "whl",
-                                            detox: false
+                                        if(isUnix()){
+                                            sh(
+                                                label: "Checking Python version",
+                                                script: "python --version"
                                             )
-
-                                        echo "Finished testing Built Distribution: .whl"
+                                            sh(
+                                                label: "Connecting to DevPi index",
+                                                script: "devpi use https://devpi.library.illinois.edu --clientdir certs && devpi login $DEVPI_USR --password $DEVPI_PSW --clientdir certs && devpi use ${env.BRANCH_NAME}_staging --clientdir certs"
+                                            )
+                                            sh(
+                                                label: "Running tests on Devpi",
+                                                script: "devpi test --index ${env.BRANCH_NAME}_staging ${props.Name}==${props.Version} -s ${CONFIGURATIONS[PYTHON_VERSION].devpiSelector[FORMAT]} --clientdir certs -e ${CONFIGURATIONS[PYTHON_VERSION].tox_env} -v"
+                                            )
+                                        } else {
+                                            bat(
+                                                label: "Checking Python version",
+                                                script: "python --version"
+                                            )
+                                            bat(
+                                                label: "Connecting to DevPi index",
+                                                script: "devpi use https://devpi.library.illinois.edu --clientdir certs\\ && devpi login %DEVPI_USR% --password %DEVPI_PSW% --clientdir certs\\ && devpi use ${env.BRANCH_NAME}_staging --clientdir certs\\"
+                                            )
+                                            bat(
+                                                label: "Running tests on Devpi",
+                                                script: "devpi test --index ${env.BRANCH_NAME}_staging ${props.Name}==${props.Version} -s ${CONFIGURATIONS[PYTHON_VERSION].devpiSelector[FORMAT]} --clientdir certs\\ -e ${CONFIGURATIONS[PYTHON_VERSION].tox_env} -v"
+                                            )
+                                        }
                                     }
                                 }
-
                             }
                         }
                     }
@@ -702,33 +861,64 @@ pipeline {
                             equals expected: true, actual: params.DEPLOY_DEVPI_PRODUCTION
                             branch "master"
                         }
+                        beforeAgent true
+                    }
+                    agent {
+                        dockerfile {
+                            filename 'CI/docker/deploy/devpi/deploy/Dockerfile'
+                            label 'linux&&docker'
+                            additionalBuildArgs '--build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
+                        }
                     }
                     steps {
                         script {
-                            input "Release ${env.PKG_NAME} ${env.PKG_VERSION} to DevPi Production?"
-                            withCredentials([usernamePassword(credentialsId: 'DS_devpi', usernameVariable: 'DEVPI_USERNAME', passwordVariable: 'DEVPI_PASSWORD')]) {
-                                bat "venv\\Scripts\\devpi.exe login ${DEVPI_USERNAME} --password ${DEVPI_PASSWORD}"
-                                bat "venv\\Scripts\\devpi.exe use /${DEVPI_USERNAME}/${env.BRANCH_NAME}_staging"
-                                bat "venv\\Scripts\\devpi.exe push ${env.PKG_NAME}==${env.PKG_VERSION} production/release"
+                            unstash "DIST-INFO"
+                            def props = readProperties interpolate: true, file: 'pyhathiprep.dist-info/METADATA'
+                            try{
+                                timeout(30) {
+                                    input "Release ${props.Name} ${props.Version} (https://devpi.library.illinois.edu/DS_Jenkins/${env.BRANCH_NAME}_staging/${props.Name}/${props.Version}) to DevPi Production? "
+                                }
+                                sh "devpi use https://devpi.library.illinois.edu --clientdir ${WORKSPACE}/devpi  && devpi login $DEVPI_USR --password $DEVPI_PSW --clientdir ${WORKSPACE}/devpi && devpi use /DS_Jenkins/${env.BRANCH_NAME}_staging --clientdir ${WORKSPACE}/devpi && devpi push --index ${env.DEVPI_USR}/${env.BRANCH_NAME}_staging ${props.Name}==${props.Version} production/release --clientdir ${WORKSPACE}/devpi"
+                            } catch(err){
+                                echo "User response timed out. Packages not deployed to DevPi Production."
                             }
                         }
                     }
                 }
-
             }
-            post {
-                success {
-                    echo "it Worked. Pushing file to ${env.BRANCH_NAME} index"
-                    script {
-                        withCredentials([usernamePassword(credentialsId: 'DS_devpi', usernameVariable: 'DEVPI_USERNAME', passwordVariable: 'DEVPI_PASSWORD')]) {
-                            bat "venv\\Scripts\\devpi.exe login ${DEVPI_USERNAME} --password ${DEVPI_PASSWORD}"
-                            bat "venv\\Scripts\\devpi.exe use /${DEVPI_USERNAME}/${env.BRANCH_NAME}_staging"
-                            bat "venv\\Scripts\\devpi.exe push ${env.PKG_NAME}==${env.PKG_VERSION} ${DEVPI_USERNAME}/${env.BRANCH_NAME}"
+            post{
+                success{
+                    node('linux && docker') {
+                        checkout scm
+                        script{
+                            docker.build("py3exiv2bind:devpi.${env.BUILD_ID}",'-f ./CI/docker/deploy/devpi/deploy/Dockerfile --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g) .').inside{
+                                unstash "DIST-INFO"
+                                def props = readProperties interpolate: true, file: 'pyhathiprep.dist-info/METADATA'
+                                sh(
+                                    label: "Connecting to DevPi Server",
+                                    script: 'devpi use https://devpi.library.illinois.edu --clientdir ${WORKSPACE}/devpi && devpi login $DEVPI_USR --password $DEVPI_PSW --clientdir ${WORKSPACE}/devpi'
+                                )
+                                sh "devpi use /DS_Jenkins/${env.BRANCH_NAME}_staging --clientdir ${WORKSPACE}/devpi"
+                                sh "devpi push ${props.Name}==${props.Version} DS_Jenkins/${env.BRANCH_NAME} --clientdir ${WORKSPACE}/devpi"
+                            }
                         }
                     }
                 }
                 cleanup{
-                    remove_from_devpi("venv\\Scripts\\devpi.exe", "${env.PKG_NAME}", "${env.PKG_VERSION}", "/${env.DEVPI_USR}/${env.BRANCH_NAME}_staging", "${env.DEVPI_USR}", "${env.DEVPI_PSW}")
+                    node('linux && docker') {
+                       script{
+                            docker.build("py3exiv2bind:devpi.${env.BUILD_ID}",'-f ./CI/docker/deploy/devpi/deploy/Dockerfile --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g) .').inside{
+                                unstash "DIST-INFO"
+                                def props = readProperties interpolate: true, file: 'pyhathiprep.dist-info/METADATA'
+                                sh(
+                                    label: "Connecting to DevPi Server",
+                                    script: 'devpi use https://devpi.library.illinois.edu --clientdir ${WORKSPACE}/devpi && devpi login $DEVPI_USR --password $DEVPI_PSW --clientdir ${WORKSPACE}/devpi'
+                                )
+                                sh "devpi use /DS_Jenkins/${env.BRANCH_NAME}_staging --clientdir ${WORKSPACE}/devpi"
+                                sh "devpi remove -y ${props.Name}==${props.Version} --clientdir ${WORKSPACE}/devpi"
+                            }
+                       }
+                    }
                 }
             }
         }
