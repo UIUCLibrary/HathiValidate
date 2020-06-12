@@ -4,3 +4,4 @@ tox
 coverage
 mypy
 devpi-client
+sphinx
