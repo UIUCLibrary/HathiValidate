@@ -29,35 +29,17 @@ def CONFIGURATIONS = [
                             ]
                         ],
                         test:[
-                            wheel: [
-                                dockerfile: [
-                                    filename: 'ci/docker/python/windows/Dockerfile',
-                                    label: 'Windows&&Docker',
-                                    additionalBuildArgs: '--build-arg PYTHON_DOCKER_IMAGE_BASE=python:3.6-windowsservercore'
-                                ]
-                            ],
-                            sdist: [
-                                dockerfile: [
-                                    filename: 'ci/docker/python/windows/Dockerfile',
-                                    label: 'Windows&&Docker',
-                                    additionalBuildArgs: '--build-arg PYTHON_DOCKER_IMAGE_BASE=python:3.6-windowsservercore'
-                                ]
+                            dockerfile: [
+                                filename: 'ci/docker/python/windows/Dockerfile',
+                                label: 'Windows&&Docker',
+                                additionalBuildArgs: '--build-arg PYTHON_DOCKER_IMAGE_BASE=python:3.6-windowsservercore'
                             ]
                         ],
                         devpi: [
-                            wheel: [
-                                dockerfile: [
-                                    filename: 'ci/docker/deploy/devpi/test/windows/whl/Dockerfile',
-                                    label: 'Windows&&Docker',
-                                    additionalBuildArgs: '--build-arg PYTHON_DOCKER_IMAGE_BASE=python:3.6-windowsservercore'
-                                ]
-                            ],
-                            sdist: [
-                                dockerfile: [
-                                    filename: 'ci/docker/deploy/devpi/test/windows/source/Dockerfile',
-                                    label: 'Windows&&Docker',
-                                    additionalBuildArgs: '--build-arg PYTHON_INSTALLER_URL=https://www.python.org/ftp/python/3.6.8/python-3.6.8-amd64.exe --build-arg CHOCOLATEY_SOURCE'
-                                ]
+                            dockerfile: [
+                                filename: 'ci/docker/deploy/devpi/test/windows/whl/Dockerfile',
+                                label: 'Windows&&Docker',
+                                additionalBuildArgs: '--build-arg PYTHON_DOCKER_IMAGE_BASE=python:3.6-windowsservercore'
                             ]
                         ]
                     ],
@@ -76,28 +58,17 @@ def CONFIGURATIONS = [
                             ]
                         ],
                         test: [
-                            sdist: [
-                                dockerfile: [
-                                    filename: 'ci/docker/python/linux/Dockerfile',
-                                    label: 'linux&&docker',
-                                    additionalBuildArgs: '--build-arg PYTHON_VERSION=3.6 --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
-                                ]
+                            dockerfile: [
+                                filename: 'ci/docker/python/linux/Dockerfile',
+                                label: 'linux&&docker',
+                                additionalBuildArgs: '--build-arg PYTHON_VERSION=3.6 --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
                             ]
                         ],
                         devpi: [
-                            whl: [
-                                dockerfile: [
-                                    filename: 'ci/docker/deploy/devpi/test/linux/Dockerfile',
-                                    label: 'linux&&docker',
-                                    additionalBuildArgs: '--build-arg PYTHON_VERSION=3.6 --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
-                                ]
-                            ],
-                            sdist: [
-                                dockerfile: [
-                                    filename: 'ci/docker/deploy/devpi/test/linux/Dockerfile',
-                                    label: 'linux&&docker',
-                                    additionalBuildArgs: '--build-arg PYTHON_VERSION=3.6 --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
-                                ]
+                            dockerfile: [
+                                filename: 'ci/docker/deploy/devpi/test/linux/Dockerfile',
+                                label: 'linux&&docker',
+                                additionalBuildArgs: '--build-arg PYTHON_VERSION=3.6 --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
                             ]
                         ]
                     ],
@@ -129,35 +100,17 @@ def CONFIGURATIONS = [
                             ]
                         ],
                         test: [
-                            sdist: [
-                                dockerfile: [
-                                    filename: 'ci/docker/python/windows/Dockerfile',
-                                    label: 'Windows&&Docker',
-                                    additionalBuildArgs: '--build-arg PYTHON_DOCKER_IMAGE_BASE=python:3.7'
-                                ]
-                            ],
-                            wheel: [
-                                dockerfile: [
-                                    filename: 'ci/docker/python/windows/Dockerfile',
-                                    additionalBuildArgs: '--build-arg PYTHON_DOCKER_IMAGE_BASE=python:3.7',
-                                    label: 'windows && docker',
-                                ]
+                            dockerfile: [
+                                filename: 'ci/docker/python/windows/Dockerfile',
+                                label: 'Windows&&Docker',
+                                additionalBuildArgs: '--build-arg PYTHON_DOCKER_IMAGE_BASE=python:3.7'
                             ]
                         ],
                         devpi: [
-                            wheel: [
-                                dockerfile: [
-                                    filename: 'ci/docker/deploy/devpi/test/windows/whl/Dockerfile',
-                                    label: 'Windows&&Docker',
-                                    additionalBuildArgs: '--build-arg PYTHON_DOCKER_IMAGE_BASE=python:3.7'
-                                ]
-                            ],
-                            sdist: [
-                                dockerfile: [
-                                    filename: 'ci/docker/deploy/devpi/test/windows/source/Dockerfile',
-                                    label: 'Windows&&Docker',
-                                    additionalBuildArgs: '--build-arg PYTHON_INSTALLER_URL=https://www.python.org/ftp/python/3.7.5/python-3.7.5-amd64.exe --build-arg CHOCOLATEY_SOURCE'
-                                ]
+                            dockerfile: [
+                                filename: 'ci/docker/deploy/devpi/test/windows/whl/Dockerfile',
+                                label: 'Windows&&Docker',
+                                additionalBuildArgs: '--build-arg PYTHON_DOCKER_IMAGE_BASE=python:3.7'
                             ]
                         ]
                     ],
@@ -176,28 +129,17 @@ def CONFIGURATIONS = [
                             ]
                         ],
                         test: [
-                            sdist: [
-                                dockerfile: [
-                                    filename: 'ci/docker/python/linux/Dockerfile',
-                                    label: 'linux&&docker',
-                                    additionalBuildArgs: '--build-arg PYTHON_VERSION=3.7 --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
-                                ]
+                            dockerfile: [
+                                filename: 'ci/docker/python/linux/Dockerfile',
+                                label: 'linux&&docker',
+                                additionalBuildArgs: '--build-arg PYTHON_VERSION=3.7 --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
                             ]
                         ],
                         devpi: [
-                            wheel: [
-                                dockerfile: [
-                                    filename: 'ci/docker/deploy/devpi/test/linux/Dockerfile',
-                                    label: 'linux&&docker',
-                                    additionalBuildArgs: '--build-arg PYTHON_VERSION=3.7 --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
-                                ]
-                            ],
-                            sdist: [
-                                dockerfile: [
-                                    filename: 'ci/docker/deploy/devpi/test/linux/Dockerfile',
-                                    label: 'linux&&docker',
-                                    additionalBuildArgs: '--build-arg PYTHON_VERSION=3.7 --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
-                                ]
+                            dockerfile: [
+                                filename: 'ci/docker/deploy/devpi/test/linux/Dockerfile',
+                                label: 'linux&&docker',
+                                additionalBuildArgs: '--build-arg PYTHON_VERSION=3.7 --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
                             ]
                         ]
                     ],
@@ -229,35 +171,17 @@ def CONFIGURATIONS = [
                             ]
                         ],
                         test: [
-                            sdist: [
-                                dockerfile: [
-                                    filename: 'ci/docker/python/windows/Dockerfile',
-                                    label: 'Windows&&Docker',
-                                    additionalBuildArgs: '--build-arg PYTHON_DOCKER_IMAGE_BASE=python:3.8'
-                                ]
-                            ],
-                            wheel: [
-                                dockerfile: [
-                                    filename: 'ci/docker/python/windows/Dockerfile',
-                                    additionalBuildArgs: '--build-arg PYTHON_DOCKER_IMAGE_BASE=python:3.8',
-                                    label: 'windows && docker',
-                                ]
+                            dockerfile: [
+                                filename: 'ci/docker/python/windows/Dockerfile',
+                                label: 'Windows&&Docker',
+                                additionalBuildArgs: '--build-arg PYTHON_DOCKER_IMAGE_BASE=python:3.8'
                             ]
                         ],
                         devpi: [
-                            wheel: [
-                                dockerfile: [
-                                    filename: 'ci/docker/deploy/devpi/test/windows/whl/Dockerfile',
-                                    label: 'Windows&&Docker',
-                                    additionalBuildArgs: '--build-arg PYTHON_DOCKER_IMAGE_BASE=python:3.8'
-                                ]
-                            ],
-                            sdist: [
-                                dockerfile: [
-                                    filename: 'ci/docker/deploy/devpi/test/windows/source/Dockerfile',
-                                    label: 'Windows&&Docker',
-                                    additionalBuildArgs: '--build-arg PYTHON_INSTALLER_URL=https://www.python.org/ftp/python/3.8.3/python-3.8.3-amd64.exe --build-arg CHOCOLATEY_SOURCE'
-                                ]
+                            dockerfile: [
+                                filename: 'ci/docker/deploy/devpi/test/windows/whl/Dockerfile',
+                                label: 'Windows&&Docker',
+                                additionalBuildArgs: '--build-arg PYTHON_DOCKER_IMAGE_BASE=python:3.8'
                             ]
                         ]
 
@@ -277,28 +201,17 @@ def CONFIGURATIONS = [
                             ]
                         ],
                         test: [
-                            sdist: [
-                                dockerfile: [
-                                    filename: 'ci/docker/python/linux/Dockerfile',
-                                    label: 'linux&&docker',
-                                    additionalBuildArgs: '--build-arg PYTHON_VERSION=3.8 --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
-                                ]
+                            dockerfile: [
+                                filename: 'ci/docker/python/linux/Dockerfile',
+                                label: 'linux&&docker',
+                                additionalBuildArgs: '--build-arg PYTHON_VERSION=3.8 --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
                             ]
                         ],
                         devpi: [
-                            wheel: [
-                                dockerfile: [
-                                    filename: 'ci/docker/deploy/devpi/test/linux/Dockerfile',
-                                    label: 'linux&&docker',
-                                    additionalBuildArgs: '--build-arg PYTHON_VERSION=3.8 --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
-                                ]
-                            ],
-                            sdist: [
-                                dockerfile: [
-                                    filename: 'ci/docker/deploy/devpi/test/linux/Dockerfile',
-                                    label: 'linux&&docker',
-                                    additionalBuildArgs: '--build-arg PYTHON_VERSION=3.8 --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
-                                ]
+                            dockerfile: [
+                                filename: 'ci/docker/deploy/devpi/test/linux/Dockerfile',
+                                label: 'linux&&docker',
+                                additionalBuildArgs: '--build-arg PYTHON_VERSION=3.8 --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
                             ]
                         ]
                     ],
@@ -596,9 +509,9 @@ pipeline {
                             stage("Testing Packages"){
                                 agent {
                                     dockerfile {
-                                        filename "${CONFIGURATIONS[PYTHON_VERSION].os[PLATFORM].agents.test[FORMAT].dockerfile.filename}"
-                                        label "${CONFIGURATIONS[PYTHON_VERSION].os[PLATFORM].agents.test[FORMAT].dockerfile.label}"
-                                        additionalBuildArgs "${CONFIGURATIONS[PYTHON_VERSION].os[PLATFORM].agents.test[FORMAT].dockerfile.additionalBuildArgs}"
+                                        filename "${CONFIGURATIONS[PYTHON_VERSION].os[PLATFORM].agents.test.dockerfile.filename}"
+                                        label "${CONFIGURATIONS[PYTHON_VERSION].os[PLATFORM].agents.test.dockerfile.label}"
+                                        additionalBuildArgs "${CONFIGURATIONS[PYTHON_VERSION].os[PLATFORM].agents.test.dockerfile.additionalBuildArgs}"
                                      }
                                 }
                                 steps{
