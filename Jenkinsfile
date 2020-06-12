@@ -543,8 +543,7 @@ pipeline {
 
                     }
                     post{
-                        success{
-                            archiveArtifacts artifacts: "dist/*.whl,dist/*.tar.gz,dist/*.zip", fingerprint: true
+                        always{
                             stash includes: 'dist/*.whl', name: "wheel"
                             stash includes: 'dist/*.zip', name: "sdist"
                         }
@@ -626,9 +625,6 @@ pipeline {
                             }
                         }
                         post{
-                            success{
-                                archiveArtifacts allowEmptyArchive: true, artifacts: "dist/${CONFIGURATIONS[PYTHON_VERSION].os[PLATFORM].pkgRegex[FORMAT]}"
-                            }
                             cleanup{
                                 cleanWs(
                                     notFailBuild: true,
@@ -642,6 +638,11 @@ pipeline {
                             }
                         }
                     }
+                }
+            }
+            post{
+                success{
+                    archiveArtifacts artifacts: "dist/*.whl,dist/*.tar.gz,dist/*.zip", fingerprint: true
                 }
             }
         }
