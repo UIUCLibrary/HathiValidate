@@ -224,34 +224,20 @@ pipeline {
         }
         stage("Packaging") {
             agent {
-                  dockerfile {
-                    filename 'ci/docker/python/windows/Dockerfile'
-                    label 'Windows&&Docker'
-                  }
-            }
-            options{
-                timeout(4)
-            }
-            stages{
-                stage("Building packages"){
-
-                    parallel {
-                        stage("Source and Wheel formats"){
-                            steps{
-                                bat "python.exe setup.py sdist --format zip -d ${WORKSPACE}\\dist bdist_wheel -d ${WORKSPACE}\\dist"
-
-                            }
-                            post{
-                                success{
-                                    archiveArtifacts artifacts: "dist/*.whl,dist/*.tar.gz,dist/*.zip", fingerprint: true
-                                    stash includes: 'dist/*.*', name: "dist"
-                                }
-                            }
-                        }
-                    }
+                dockerfile {
+                    filename 'ci/docker/python/linux/Dockerfile'
+                    label 'linux && docker'
                 }
             }
+            steps{
+                sh "python setup.py sdist --format zip -d dist bdist_wheel -d dist"
+
+            }
             post{
+                success{
+                    archiveArtifacts artifacts: "dist/*.whl,dist/*.tar.gz,dist/*.zip", fingerprint: true
+                    stash includes: 'dist/*.*', name: "dist"
+                }
                 cleanup{
                     cleanWs notFailBuild: true
                 }
