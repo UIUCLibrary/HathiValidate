@@ -11,5 +11,4 @@ RUN python -m pip install --upgrade pip ; `
 
 RUN pip wheel --wheel-dir=/wheels `
     -r c:/tmp/requirements.txt `
-    -r c:/tmp/requirements-ci.txt `
-RUN tox --version
+    -r c:/tmp/requirements-ci.txt
