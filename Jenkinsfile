@@ -37,7 +37,7 @@ def CONFIGURATIONS = [
                         ],
                         devpi: [
                             dockerfile: [
-                                filename: 'ci/docker/python/windows/DockerfileDockerfile',
+                                filename: 'ci/docker/python/windows/Dockerfile',
                                 label: 'Windows && Docker',
                                 additionalBuildArgs: '--build-arg PYTHON_DOCKER_IMAGE_BASE=python:3.6-windowsservercore'
                             ]
@@ -66,7 +66,7 @@ def CONFIGURATIONS = [
                         ],
                         devpi: [
                             dockerfile: [
-                                filename: 'ci/docker/deploy/devpi/test/linux/Dockerfile',
+                                filename: 'ci/docker/python/linux/Dockerfile',
                                 label: 'linux&&docker',
                                 additionalBuildArgs: '--build-arg PYTHON_VERSION=3.6 --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
                             ]
@@ -137,7 +137,7 @@ def CONFIGURATIONS = [
                         ],
                         devpi: [
                             dockerfile: [
-                                filename: 'ci/docker/deploy/devpi/test/linux/Dockerfile',
+                                filename: 'ci/docker/python/linux/Dockerfile',
                                 label: 'linux&&docker',
                                 additionalBuildArgs: '--build-arg PYTHON_VERSION=3.7 --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
                             ]
@@ -209,7 +209,7 @@ def CONFIGURATIONS = [
                         ],
                         devpi: [
                             dockerfile: [
-                                filename: 'ci/docker/deploy/devpi/test/linux/Dockerfile',
+                                filename: 'ci/docker/python/linux/Dockerfile',
                                 label: 'linux&&docker',
                                 additionalBuildArgs: '--build-arg PYTHON_VERSION=3.8 --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
                             ]
