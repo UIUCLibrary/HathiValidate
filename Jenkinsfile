@@ -822,7 +822,7 @@ pipeline {
                                 steps{
                                     unstash "DIST-INFO"
                                     script{
-                                        def props = readProperties interpolate: true, file: "pyhathiprep.dist-info/METADATA"
+                                        def props = readProperties interpolate: true, file: "HathiValidate.dist-info/METADATA"
 
                                         if(isUnix()){
                                             sh(
