@@ -1,7 +1,9 @@
 pytest
+pytest-cov
 flake8
 tox
 coverage
 mypy
 devpi-client
 sphinx
+lxml
