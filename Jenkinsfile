@@ -16,6 +16,309 @@ def remove_from_devpi(devpiExecutable, pkgName, pkgVersion, devpiIndex, devpiUse
     }
 }
 
+def CONFIGURATIONS = [
+        "3.6" : [
+            os: [
+                windows:[
+                    agents: [
+                        build: [
+                            dockerfile: [
+                                filename: 'ci/docker/windows/build/msvc/Dockerfile',
+                                label: 'Windows&&Docker',
+                                additionalBuildArgs: '--build-arg PYTHON_INSTALLER_URL=https://www.python.org/ftp/python/3.6.8/python-3.6.8-amd64.exe --build-arg CHOCOLATEY_SOURCE'
+                            ]
+                        ],
+                        test:[
+                            wheel: [
+                                dockerfile: [
+                                    filename: 'ci/docker/windows/test/msvc/Dockerfile',
+                                    label: 'Windows&&Docker',
+                                    additionalBuildArgs: '--build-arg PYTHON_DOCKER_IMAGE_BASE=python:3.6-windowsservercore --build-arg CHOCOLATEY_SOURCE'
+                                ]
+                            ],
+                            sdist: [
+                                dockerfile: [
+                                    filename: 'ci/docker/windows/build/msvc/Dockerfile',
+                                    label: 'Windows&&Docker',
+                                    additionalBuildArgs: '--build-arg PYTHON_INSTALLER_URL=https://www.python.org/ftp/python/3.6.8/python-3.6.8-amd64.exe --build-arg CHOCOLATEY_SOURCE'
+                                ]
+                            ]
+                        ],
+                        devpi: [
+                            wheel: [
+                                dockerfile: [
+                                    filename: 'ci/docker/deploy/devpi/test/windows/whl/Dockerfile',
+                                    label: 'Windows&&Docker',
+                                    additionalBuildArgs: '--build-arg PYTHON_DOCKER_IMAGE_BASE=python:3.6-windowsservercore'
+                                ]
+                            ],
+                            sdist: [
+                                dockerfile: [
+                                    filename: 'ci/docker/deploy/devpi/test/windows/source/Dockerfile',
+                                    label: 'Windows&&Docker',
+                                    additionalBuildArgs: '--build-arg PYTHON_INSTALLER_URL=https://www.python.org/ftp/python/3.6.8/python-3.6.8-amd64.exe --build-arg CHOCOLATEY_SOURCE'
+                                ]
+                            ]
+                        ]
+                    ],
+                    pkgRegex: [
+                        wheel: "*cp36*.whl",
+                        sdist: "uiucprescon.ocr-*.zip"
+                    ]
+                ],
+                linux: [
+                    agents: [
+                        build: [
+                            dockerfile: [
+                                filename: 'ci/docker/linux/build/Dockerfile',
+                                label: 'linux&&docker',
+                                additionalBuildArgs: '--build-arg PYTHON_VERSION=3.6 --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
+                            ]
+                        ],
+                        test: [
+                            sdist: [
+                                dockerfile: [
+                                    filename: 'ci/docker/linux/build/Dockerfile',
+                                    label: 'linux&&docker',
+                                    additionalBuildArgs: '--build-arg PYTHON_VERSION=3.6 --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
+                                ]
+                            ]
+                        ],
+                        devpi: [
+                            whl: [
+                                dockerfile: [
+                                    filename: 'ci/docker/deploy/devpi/test/linux/Dockerfile',
+                                    label: 'linux&&docker',
+                                    additionalBuildArgs: '--build-arg PYTHON_VERSION=3.6 --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
+                                ]
+                            ],
+                            sdist: [
+                                dockerfile: [
+                                    filename: 'ci/docker/deploy/devpi/test/linux/Dockerfile',
+                                    label: 'linux&&docker',
+                                    additionalBuildArgs: '--build-arg PYTHON_VERSION=3.6 --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
+                                ]
+                            ]
+                        ]
+                    ],
+                    pkgRegex: [
+                        wheel: "*cp36*.whl",
+                        sdist: "uiucprescon.ocr-*.zip"
+                    ]
+                ]
+            ],
+            tox_env: "py36",
+            devpiSelector: [
+                sdist: "zip",
+                wheel: "36.*whl",
+            ],
+            pkgRegex: [
+                wheel: "*cp36*.whl",
+                sdist: "*.zip"
+            ]
+        ],
+        "3.7" : [
+            os: [
+                windows: [
+                    agents: [
+                        build: [
+                            dockerfile: [
+                                filename: 'ci/docker/windows/build/msvc/Dockerfile',
+                                label: 'Windows&&Docker',
+                                additionalBuildArgs: '--build-arg PYTHON_INSTALLER_URL=https://www.python.org/ftp/python/3.7.5/python-3.7.5-amd64.exe --build-arg CHOCOLATEY_SOURCE'
+                            ]
+                        ],
+                        test: [
+                            sdist: [
+                                dockerfile: [
+                                    filename: 'ci/docker/windows/build/msvc/Dockerfile',
+                                    label: 'Windows&&Docker',
+                                    additionalBuildArgs: '--build-arg PYTHON_INSTALLER_URL=https://www.python.org/ftp/python/3.7.5/python-3.7.5-amd64.exe --build-arg CHOCOLATEY_SOURCE'
+                                ]
+                            ],
+                            wheel: [
+                                dockerfile: [
+                                    filename: 'ci/docker/windows/test/msvc/Dockerfile',
+                                    additionalBuildArgs: '--build-arg PYTHON_DOCKER_IMAGE_BASE=python:3.7',
+                                    label: 'windows && docker',
+                                ]
+                            ]
+                        ],
+                        devpi: [
+                            wheel: [
+                                dockerfile: [
+                                    filename: 'ci/docker/deploy/devpi/test/windows/whl/Dockerfile',
+                                    label: 'Windows&&Docker',
+                                    additionalBuildArgs: '--build-arg PYTHON_DOCKER_IMAGE_BASE=python:3.7'
+                                ]
+                            ],
+                            sdist: [
+                                dockerfile: [
+                                    filename: 'ci/docker/deploy/devpi/test/windows/source/Dockerfile',
+                                    label: 'Windows&&Docker',
+                                    additionalBuildArgs: '--build-arg PYTHON_INSTALLER_URL=https://www.python.org/ftp/python/3.7.5/python-3.7.5-amd64.exe --build-arg CHOCOLATEY_SOURCE'
+                                ]
+                            ]
+                        ]
+                    ],
+                    pkgRegex: [
+                        wheel: "*cp37*.whl",
+                        sdist: "*.zip"
+                    ]
+                ],
+                linux: [
+                    agents: [
+                        build: [
+                            dockerfile: [
+                                filename: 'ci/docker/linux/build/Dockerfile',
+                                label: 'linux&&docker',
+                                additionalBuildArgs: '--build-arg PYTHON_VERSION=3.7 --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
+                            ]
+                        ],
+                        test: [
+                            sdist: [
+                                dockerfile: [
+                                    filename: 'ci/docker/linux/build/Dockerfile',
+                                    label: 'linux&&docker',
+                                    additionalBuildArgs: '--build-arg PYTHON_VERSION=3.7 --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
+                                ]
+                            ]
+                        ],
+                        devpi: [
+                            wheel: [
+                                dockerfile: [
+                                    filename: 'ci/docker/deploy/devpi/test/linux/Dockerfile',
+                                    label: 'linux&&docker',
+                                    additionalBuildArgs: '--build-arg PYTHON_VERSION=3.7 --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
+                                ]
+                            ],
+                            sdist: [
+                                dockerfile: [
+                                    filename: 'ci/docker/deploy/devpi/test/linux/Dockerfile',
+                                    label: 'linux&&docker',
+                                    additionalBuildArgs: '--build-arg PYTHON_VERSION=3.7 --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
+                                ]
+                            ]
+                        ]
+                    ],
+                    pkgRegex: [
+                        wheel: "*cp37*.whl",
+                        sdist: "uiucprescon.ocr-*.zip"
+                    ]
+                ]
+            ],
+            tox_env: "py37",
+            devpiSelector: [
+                sdist: "zip",
+                wheel: "37.*whl",
+            ],
+            pkgRegex: [
+                wheel: "*cp37*.whl",
+                sdist: "*.zip"
+            ]
+        ],
+        "3.8" : [
+            os: [
+                windows: [
+                    agents: [
+                        build: [
+                            dockerfile: [
+                                filename: 'ci/docker/windows/build/msvc/Dockerfile',
+                                label: 'Windows&&Docker',
+                                additionalBuildArgs: '--build-arg PYTHON_INSTALLER_URL=https://www.python.org/ftp/python/3.8.3/python-3.8.3-amd64.exe --build-arg CHOCOLATEY_SOURCE'
+                            ]
+                        ],
+                        test: [
+                            sdist: [
+                                dockerfile: [
+                                    filename: 'ci/docker/windows/build/msvc/Dockerfile',
+                                    label: 'Windows&&Docker',
+                                    additionalBuildArgs: '--build-arg PYTHON_INSTALLER_URL=https://www.python.org/ftp/python/3.8.3/python-3.8.3-amd64.exe --build-arg CHOCOLATEY_SOURCE'
+                                ]
+                            ],
+                            wheel: [
+                                dockerfile: [
+                                    filename: 'ci/docker/windows/test/msvc/Dockerfile',
+                                    additionalBuildArgs: '--build-arg PYTHON_DOCKER_IMAGE_BASE=python:3.8',
+                                    label: 'windows && docker',
+                                ]
+                            ]
+                        ],
+                        devpi: [
+                            wheel: [
+                                dockerfile: [
+                                    filename: 'ci/docker/deploy/devpi/test/windows/whl/Dockerfile',
+                                    label: 'Windows&&Docker',
+                                    additionalBuildArgs: '--build-arg PYTHON_DOCKER_IMAGE_BASE=python:3.8'
+                                ]
+                            ],
+                            sdist: [
+                                dockerfile: [
+                                    filename: 'ci/docker/deploy/devpi/test/windows/source/Dockerfile',
+                                    label: 'Windows&&Docker',
+                                    additionalBuildArgs: '--build-arg PYTHON_INSTALLER_URL=https://www.python.org/ftp/python/3.8.3/python-3.8.3-amd64.exe --build-arg CHOCOLATEY_SOURCE'
+                                ]
+                            ]
+                        ]
+
+                    ],
+                    pkgRegex: [
+                        wheel: "*cp38*.whl",
+                        sdist: "uiucprescon.ocr-*.zip"
+                    ]
+                ],
+                linux: [
+                    agents: [
+                        build: [
+                            dockerfile: [
+                                filename: 'ci/docker/linux/build/Dockerfile',
+                                label: 'linux&&docker',
+                                additionalBuildArgs: '--build-arg PYTHON_VERSION=3.8 --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
+                            ]
+                        ],
+                        test: [
+                            sdist: [
+                                dockerfile: [
+                                    filename: 'ci/docker/linux/build/Dockerfile',
+                                    label: 'linux&&docker',
+                                    additionalBuildArgs: '--build-arg PYTHON_VERSION=3.8 --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
+                                ]
+                            ]
+                        ],
+                        devpi: [
+                            wheel: [
+                                dockerfile: [
+                                    filename: 'ci/docker/deploy/devpi/test/linux/Dockerfile',
+                                    label: 'linux&&docker',
+                                    additionalBuildArgs: '--build-arg PYTHON_VERSION=3.8 --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
+                                ]
+                            ],
+                            sdist: [
+                                dockerfile: [
+                                    filename: 'ci/docker/deploy/devpi/test/linux/Dockerfile',
+                                    label: 'linux&&docker',
+                                    additionalBuildArgs: '--build-arg PYTHON_VERSION=3.8 --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
+                                ]
+                            ]
+                        ]
+                    ],
+                    pkgRegex: [
+                        wheel: "*cp38*.whl",
+                        sdist: "uiucprescon.ocr-*.zip"
+                    ]
+                ]
+            ],
+            tox_env: "py38",
+            devpiSelector: [
+                sdist: "zip",
+                wheel: "38.*whl",
+            ],
+            pkgRegex: [
+                wheel: "*cp38*.whl",
+                sdist: "*.zip"
+            ]
+        ],
+    ]
 
 def test_devpi(DevpiPath, DevpiIndex, packageName, PackageRegex, certsDir="certs\\"){
 
@@ -242,6 +545,112 @@ pipeline {
                         }
                         cleanup{
                             cleanWs notFailBuild: true
+                        }
+                    }
+                }
+                stage("Testing Packages"){
+                    matrix{
+                        axes {
+                            axis {
+                                name 'PYTHON_VERSION'
+                                values(
+                                    '3.6',
+                                    '3.7',
+                                    '3.8'
+                                )
+                            }
+                            axis {
+                                name 'PLATFORM'
+                                values(
+                                    "windows",
+                                    "linux"
+                                )
+                            }
+                            axis {
+                                name 'FORMAT'
+                                values(
+                                    "sdist",
+                                    "wheel"
+                                )
+                            }
+                        }
+                        excludes{
+                            exclude {
+                                axis {
+                                    name 'PLATFORM'
+                                    values 'linux'
+                                }
+                                axis {
+                                    name 'FORMAT'
+                                    values 'wheel'
+                                }
+                            }
+                        }
+                        stages{
+                            stage("Testing Packages"){
+                                agent {
+                                    dockerfile {
+                                        filename "${CONFIGURATIONS[PYTHON_VERSION].os[PLATFORM].agents.test[FORMAT].dockerfile.filename}"
+                                        label "${CONFIGURATIONS[PYTHON_VERSION].os[PLATFORM].agents.test[FORMAT].dockerfile.label}"
+                                        additionalBuildArgs "${CONFIGURATIONS[PYTHON_VERSION].os[PLATFORM].agents.test[FORMAT].dockerfile.additionalBuildArgs}"
+                                     }
+                                }
+                                steps{
+                                    script{
+                                        if (PLATFORM != "windows"){
+                                            sh(
+                                                label: "Installing Python virtual environment",
+                                                script:"python -m venv venv"
+                                            )
+
+                                            sh(
+                                                label: "Upgrading pip to latest version",
+                                                script: "venv/bin/python -m pip install pip --upgrade"
+                                            )
+
+                                            sh(
+                                                label: "Installing tox to Python virtual environment",
+                                                script: "venv/bin/pip install tox --upgrade"
+                                            )
+                                        }
+                                        if (FORMAT == "wheel"){
+                                            unstash "${FORMAT} ${PYTHON_VERSION}-${PLATFORM}"
+                                        }
+                                        else{
+                                            unstash "sdist"
+                                        }
+                                        findFiles( glob: "dist/**/${CONFIGURATIONS[PYTHON_VERSION].os[PLATFORM].pkgRegex[FORMAT]}").each{
+                                            if(isUnix()){
+                                                sh(
+                                                    label: "Testing ${it}",
+                                                    script: "venv/bin/tox --installpkg=${it.path} -e py"
+                                                    )
+                                            } else {
+                                                bat(
+                                                    label: "Testing ${it}",
+                                                    script: "tox --installpkg=${it.path} -e py"
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        post{
+                            success{
+                                archiveArtifacts allowEmptyArchive: true, artifacts: "dist/${CONFIGURATIONS[PYTHON_VERSION].os[PLATFORM].pkgRegex[FORMAT]}"
+                            }
+                            cleanup{
+                                cleanWs(
+                                    notFailBuild: true,
+                                    deleteDirs: true,
+                                    patterns: [
+                                            [pattern: 'dist', type: 'INCLUDE'],
+                                            [pattern: 'build', type: 'INCLUDE'],
+                                            [pattern: '.tox', type: 'INCLUDE'],
+                                        ]
+                                )
+                            }
                         }
                     }
                 }
