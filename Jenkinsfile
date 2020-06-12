@@ -541,7 +541,8 @@ pipeline {
                     post{
                         success{
                             archiveArtifacts artifacts: "dist/*.whl,dist/*.tar.gz,dist/*.zip", fingerprint: true
-                            stash includes: 'dist/*.*', name: "dist"
+                            stash includes: 'dist/*.whl', name: "wheel"
+                            stash includes: 'dist/*.zip', name: "sdist"
                         }
                         cleanup{
                             cleanWs notFailBuild: true
@@ -614,7 +615,7 @@ pipeline {
                                             )
                                         }
                                         if (FORMAT == "wheel"){
-                                            unstash "${FORMAT} ${PYTHON_VERSION}-${PLATFORM}"
+                                            unstash "wheel"
                                         }
                                         else{
                                             unstash "sdist"
