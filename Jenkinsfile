@@ -74,40 +74,22 @@ pipeline {
         string(name: 'URL_SUBFOLDER', defaultValue: "hathi_validate", description: 'The directory that the docs should be saved under')
     }
     stages {
-        stage("Configure") {
+        stage("Getting Distribution Info"){
             agent {
               dockerfile {
-                filename 'ci/docker/python/windows/Dockerfile'
-                label 'Windows&&Docker'
+                filename 'ci/docker/python/linux/Dockerfile'
+                label 'linux && docker'
               }
             }
-            stages{
-                stage("Stashing important files for later"){
-                    options{
-                        timeout(2)
-                    }
-                    steps{
-                        stash includes: 'deployment.yml', name: "Deployment"
-                    }
-                }
-                stage("Getting Distribution Info"){
-                    options{
-                        timeout(4)
-                    }
-                    steps{
-                        bat "python setup.py dist_info"
-                    }
-                    post{
-                        success{
-                            stash includes: "HathiValidate.dist-info/**", name: 'DIST-INFO'
-                            archiveArtifacts artifacts: "HathiValidate.dist-info/**"
-                        }
-                    }
+            steps{
+                timeout(4){
+                    sh "python setup.py dist_info"
                 }
             }
-            post {
-                failure {
-                    deleteDir()
+            post{
+                success{
+                    stash includes: "HathiValidate.dist-info/**", name: 'DIST-INFO'
+                    archiveArtifacts artifacts: "HathiValidate.dist-info/**"
                 }
             }
         }
