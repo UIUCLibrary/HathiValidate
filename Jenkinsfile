@@ -223,23 +223,27 @@ pipeline {
             }
         }
         stage("Packaging") {
-            agent {
-                dockerfile {
-                    filename 'ci/docker/python/linux/Dockerfile'
-                    label 'linux && docker'
-                }
-            }
-            steps{
-                sh "python setup.py sdist --format zip -d dist bdist_wheel -d dist"
+            stages{
+                stage("Building Python Distribution Packages"){
+                    agent {
+                        dockerfile {
+                            filename 'ci/docker/python/linux/Dockerfile'
+                            label 'linux && docker'
+                        }
+                    }
+                    steps{
+                        sh "python setup.py sdist --format zip -d dist bdist_wheel -d dist"
 
-            }
-            post{
-                success{
-                    archiveArtifacts artifacts: "dist/*.whl,dist/*.tar.gz,dist/*.zip", fingerprint: true
-                    stash includes: 'dist/*.*', name: "dist"
-                }
-                cleanup{
-                    cleanWs notFailBuild: true
+                    }
+                    post{
+                        success{
+                            archiveArtifacts artifacts: "dist/*.whl,dist/*.tar.gz,dist/*.zip", fingerprint: true
+                            stash includes: 'dist/*.*', name: "dist"
+                        }
+                        cleanup{
+                            cleanWs notFailBuild: true
+                        }
+                    }
                 }
             }
         }
