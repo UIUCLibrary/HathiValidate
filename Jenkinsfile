@@ -576,8 +576,8 @@ pipeline {
                             axis {
                                 name 'FORMAT'
                                 values(
-                                    "sdist",
-                                    "wheel"
+                                    "wheel",
+                                    "sdist"
                                 )
                             }
                         }
