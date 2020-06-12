@@ -501,7 +501,11 @@ pipeline {
                     }
                     steps{
                         catchError(buildResult: "SUCCESS", message: 'MyPy found issues', stageResult: "UNSTABLE") {
-                            sh "mypy -p hathi_validate --html-report reports/mypy_html > logs/mypy.log"
+                            sh(label: "Running MyPy",
+                               script: """mkdir -p logs
+                                          mypy -p hathi_validate --html-report reports/mypy_html > logs/mypy.log
+                                          """
+                              )
                         }
                     }
                     post{
