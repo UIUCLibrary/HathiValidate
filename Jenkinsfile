@@ -360,7 +360,6 @@ pipeline {
     agent none
 
     options {
-        disableConcurrentBuilds()  //each branch has 1 job running at a time
         buildDiscarder logRotator(artifactDaysToKeepStr: '10', artifactNumToKeepStr: '10')
     }
     triggers {
