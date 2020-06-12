@@ -276,12 +276,11 @@ pipeline {
         buildDiscarder logRotator(artifactDaysToKeepStr: '10', artifactNumToKeepStr: '10')
     }
     triggers {
-        cron('@daily')
+        parameterizedCron '@daily % DEPLOY_DEVPI=true; TEST_RUN_TOX=true'
     }
-
     parameters {
         string(name: "PROJECT_NAME", defaultValue: "Hathi Validate", description: "Name given to the project")
-        booleanParam(name: "TEST_RUN_TOX", defaultValue: true, description: "Run Tox Tests")
+        booleanParam(name: "TEST_RUN_TOX", defaultValue: false, description: "Run Tox Tests")
         booleanParam(name: "DEPLOY_DEVPI", defaultValue: false, description: "Deploy to devpi on http://devpy.library.illinois.edu/DS_Jenkins/${env.BRANCH_NAME}")
         booleanParam(name: "DEPLOY_DEVPI_PRODUCTION", defaultValue: false, description: "Deploy to https://devpi.library.illinois.edu/production/release")
         booleanParam(name: "DEPLOY_HATHI_TOOL_BETA", defaultValue: false, description: "Deploy standalone to \\\\storage.library.illinois.edu\\HathiTrust\\Tools\\beta\\")
