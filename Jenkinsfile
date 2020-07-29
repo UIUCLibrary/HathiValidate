@@ -390,13 +390,6 @@ pipeline {
                     }
                     steps {
                         sh "tox --workdir .tox -vv -e py"
-//                         script{
-//                             try{
-//                                 bat "tox --parallel=auto --parallel-live --workdir ${WORKSPACE}\\.tox -vv"
-//                             } catch (exc) {
-//                                 bat "tox --parallel=auto --parallel-live --workdir ${WORKSPACE}\\.tox --recreate -vv"
-//                             }
-//                         }
                     }
                 }
                 stage("MyPy"){
@@ -583,96 +576,6 @@ pipeline {
                         }
                     }
                 }
-//                 stage("Testing Packages"){
-//                     options{
-//                         timestamps()
-//                     }
-//                     matrix{
-//                         axes {
-//                             axis {
-//                                 name 'PYTHON_VERSION'
-//                                 values(
-//                                     '3.8',
-//                                     '3.7',
-//                                     '3.6'
-//                                 )
-//                             }
-//                             axis {
-//                                 name 'PLATFORM'
-//                                 values(
-//                                     "windows",
-//                                     "linux"
-//                                 )
-//                             }
-//                             axis {
-//                                 name 'FORMAT'
-//                                 values(
-//                                     "wheel",
-//                                     "sdist"
-//                                 )
-//                             }
-//                         }
-//                         excludes{
-//                             exclude {
-//                                 axis {
-//                                     name 'PLATFORM'
-//                                     values 'linux'
-//                                 }
-//                                 axis {
-//                                     name 'FORMAT'
-//                                     values 'wheel'
-//                                 }
-//                             }
-//                         }
-//                         stages{
-//                             stage("Testing Packages"){
-//                                 agent {
-//                                     dockerfile {
-//                                         filename "${CONFIGURATIONS[PYTHON_VERSION].os[PLATFORM].agents.test.dockerfile.filename}"
-//                                         label "${CONFIGURATIONS[PYTHON_VERSION].os[PLATFORM].agents.test.dockerfile.label}"
-//                                         additionalBuildArgs "${CONFIGURATIONS[PYTHON_VERSION].os[PLATFORM].agents.test.dockerfile.additionalBuildArgs}"
-//                                      }
-//                                 }
-//                                 steps{
-//                                     script{
-//                                         if (FORMAT == "wheel"){
-//                                             unstash "wheel"
-//                                         }
-//                                         else{
-//                                             unstash "sdist"
-//                                         }
-//                                         findFiles( glob: "dist/**/${CONFIGURATIONS[PYTHON_VERSION].os[PLATFORM].pkgRegex[FORMAT]}").each{
-//                                             if(isUnix()){
-//                                                 sh(
-//                                                     label: "Testing ${it}",
-//                                                     script: "tox --installpkg=${it.path} -e py -v"
-//                                                     )
-//                                             } else {
-//                                                 bat(
-//                                                     label: "Testing ${it}",
-//                                                     script: "tox --installpkg=${it.path} -e py -v"
-//                                                 )
-//                                             }
-//                                         }
-//                                     }
-//                                 }
-//                                 post{
-//                                     cleanup{
-//                                         cleanWs(
-//                                             notFailBuild: true,
-//                                             deleteDirs: true,
-//                                             patterns: [
-//                                                     [pattern: 'dist', type: 'INCLUDE'],
-//                                                     [pattern: 'build', type: 'INCLUDE'],
-//                                                     [pattern: '.tox', type: 'INCLUDE'],
-//                                                 ]
-//                                         )
-//                                     }
-//                                 }
-//                             }
-//                         }
-//                     }
-//                 }
             }
         }
         stage("Deploy to Devpi"){
