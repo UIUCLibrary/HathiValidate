@@ -454,7 +454,7 @@ pipeline {
                         }
                     }
                     steps{
-                        sh "python setup.py sdist --format zip -d dist bdist_wheel -d dist"
+                        sh "python setup.py sdist -d dist bdist_wheel -d dist"
 
                     }
                     post{
