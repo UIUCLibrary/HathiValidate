@@ -473,75 +473,56 @@ pipeline {
                         }
                     }
                 }
-                stage("Testing Packages"){
-                    options{
-                        timestamps()
-                    }
+                stage('Testing all Package') {
                     matrix{
-                        axes {
+                        axes{
                             axis {
-                                name 'PYTHON_VERSION'
-                                values(
-                                    '3.8',
-                                    '3.7',
-                                    '3.6'
-                                )
-                            }
-                            axis {
-                                name 'PLATFORM'
+                                name "PLATFORM"
                                 values(
                                     "windows",
                                     "linux"
                                 )
                             }
                             axis {
-                                name 'FORMAT'
+                                name "PYTHON_VERSION"
                                 values(
-                                    "wheel",
-                                    "sdist"
+                                    "3.7",
+                                    "3.8"
                                 )
                             }
                         }
-                        excludes{
-                            exclude {
-                                axis {
-                                    name 'PLATFORM'
-                                    values 'linux'
-                                }
-                                axis {
-                                    name 'FORMAT'
-                                    values 'wheel'
-                                }
+                        agent {
+                            dockerfile {
+                                filename "ci/docker/python/${PLATFORM}/Dockerfile"
+                                label "${PLATFORM} && docker"
+                                additionalBuildArgs "--build-arg PYTHON_VERSION=${PYTHON_VERSION} --build-arg PIP_EXTRA_INDEX_URL"
                             }
                         }
                         stages{
-                            stage("Testing Packages"){
-                                agent {
-                                    dockerfile {
-                                        filename "${CONFIGURATIONS[PYTHON_VERSION].os[PLATFORM].agents.test.dockerfile.filename}"
-                                        label "${CONFIGURATIONS[PYTHON_VERSION].os[PLATFORM].agents.test.dockerfile.label}"
-                                        additionalBuildArgs "${CONFIGURATIONS[PYTHON_VERSION].os[PLATFORM].agents.test.dockerfile.additionalBuildArgs}"
-                                     }
+                            stage("Testing Package sdist"){
+                                options {
+                                    warnError('Package Testing Failed')
                                 }
                                 steps{
+                                    unstash "PYTHON_PACKAGES"
                                     script{
-                                        if (FORMAT == "wheel"){
-                                            unstash "wheel"
-                                        }
-                                        else{
-                                            unstash "sdist"
-                                        }
-                                        findFiles( glob: "dist/**/${CONFIGURATIONS[PYTHON_VERSION].os[PLATFORM].pkgRegex[FORMAT]}").each{
-                                            if(isUnix()){
-                                                sh(
-                                                    label: "Testing ${it}",
-                                                    script: "tox --installpkg=${it.path} -e py -v"
+                                        findFiles(glob: "**/*.tar.gz").each{
+                                            timeout(15){
+                                                if(PLATFORM == "windows"){
+                                                    bat(
+                                                        script: """python --version
+                                                                   tox --installpkg=${it.path} -e py -vv
+                                                                   """,
+                                                        label: "Testing ${it}"
                                                     )
-                                            } else {
-                                                bat(
-                                                    label: "Testing ${it}",
-                                                    script: "tox --installpkg=${it.path} -e py -v"
-                                                )
+                                                } else {
+                                                    sh(
+                                                        script: """python --version
+                                                                   tox --installpkg=${it.path} -e py -vv
+                                                                   """,
+                                                        label: "Testing ${it}"
+                                                    )
+                                                }
                                             }
                                         }
                                     }
@@ -552,9 +533,51 @@ pipeline {
                                             notFailBuild: true,
                                             deleteDirs: true,
                                             patterns: [
-                                                    [pattern: 'dist', type: 'INCLUDE'],
-                                                    [pattern: 'build', type: 'INCLUDE'],
-                                                    [pattern: '.tox', type: 'INCLUDE'],
+                                                [pattern: 'dist/', type: 'INCLUDE'],
+                                                [pattern: 'build/', type: 'INCLUDE'],
+                                                [pattern: '.tox/', type: 'INCLUDE'],
+                                                ]
+                                        )
+                                    }
+                                }
+                            }
+                            stage("Testing Package Wheel"){
+                                options {
+                                    warnError('Package Testing Failed')
+                                }
+                                steps{
+                                    unstash "PYTHON_PACKAGES"
+                                    script{
+                                        findFiles(glob: "**/*.whl").each{
+                                            timeout(15){
+                                                if(PLATFORM == "windows"){
+                                                    bat(
+                                                        script: """python --version
+                                                                   tox --installpkg=${it.path} -e py -vv
+                                                                   """,
+                                                        label: "Testing ${it}"
+                                                    )
+                                                } else {
+                                                    sh(
+                                                        script: """python --version
+                                                                   tox --installpkg=${it.path} -e py -vv
+                                                                   """,
+                                                        label: "Testing ${it}"
+                                                    )
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                post{
+                                    cleanup{
+                                        cleanWs(
+                                            notFailBuild: true,
+                                            deleteDirs: true,
+                                            patterns: [
+                                                [pattern: 'dist/', type: 'INCLUDE'],
+                                                [pattern: 'build/', type: 'INCLUDE'],
+                                                [pattern: '.tox/', type: 'INCLUDE'],
                                                 ]
                                         )
                                     }
@@ -563,6 +586,96 @@ pipeline {
                         }
                     }
                 }
+//                 stage("Testing Packages"){
+//                     options{
+//                         timestamps()
+//                     }
+//                     matrix{
+//                         axes {
+//                             axis {
+//                                 name 'PYTHON_VERSION'
+//                                 values(
+//                                     '3.8',
+//                                     '3.7',
+//                                     '3.6'
+//                                 )
+//                             }
+//                             axis {
+//                                 name 'PLATFORM'
+//                                 values(
+//                                     "windows",
+//                                     "linux"
+//                                 )
+//                             }
+//                             axis {
+//                                 name 'FORMAT'
+//                                 values(
+//                                     "wheel",
+//                                     "sdist"
+//                                 )
+//                             }
+//                         }
+//                         excludes{
+//                             exclude {
+//                                 axis {
+//                                     name 'PLATFORM'
+//                                     values 'linux'
+//                                 }
+//                                 axis {
+//                                     name 'FORMAT'
+//                                     values 'wheel'
+//                                 }
+//                             }
+//                         }
+//                         stages{
+//                             stage("Testing Packages"){
+//                                 agent {
+//                                     dockerfile {
+//                                         filename "${CONFIGURATIONS[PYTHON_VERSION].os[PLATFORM].agents.test.dockerfile.filename}"
+//                                         label "${CONFIGURATIONS[PYTHON_VERSION].os[PLATFORM].agents.test.dockerfile.label}"
+//                                         additionalBuildArgs "${CONFIGURATIONS[PYTHON_VERSION].os[PLATFORM].agents.test.dockerfile.additionalBuildArgs}"
+//                                      }
+//                                 }
+//                                 steps{
+//                                     script{
+//                                         if (FORMAT == "wheel"){
+//                                             unstash "wheel"
+//                                         }
+//                                         else{
+//                                             unstash "sdist"
+//                                         }
+//                                         findFiles( glob: "dist/**/${CONFIGURATIONS[PYTHON_VERSION].os[PLATFORM].pkgRegex[FORMAT]}").each{
+//                                             if(isUnix()){
+//                                                 sh(
+//                                                     label: "Testing ${it}",
+//                                                     script: "tox --installpkg=${it.path} -e py -v"
+//                                                     )
+//                                             } else {
+//                                                 bat(
+//                                                     label: "Testing ${it}",
+//                                                     script: "tox --installpkg=${it.path} -e py -v"
+//                                                 )
+//                                             }
+//                                         }
+//                                     }
+//                                 }
+//                                 post{
+//                                     cleanup{
+//                                         cleanWs(
+//                                             notFailBuild: true,
+//                                             deleteDirs: true,
+//                                             patterns: [
+//                                                     [pattern: 'dist', type: 'INCLUDE'],
+//                                                     [pattern: 'build', type: 'INCLUDE'],
+//                                                     [pattern: '.tox', type: 'INCLUDE'],
+//                                                 ]
+//                                         )
+//                                     }
+//                                 }
+//                             }
+//                         }
+//                     }
+//                 }
             }
         }
         stage("Deploy to Devpi"){
