@@ -460,7 +460,7 @@ pipeline {
                     post{
                         always{
                             stash includes: 'dist/*.whl', name: "wheel"
-                            stash includes: 'dist/*.zip', name: "sdist"
+                            stash includes: 'dist/*.zip,dist/*.tar.gz', name: "sdist"
                         }
                         success{
                             archiveArtifacts artifacts: "dist/*.whl,dist/*.tar.gz,dist/*.zip", fingerprint: true
