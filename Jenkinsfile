@@ -385,14 +385,11 @@ pipeline {
                             label 'linux && docker'
                         }
                     }
-                    environment{
-                        TOXENV="py"
-                    }
                     when{
                         equals expected: true, actual: params.TEST_RUN_TOX
                     }
                     steps {
-                        sh "tox --workdir .tox -vv"
+                        sh "tox --workdir .tox -vv -e py"
 //                         script{
 //                             try{
 //                                 bat "tox --parallel=auto --parallel-live --workdir ${WORKSPACE}\\.tox -vv"
