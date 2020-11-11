@@ -398,6 +398,9 @@ pipeline {
                         equals expected: true, actual: params.TEST_RUN_TOX
                     }
                     steps {
+                        script{
+                            def envs = tox.getToxEnvs()
+                        }
                         get_tox_jobs()
 //                         sh "tox --workdir .tox -vv -e py"
                     }
