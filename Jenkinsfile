@@ -395,17 +395,15 @@ pipeline {
                     steps {
                         script{
 
-                            def windowsJobs
-                            def linuxJobs
+                            def jobs = [:]
                             parallel(
                                 "Scanning Tox Environments for Linux":{
-                                    windowsJobs += tox.getToxTestsParallel("Tox Linux", "linux && docker", "ci/docker/python/linux/tox/Dockerfile", "--build-arg PIP_EXTRA_INDEX_URL --build-arg PIP_INDEX_URL")
+                                    jobs += tox.getToxTestsParallel("Tox Linux", "linux && docker", "ci/docker/python/linux/tox/Dockerfile", "--build-arg PIP_EXTRA_INDEX_URL --build-arg PIP_INDEX_URL")
                                 },
                                 "Scanning Tox Environments for Windows":{
                                     jobs +=  tox.getToxTestsParallel("Tox Windows", "windows && docker", "ci/docker/python/windows/tox/Dockerfile", "--build-arg PIP_EXTRA_INDEX_URL --build-arg PIP_INDEX_URL --build-arg CHOCOLATEY_SOURCE")
                                 }
                             )
-                            def jobs = windowsJobs + linuxJobs
                             parallel(jobs)
                         }
                     }
