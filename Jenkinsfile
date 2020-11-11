@@ -409,7 +409,7 @@ pipeline {
                                         envs = tox.getToxEnvs()
                                     }
                                 } finally {
-                                    echo "finally ${dockerImage}"
+                                    echo "finally ${dockerImage.id}"
                                 }
                             }
                             echo "Got ${envs}"
