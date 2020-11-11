@@ -511,19 +511,20 @@ pipeline {
                                 steps{
                                     unstash "sdist"
                                     script{
+                                        def toxEnv = "py${PYTHON_VERSION.replace('.', '')}"
                                         findFiles(glob: "**/*.tar.gz").each{
                                             timeout(15){
                                                 if(PLATFORM == "windows"){
                                                     bat(
                                                         script: """python --version
-                                                                   tox --installpkg=${it.path} -e py -vv
+                                                                   tox --installpkg=${it.path} -e ${toxEnv} -vv
                                                                    """,
                                                         label: "Testing ${it}"
                                                     )
                                                 } else {
                                                     sh(
                                                         script: """python --version
-                                                                   tox --installpkg=${it.path} -e py -vv
+                                                                   tox --installpkg=${it.path} -e ${toxEnv} -vv
                                                                    """,
                                                         label: "Testing ${it}"
                                                     )
@@ -553,19 +554,20 @@ pipeline {
                                 steps{
                                     unstash "wheel"
                                     script{
+                                        def toxEnv = "py${PYTHON_VERSION.replace('.', '')}"
                                         findFiles(glob: "**/*.whl").each{
                                             timeout(15){
                                                 if(PLATFORM == "windows"){
                                                     bat(
                                                         script: """python --version
-                                                                   tox --installpkg=${it.path} -e py -vv
+                                                                   tox --installpkg=${it.path} -e ${toxEnv} -vv
                                                                    """,
                                                         label: "Testing ${it}"
                                                     )
                                                 } else {
                                                     sh(
                                                         script: """python --version
-                                                                   tox --installpkg=${it.path} -e py -vv
+                                                                   tox --installpkg=${it.path} -e ${toxEnv} -vv
                                                                    """,
                                                         label: "Testing ${it}"
                                                     )
