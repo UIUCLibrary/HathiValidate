@@ -388,21 +388,28 @@ pipeline {
                     }
                 }
                 stage("Run Tox"){
-                    agent {
-                        dockerfile {
-                            filename 'ci/docker/python/linux/Dockerfile'
-                            label 'linux && docker'
-                        }
-                    }
+//                     agent {
+//                         dockerfile {
+//                             filename 'ci/docker/python/linux/Dockerfile'
+//                             label 'linux && docker'
+//                         }
+//                     }
                     when{
                         equals expected: true, actual: params.TEST_RUN_TOX
                     }
                     steps {
                         script{
-                            def envs = tox.getToxEnvs()
+                            def envs
+                            node("linux && docker"){
+                                def dockerImageName = "toxhathivalidate"
+                                def dockerImage = docker.build(dockerImageName, "-f ci/docker/python/linux/Dockerfile ${dockerArgs} .")
+                                dockerImage.inside{
+                                    envs = tox.getToxEnvs()
+                                }
+                            }
                             echo "Got ${envs}"
                         }
-                        get_tox_jobs()
+//                         get_tox_jobs()
 //                         sh "tox --workdir .tox -vv -e py"
                     }
                 }
