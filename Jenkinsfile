@@ -232,6 +232,9 @@ def CONFIGURATIONS = [
             ]
         ],
     ]
+def get_tox_jobs(){
+    sh "tox --workdir .tox -vv -e py"
+}
 
 def test_devpi(DevpiPath, DevpiIndex, packageName, PackageRegex, certsDir="certs\\"){
 
@@ -277,7 +280,8 @@ pipeline {
     }
     parameters {
         string(name: "PROJECT_NAME", defaultValue: "Hathi Validate", description: "Name given to the project")
-        booleanParam(name: "TEST_RUN_TOX", defaultValue: false, description: "Run Tox Tests")
+//         todo set default to false
+        booleanParam(name: "TEST_RUN_TOX", defaultValue: true, description: "Run Tox Tests")
         booleanParam(name: "BUILD_PACKAGES", defaultValue: false, description: "Build Python packages")
         booleanParam(name: "DEPLOY_DEVPI", defaultValue: false, description: "Deploy to devpi on http://devpy.library.illinois.edu/DS_Jenkins/${env.BRANCH_NAME}")
         booleanParam(name: "DEPLOY_DEVPI_PRODUCTION", defaultValue: false, description: "Deploy to https://devpi.library.illinois.edu/production/release")
@@ -389,7 +393,8 @@ pipeline {
                         equals expected: true, actual: params.TEST_RUN_TOX
                     }
                     steps {
-                        sh "tox --workdir .tox -vv -e py"
+                        get_tox_jobs()
+//                         sh "tox --workdir .tox -vv -e py"
                     }
                 }
                 stage("MyPy"){
