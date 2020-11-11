@@ -400,6 +400,7 @@ pipeline {
                     steps {
                         script{
                             def envs = tox.getToxEnvs()
+                            echo "Got ${envs}"
                         }
                         get_tox_jobs()
 //                         sh "tox --workdir .tox -vv -e py"
