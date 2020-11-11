@@ -399,23 +399,24 @@ pipeline {
                     }
                     steps {
                         script{
-                            def envs
-                            node("linux && docker"){
-                                def dockerImageName = "toxhathivalidate"
-                                def dockerArgs = ""
-                                def dockerImage = docker.build(dockerImageName, "-f ci/docker/python/linux/jenkins/Dockerfile ${dockerArgs} .")
-                                try{
-                                    dockerImage.inside{
-                                        envs = tox.getToxEnvs()
-                                    }
-                                } finally {
-                                    echo "finally ${dockerImage.id}"
-                                    sh(label: "Removing image", script: "docker image rm ${dockerImage.id}")
-                                }
-                            }
-                            echo "Got ${envs}"
+//                             def envs
+//                             node("linux && docker"){
+//                                 def dockerImageName = "toxhathivalidate"
+//                                 def dockerArgs = ""
+//                                 def dockerImage = docker.build(dockerImageName, "-f ci/docker/python/linux/jenkins/Dockerfile ${dockerArgs} .")
+//                                 try{
+//                                     dockerImage.inside{
+//                                         envs = tox.getToxEnvs()
+//                                     }
+//                                 } finally {
+//                                     echo "finally ${dockerImage.id}"
+//                                     sh(label: "Removing image", script: "docker image rm ${dockerImage.id}")
+//                                 }
+//                             }
+//                             echo "Got ${envs}"
                             def jobs = tox.getToxTestsParallel("Linux", "linux && docker", "ci/docker/python/linux/tox/Dockerfile", "--build-arg PIP_EXTRA_INDEX_URL --build-arg PIP_INDEX_URL")
-                        }
+                            parallel(jobs)
+//                         }
 //                         get_tox_jobs()
 //                         sh "tox --workdir .tox -vv -e py"
                     }
