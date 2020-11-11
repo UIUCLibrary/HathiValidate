@@ -394,7 +394,6 @@ pipeline {
                     }
                     steps {
                         script{
-
                             def jobs = [:]
                             parallel(
                                 "Scanning Tox Environments for Linux":{
