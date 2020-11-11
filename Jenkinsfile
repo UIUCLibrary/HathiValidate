@@ -269,9 +269,12 @@ def get_package_name(stashName, metadataFile){
         }
     }
 }
+
+def tox
+
 node(){
     checkout scm
-    def tox = load("ci/jenkins/scripts/tox.groovy")
+    tox = load("ci/jenkins/scripts/tox.groovy")
 }
 
 pipeline {
