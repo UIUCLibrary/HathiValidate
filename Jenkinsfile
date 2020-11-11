@@ -410,6 +410,7 @@ pipeline {
                                     }
                                 } finally {
                                     echo "finally ${dockerImage.id}"
+                                    sh(label: "Removing image", script: "docker image rm ${dockerImage.id}")
                                 }
                             }
                             echo "Got ${envs}"
