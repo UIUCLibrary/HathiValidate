@@ -68,9 +68,10 @@ SHELL ["cmd", "/S", "/C" ]
 ARG PIP_INDEX_URL
 ARG PIP_EXTRA_INDEX_URL
 COPY requirements.txt ci/docker/python/shared/requirements-ci.txt c:/requirements/
-RUN py -3.6 -m pip install --upgrade pip wheel && `
-    py -3.6 -m pip wheel -w c:\wheels\ --no-cache-dir -r c:/requirements/requirements-ci.txt && `
-    py -3.6 -m pip wheel -w c:\wheels\ --no-cache-dir -r c:/requirements/requirements.txt
+ENV PY_PYTHON=3.6
+RUN py -m pip install --upgrade pip wheel && `
+    py -m pip wheel -w c:\wheels\ --no-cache-dir -r c:/requirements/requirements-ci.txt && `
+    py -m pip wheel -w c:\wheels\ --no-cache-dir -r c:/requirements/requirements.txt
 
 # ==============================================================================
 FROM BASE_BUILDER as WHEEL_BUilDER_PY37
@@ -78,9 +79,11 @@ SHELL ["cmd", "/S", "/C" ]
 ARG PIP_INDEX_URL
 ARG PIP_EXTRA_INDEX_URL
 COPY requirements.txt ci/docker/python/shared/requirements-ci.txt c:/requirements/
-RUN py -3.7 -m pip install --upgrade pip wheel && `
-    py -3.7 -m pip wheel -w c:\wheels\ --no-cache-dir -r c:/requirements/requirements-ci.txt && `
-    py -3.7 -m pip wheel -w c:\wheels\ --no-cache-dir -r c:/requirements/requirements.txt
+ENV PY_PYTHON=3.7
+RUN py -m pip install --upgrade pip wheel && `
+    py -m pip wheel -w c:\wheels\ --no-cache-dir -r c:/requirements/requirements-ci.txt && `
+    py -m pip wheel -w c:\wheels\ --no-cache-dir -r c:/requirements/requirements.txt
+
 
 # ==============================================================================
 FROM BASE_BUILDER as WHEEL_BUilDER_PY38
@@ -88,9 +91,11 @@ SHELL ["cmd", "/S", "/C" ]
 ARG PIP_INDEX_URL
 ARG PIP_EXTRA_INDEX_URL
 COPY requirements.txt ci/docker/python/shared/requirements-ci.txt c:/requirements/
-RUN py -3.8 -m pip install --upgrade pip wheel && `
-    py -3.8 -m pip wheel -w c:\wheels\ --no-cache-dir -r c:/requirements/requirements-ci.txt && `
-    py -3.8 -m pip wheel -w c:\wheels\ --no-cache-dir -r c:/requirements/requirements.txt
+ENV PY_PYTHON=3.8
+RUN py -m pip install --upgrade pip wheel && `
+    py -m pip wheel -w c:\wheels\ --no-cache-dir -r c:/requirements/requirements-ci.txt && `
+    py -m pip wheel -w c:\wheels\ --no-cache-dir -r c:/requirements/requirements.txt
+
 # ==============================================================================
 
 # ==============================================================================
@@ -99,9 +104,10 @@ SHELL ["cmd", "/S", "/C" ]
 ARG PIP_INDEX_URL
 ARG PIP_EXTRA_INDEX_URL
 COPY requirements.txt ci/docker/python/shared/requirements-ci.txt c:/requirements/
-RUN py -3.9 -m pip install --upgrade pip wheel && `
-    py -3.9 -m pip wheel -w c:\wheels\ --no-cache-dir -r c:/requirements/requirements-ci.txt && `
-    py -3.9 -m pip wheel -w c:\wheels\ --no-cache-dir -r c:/requirements/requirements.txt
+ENV PY_PYTHON=3.9
+RUN py -m pip install --upgrade pip wheel && `
+    py -m pip wheel -w c:\wheels\ --no-cache-dir -r c:/requirements/requirements-ci.txt && `
+    py -m pip wheel -w c:\wheels\ --no-cache-dir -r c:/requirements/requirements.txt
 
 # ==============================================================================
 FROM BASE_BUILDER

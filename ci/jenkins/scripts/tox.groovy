@@ -111,20 +111,34 @@ def getToxTestsParallel(envNamePrefix, label, dockerfile, dockerArgs){
             checkout scm
             def dockerImageName = "tox${currentBuild.projectName}".replaceAll("-", "").toLowerCase()
             def dockerImage = docker.build(dockerImageName, "-f ${dockerfile} ${dockerArgs} .")
-            dockerImage.inside{
-                envs = getToxEnvs()
-            }
-            if(isUnix()){
+            try{
+                dockerImage.inside{
+                    envs = getToxEnvs()
+                }
+                if(isUnix()){
+                    sh(
+                        label: "Removing Docker Image used to run tox",
+                        script: "docker image ls ${dockerImageName}"
+                    )
+                } else {
+                    bat(
+                        label: "Removing Docker Image used to run tox",
+                        script: """docker image ls ${dockerImageName}
+                                   """
+                    )
+                }
+            } finally {
+                if(isUnix()){
                 sh(
-                    label: "Removing Docker Image used to run tox",
-                    script: "docker image ls ${dockerImageName}"
-                )
-            } else {
-                bat(
-                    label: "Removing Docker Image used to run tox",
-                    script: """docker image ls ${dockerImageName}
-                               """
-                )
+                        label: "Removing Docker Image used to run tox",
+                        script: "docker image rm ${dockerImage.id}"
+                    )
+                } else {
+                    bat(
+                        label: "Removing Docker Image used to run tox",
+                        script: "docker image rm ${dockerImage.id}"
+                    )
+                }
             }
         }
         echo "Found tox environments for ${envs.join(', ')}"
@@ -135,7 +149,7 @@ def getToxTestsParallel(envNamePrefix, label, dockerfile, dockerArgs){
             dockerImageForTesting = docker.build(dockerImageName, "-f ${dockerfile} ${dockerArgs} . ")
 
         }
-        echo "Adding jobs to ${originalNodeLabel} with ${dockerImageForTesting}"
+        echo "Adding jobs to ${originalNodeLabel}"
         def jobs = envs.collectEntries({ tox_env ->
             def tox_result
             def githubChecksName = "Tox: ${tox_env} ${envNamePrefix}"
@@ -145,7 +159,7 @@ def getToxTestsParallel(envNamePrefix, label, dockerfile, dockerArgs){
                 node(originalNodeLabel){
                     ws{
                         checkout scm
-                        dockerImageForTesting.inside{
+                        dockerImageForTestingdockerImageForTesting.inside{
                             try{
                                 publishChecks(
                                     conclusion: 'NONE',
