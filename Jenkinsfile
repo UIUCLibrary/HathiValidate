@@ -416,7 +416,7 @@ pipeline {
 //                             echo "Got ${envs}"
                             def jobs = tox.getToxTestsParallel("Linux", "linux && docker", "ci/docker/python/linux/tox/Dockerfile", "--build-arg PIP_EXTRA_INDEX_URL --build-arg PIP_INDEX_URL")
                             parallel(jobs)
-//                         }
+                        }
 //                         get_tox_jobs()
 //                         sh "tox --workdir .tox -vv -e py"
                     }
