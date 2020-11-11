@@ -23,21 +23,21 @@ def CONFIGURATIONS = [
                     agents: [
                         build: [
                             dockerfile: [
-                                filename: 'ci/docker/python/windows/Dockerfile',
+                                filename: 'ci/docker/python/windows/jenkins/Dockerfile',
                                 label: 'windows && docker',
                                 additionalBuildArgs: '--build-arg PYTHON_DOCKER_IMAGE_BASE=python:3.6-windowsservercore'
                             ]
                         ],
                         test:[
                             dockerfile: [
-                                filename: 'ci/docker/python/windows/Dockerfile',
+                                filename: 'ci/docker/python/windows/jenkins/Dockerfile',
                                 label: 'windows && docker',
                                 additionalBuildArgs: '--build-arg PYTHON_DOCKER_IMAGE_BASE=python:3.6-windowsservercore'
                             ]
                         ],
                         devpi: [
                             dockerfile: [
-                                filename: 'ci/docker/python/windows/Dockerfile',
+                                filename: 'ci/docker/python/windows/jenkins/Dockerfile',
                                 label: 'windows && docker',
                                 additionalBuildArgs: '--build-arg PYTHON_DOCKER_IMAGE_BASE=python:3.6-windowsservercore'
                             ]
@@ -94,21 +94,21 @@ def CONFIGURATIONS = [
                     agents: [
                         build: [
                             dockerfile: [
-                                filename: 'ci/docker/python/windows/Dockerfile',
+                                filename: 'ci/docker/python/windows/jenkins/Dockerfile',
                                 label: 'windows && docker',
                                 additionalBuildArgs: '--build-arg PYTHON_DOCKER_IMAGE_BASE=python:3.7'
                             ]
                         ],
                         test: [
                             dockerfile: [
-                                filename: 'ci/docker/python/windows/Dockerfile',
+                                filename: 'ci/docker/python/windows/jenkins/Dockerfile',
                                 label: 'windows && docker',
                                 additionalBuildArgs: '--build-arg PYTHON_DOCKER_IMAGE_BASE=python:3.7'
                             ]
                         ],
                         devpi: [
                             dockerfile: [
-                                filename: 'ci/docker/python/windows/Dockerfile',
+                                filename: 'ci/docker/python/windows/jenkins/Dockerfile',
                                 label: 'windows && docker',
                                 additionalBuildArgs: '--build-arg PYTHON_DOCKER_IMAGE_BASE=python:3.7'
                             ]
@@ -165,21 +165,21 @@ def CONFIGURATIONS = [
                     agents: [
                         build: [
                             dockerfile: [
-                                filename: 'ci/docker/python/windows/Dockerfile',
+                                filename: 'ci/docker/python/windows/jenkins/Dockerfile',
                                 label: 'windows && docker',
                                 additionalBuildArgs: '--build-arg PYTHON_DOCKER_IMAGE_BASE=python:3.8'
                             ]
                         ],
                         test: [
                             dockerfile: [
-                                filename: 'ci/docker/python/windows/Dockerfile',
+                                filename: 'ci/docker/python/windows/jenkins/Dockerfile',
                                 label: 'windows && docker',
                                 additionalBuildArgs: '--build-arg PYTHON_DOCKER_IMAGE_BASE=python:3.8'
                             ]
                         ],
                         devpi: [
                             dockerfile: [
-                                filename: 'ci/docker/python/windows/Dockerfile',
+                                filename: 'ci/docker/python/windows/jenkins/Dockerfile',
                                 label: 'windows && docker',
                                 additionalBuildArgs: '--build-arg PYTHON_DOCKER_IMAGE_BASE=python:3.8'
                             ]
@@ -388,37 +388,15 @@ pipeline {
                     }
                 }
                 stage("Run Tox"){
-//                     agent {
-//                         dockerfile {
-//                             filename 'ci/docker/python/linux/jenkins/Dockerfile'
-//                             label 'linux && docker'
-//                         }
 //                     }
                     when{
                         equals expected: true, actual: params.TEST_RUN_TOX
                     }
                     steps {
                         script{
-//                             def envs
-//                             node("linux && docker"){
-//                                 def dockerImageName = "toxhathivalidate"
-//                                 def dockerArgs = ""
-//                                 def dockerImage = docker.build(dockerImageName, "-f ci/docker/python/linux/jenkins/Dockerfile ${dockerArgs} .")
-//                                 try{
-//                                     dockerImage.inside{
-//                                         envs = tox.getToxEnvs()
-//                                     }
-//                                 } finally {
-//                                     echo "finally ${dockerImage.id}"
-//                                     sh(label: "Removing image", script: "docker image rm ${dockerImage.id}")
-//                                 }
-//                             }
-//                             echo "Got ${envs}"
-                            def jobs = tox.getToxTestsParallel("Linux", "linux && docker", "ci/docker/python/linux/tox/Dockerfile", "--build-arg PIP_EXTRA_INDEX_URL --build-arg PIP_INDEX_URL")
+                            def jobs = tox.getToxTestsParallel("Tox Linux", "linux && docker", "ci/docker/python/linux/tox/Dockerfile", "--build-arg PIP_EXTRA_INDEX_URL --build-arg PIP_INDEX_URL") +  tox.getToxTestsParallel("Tox Windows", "windows && docker", "ci/docker/windows/tox/Dockerfile", "--build-arg PIP_EXTRA_INDEX_URL --build-arg PIP_INDEX_URL --build-arg CHOCOLATEY_SOURCE")
                             parallel(jobs)
                         }
-//                         get_tox_jobs()
-//                         sh "tox --workdir .tox -vv -e py"
                     }
                 }
                 stage("MyPy"){
