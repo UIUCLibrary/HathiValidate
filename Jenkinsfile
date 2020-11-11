@@ -402,6 +402,7 @@ pipeline {
                             def envs
                             node("linux && docker"){
                                 def dockerImageName = "toxhathivalidate"
+                                def dockerArgs = ""
                                 def dockerImage = docker.build(dockerImageName, "-f ci/docker/python/linux/Dockerfile ${dockerArgs} .")
                                 dockerImage.inside{
                                     envs = tox.getToxEnvs()
