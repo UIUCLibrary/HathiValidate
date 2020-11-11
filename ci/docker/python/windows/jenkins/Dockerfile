@@ -1,5 +1,6 @@
 # escape=`
-ARG PYTHON_DOCKER_IMAGE_BASE=python:3.7
+ARG PYTHON_VERSION=3.7
+ARG PYTHON_DOCKER_IMAGE_BASE=python:${PYTHON_VERSION}
 FROM ${PYTHON_DOCKER_IMAGE_BASE} as wheel_builder
 ADD requirements.txt ci/docker/python/shared/requirements-ci.txt c:/tmp/
 RUN python -m pip install --upgrade pip ; `
