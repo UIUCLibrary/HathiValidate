@@ -1,7 +1,10 @@
 """DS Hathi Trust Validate
 
-.. deprecated:: version 0.3.6
+.. deprecated:: 0.3.6
    No longer supporting cx_freeze standalone builds
+
+.. versionchanged:: 0.3.6
+   Package metadata no longer evaluated at import time
 
 """
 
