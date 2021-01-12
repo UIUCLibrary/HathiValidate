@@ -6,14 +6,24 @@ import sys
 import os
 
 from hathi_validate import package, process, configure_logging, report, validator, manifest
-import hathi_validate
+
+try:
+    from importlib import metadata
+except ImportError:
+    import importlib_metadata as metadata  # type: ignore
+
 
 def get_parser():
     parser = argparse.ArgumentParser()
+    try:
+        version = metadata.version("hathiValidate")
+    except metadata.PackageNotFoundError:
+        version = "dev"
     parser.add_argument(
         '--version',
         action='version',
-        version=hathi_validate.__version__)
+        version=version
+    )
     parser.add_argument("path", help="Path to the hathipackages")
     parser.add_argument("--check_ocr",
                         action="store_true",

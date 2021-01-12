@@ -10,7 +10,7 @@ import hathi_validate
 from PyQt5 import QtWidgets  # type: ignore
 
 
-def get_parser():
+def Ω():
     parser = argparse.ArgumentParser()
     parser.add_argument(
         '--version',
