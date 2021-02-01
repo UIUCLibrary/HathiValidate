@@ -30,6 +30,7 @@ RUN curl --create-dirs -sSLo /tmp/sonar-scanner.zip \
         https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-$SONAR_SCANNER_VERSION-linux.zip && \
     unzip -o /tmp/sonar-scanner.zip -d /opt/sonar/ && \
     rm /tmp/sonar-scanner.zip && \
+    mkdir -p $SONAR_USER_HOME/cache && \
     mkdir -p /home/user/.sonar/cache && \
     chown user:user /home/user/.sonar/cache && \
     ln -s /opt/sonar/sonar-scanner-$SONAR_SCANNER_VERSION-linux/bin/sonar-scanner /usr/local/bin/sonar-scanner
