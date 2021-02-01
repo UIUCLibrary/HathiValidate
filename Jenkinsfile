@@ -376,9 +376,9 @@ pipeline {
                         }
                     }
                     stages{
-                        stage("Running Tests") {
+                        stage('Running Tests') {
                             parallel {
-                                stage("PyTest"){
+                                stage('PyTest'){
                                     steps{
                                         sh(
                                             label: 'Running pytest',
@@ -393,13 +393,13 @@ pipeline {
                                         }
                                     }
                                 }
-                                stage("MyPy"){
+                                stage('MyPy'){
                                     steps{
-                                        catchError(buildResult: "SUCCESS", message: 'MyPy found issues', stageResult: "UNSTABLE") {
-                                            sh(label: "Running MyPy",
-                                               script: """mkdir -p logs
+                                        catchError(buildResult: 'SUCCESS', message: 'MyPy found issues', stageResult: 'UNSTABLE') {
+                                            sh(label: 'Running MyPy',
+                                               script: '''mkdir -p logs
                                                           mypy -p hathi_validate --html-report reports/mypy_html > logs/mypy.log
-                                                          """
+                                                          '''
                                               )
                                         }
                                     }
@@ -410,11 +410,62 @@ pipeline {
                                         }
                                     }
                                 }
+                                stage('Run Flake8 Static Analysis') {
+                                    steps{
+                                        catchError(buildResult: 'SUCCESS', message: 'flake8 found some warnings', stageResult: 'UNSTABLE') {
+                                            sh(label: 'Running flake8',
+                                               script: 'flake8 hathi_validate --tee --output-file=logs/flake8.log'
+                                            )
+                                        }
+                                    }
+                                    post {
+                                        always {
+                                            stash includes: 'logs/flake8.log', name: 'FLAKE8_REPORT'
+                                            recordIssues(tools: [flake8(name: 'Flake8', pattern: 'logs/flake8.log')])
+                                        }
+                                    }
+                                }
+                                stage('Run Pylint Static Analysis') {
+                                    steps{
+                                        catchError(buildResult: 'SUCCESS', message: 'Pylint found issues', stageResult: 'UNSTABLE') {
+                                            sh(label: 'Running pylint',
+                                                script: 'pylint hathi_validate -r n --msg-template="{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}" > reports/pylint.txt'
+                                            )
+                                        }
+                                        sh(
+                                            script: 'pylint hathi_validate -r n --msg-template="{path}:{module}:{line}: [{msg_id}({symbol}), {obj}] {msg}" | tee reports/pylint_issues.txt',
+                                            label: 'Running pylint for sonarqube',
+                                            returnStatus: true
+                                        )
+                                    }
+                                    post{
+                                        always{
+                                            recordIssues(tools: [pyLint(pattern: 'reports/pylint.txt')])
+                                            stash includes: 'reports/pylint_issues.txt,reports/pylint.txt', name: 'PYLINT_REPORT'
+                                        }
+                                    }
+                                }
                                 stage("Doctest"){
                                     steps{
                                         sh "python -m sphinx -b doctest docs/source build/docs -d build/docs/doctrees -v"
                                     }
 
+                                }
+                            }
+                            post{
+                                always{
+                                    sh(label: 'Combining Coverage Data',
+                                       script: '''coverage combine
+                                                  coverage xml -o ./reports/coverage.xml
+                                                  '''
+                                    )
+                                    stash(includes: 'reports/coverage*.xml', name: 'COVERAGE_REPORT_DATA')
+                                    publishCoverage(
+                                        adapters: [
+                                                coberturaAdapter('reports/coverage.xml')
+                                            ],
+                                        sourceFileResolver: sourceFiles('STORE_ALL_BUILD')
+                                    )
                                 }
                             }
                         }
