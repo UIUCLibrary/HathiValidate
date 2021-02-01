@@ -287,6 +287,7 @@ pipeline {
         string(name: "PROJECT_NAME", defaultValue: "Hathi Validate", description: "Name given to the project")
         booleanParam(name: "TEST_RUN_TOX", defaultValue: false, description: "Run Tox Tests")
         booleanParam(name: "BUILD_PACKAGES", defaultValue: false, description: "Build Python packages")
+        booleanParam(name: 'USE_SONARQUBE', defaultValue: true, description: 'Send data test data to SonarQube')
         booleanParam(name: "DEPLOY_DEVPI", defaultValue: false, description: "Deploy to devpi on http://devpy.library.illinois.edu/DS_Jenkins/${env.BRANCH_NAME}")
         booleanParam(name: "DEPLOY_DEVPI_PRODUCTION", defaultValue: false, description: "Deploy to https://devpi.library.illinois.edu/production/release")
         booleanParam(name: "DEPLOY_ADD_TAG", defaultValue: false, description: "Tag commit to current version")
@@ -366,23 +367,69 @@ pipeline {
                 }
             }
         }
-        stage("Tests") {
-            parallel {
-                stage("PyTest"){
-                    agent {
-                        dockerfile {
-                            filename 'ci/docker/python/linux/jenkins/Dockerfile'
-                            label 'linux && docker'
-                        }
-                    }
-                    steps{
-                        sh "python -m pytest --junitxml=reports/junit-${env.NODE_NAME}-pytest.xml --junit-prefix=${env.NODE_NAME}-pytest --cov-report html:reports/coverage/ --cov=hathi_validate" //  --basetemp={envtmpdir}"
+        stage('Checks') {
+            when{
+                equals expected: true, actual: params.RUN_CHECKS
+            }
+            stages{
+                stage('Code Quality'){
+                    stages{
+                        stage("Tests") {
+                            parallel {
+                                stage("PyTest"){
+                                    agent {
+                                        dockerfile {
+                                            filename 'ci/docker/python/linux/jenkins/Dockerfile'
+                                            label 'linux && docker'
+                                        }
+                                    }
+                                    steps{
+                                        sh "python -m pytest --junitxml=reports/junit-${env.NODE_NAME}-pytest.xml --junit-prefix=${env.NODE_NAME}-pytest --cov-report html:reports/coverage/ --cov=hathi_validate" //  --basetemp={envtmpdir}"
 
-                    }
-                    post {
-                        always{
-                            junit "reports/junit-${env.NODE_NAME}-pytest.xml"
-                            publishHTML([allowMissing: true, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'reports/coverage', reportFiles: 'index.html', reportName: 'Coverage', reportTitles: ''])
+                                    }
+                                    post {
+                                        always{
+                                            junit "reports/junit-${env.NODE_NAME}-pytest.xml"
+                                            publishHTML([allowMissing: true, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'reports/coverage', reportFiles: 'index.html', reportName: 'Coverage', reportTitles: ''])
+                                        }
+                                    }
+                                }
+                                stage("MyPy"){
+                                    agent {
+                                        dockerfile {
+                                            filename 'ci/docker/python/linux/jenkins/Dockerfile'
+                                            label 'linux && docker'
+                                        }
+                                    }
+                                    steps{
+                                        catchError(buildResult: "SUCCESS", message: 'MyPy found issues', stageResult: "UNSTABLE") {
+                                            sh(label: "Running MyPy",
+                                               script: """mkdir -p logs
+                                                          mypy -p hathi_validate --html-report reports/mypy_html > logs/mypy.log
+                                                          """
+                                              )
+                                        }
+                                    }
+                                    post{
+                                        always {
+                                            publishHTML([allowMissing: true, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'reports/mypy_html', reportFiles: 'index.html', reportName: 'MyPy', reportTitles: ''])
+                                            recordIssues tools: [myPy(pattern: 'logs/mypy.log')]
+                                        }
+                                    }
+                                }
+                                stage("Doctest"){
+                                    agent {
+                                        dockerfile {
+                                            filename 'ci/docker/python/linux/jenkins/Dockerfile'
+                                            label 'linux && docker'
+                                        }
+                                    }
+                                    steps{
+                                        sh "python -m sphinx -b doctest docs/source build/docs -d build/docs/doctrees -v"
+                                    }
+
+                                }
+                            }
                         }
                     }
                 }
@@ -406,41 +453,6 @@ pipeline {
                             parallel(windowsJobs + linuxJobs)
                         }
                     }
-                }
-                stage("MyPy"){
-                    agent {
-                        dockerfile {
-                            filename 'ci/docker/python/linux/jenkins/Dockerfile'
-                            label 'linux && docker'
-                        }
-                    }
-                    steps{
-                        catchError(buildResult: "SUCCESS", message: 'MyPy found issues', stageResult: "UNSTABLE") {
-                            sh(label: "Running MyPy",
-                               script: """mkdir -p logs
-                                          mypy -p hathi_validate --html-report reports/mypy_html > logs/mypy.log
-                                          """
-                              )
-                        }
-                    }
-                    post{
-                        always {
-                            publishHTML([allowMissing: true, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'reports/mypy_html', reportFiles: 'index.html', reportName: 'MyPy', reportTitles: ''])
-                            recordIssues tools: [myPy(pattern: 'logs/mypy.log')]
-                        }
-                    }
-                }
-                stage("Doctest"){
-                    agent {
-                        dockerfile {
-                            filename 'ci/docker/python/linux/jenkins/Dockerfile'
-                            label 'linux && docker'
-                        }
-                    }
-                    steps{
-                        sh "python -m sphinx -b doctest docs/source build/docs -d build/docs/doctrees -v"
-                    }
-
                 }
             }
         }
