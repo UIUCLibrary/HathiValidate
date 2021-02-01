@@ -1,10 +1,11 @@
 behave
+coverage
+devpi-client
+flake8
+lxml
+mypy
+pylint
 pytest
 pytest-cov
-flake8
-tox
-coverage
-mypy
-devpi-client
 sphinx
-lxml
+tox

@@ -117,50 +117,39 @@ def generateToxReport(tox_env, toxResultFile){
     return reportSections.join("\n")
 }
 
-def getToxTestsParallel(envNamePrefix, label, dockerfile, dockerArgs){
+def getToxTestsParallel(args = [:]){
+    def envNamePrefix = args['envNamePrefix']
+    def label = args['label']
+    def dockerfile = args['dockerfile']
+    def dockerArgs = args['dockerArgs']
     script{
         def TOX_RESULT_FILE_NAME = "tox_result.json"
         def envs
         def originalNodeLabel
+        def dockerImageName = "${currentBuild.fullProjectName}:tox".replaceAll("-", "").replaceAll('/', "").replaceAll(' ', "").toLowerCase()
         node(label){
             originalNodeLabel = env.NODE_NAME
             checkout scm
-            def dockerImageName = "tox${currentBuild.projectName}".replaceAll("-", "").toLowerCase()
             def dockerImage = docker.build(dockerImageName, "-f ${dockerfile} ${dockerArgs} .")
-            try{
-                dockerImage.inside{
-                    envs = getToxEnvs()
-                }
-                if(isUnix()){
-                    sh(
-                        label: "Removing Docker Image used to run tox",
-                        script: "docker image ls ${dockerImageName}"
-                    )
-                } else {
-                    bat(
-                        label: "Removing Docker Image used to run tox",
-                        script: """docker image ls ${dockerImageName}
-                                   """
-                    )
-                }
-            } finally {
-                if(isUnix()){
+            dockerImage.inside{
+                envs = getToxEnvs()
+            }
+            if(isUnix()){
                 sh(
-                        label: "Removing Docker Image used to run tox",
-                        script: "docker image rm ${dockerImage.id}"
-                    )
-                } else {
-                    bat(
-                        label: "Removing Docker Image used to run tox",
-                        script: "docker image rm ${dockerImage.id}"
-                    )
-                }
+                    label: "Removing Docker Image used to run tox",
+                    script: "docker image ls ${dockerImageName}"
+                )
+            } else {
+                bat(
+                    label: "Removing Docker Image used to run tox",
+                    script: """docker image ls ${dockerImageName}
+                               """
+                )
             }
         }
         echo "Found tox environments for ${envs.join(', ')}"
         def dockerImageForTesting
         node(originalNodeLabel){
-            def dockerImageName = "tox"
             checkout scm
             dockerImageForTesting = docker.build(dockerImageName, "-f ${dockerfile} ${dockerArgs} . ")
 
@@ -187,12 +176,12 @@ def getToxTestsParallel(envNamePrefix, label, dockerfile, dockerArgs){
                                 if(isUnix()){
                                     sh(
                                         label: "Running Tox with ${tox_env} environment",
-                                        script: "tox  -vv --parallel--safe-build --result-json=${TOX_RESULT_FILE_NAME} -e $tox_env"
+                                        script: "tox -v --parallel--safe-build --result-json=${TOX_RESULT_FILE_NAME} -e ${tox_env}"
                                     )
                                 } else {
                                     bat(
                                         label: "Running Tox with ${tox_env} environment",
-                                        script: "tox  -vv --parallel--safe-build --result-json=${TOX_RESULT_FILE_NAME} -e $tox_env "
+                                        script: "tox -v --parallel--safe-build --result-json=${TOX_RESULT_FILE_NAME} -e ${tox_env}"
                                     )
                                 }
                             } catch (e){

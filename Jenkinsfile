@@ -3,6 +3,13 @@
 import org.ds.*
 
 @Library(["devpi", "PythonHelpers"]) _
+
+SONARQUBE_CREDENTIAL_ID = 'sonartoken-hathivalidate'
+
+defaultParameterValues = [
+    USE_SONARQUBE: false
+]
+
 def remove_from_devpi(devpiExecutable, pkgName, pkgVersion, devpiIndex, devpiUsername, devpiPassword){
     script {
             try {
@@ -270,13 +277,65 @@ def get_package_name(stashName, metadataFile){
     }
 }
 
-def tox
-
-node(){
-    checkout scm
-    tox = load("ci/jenkins/scripts/tox.groovy")
+def startup(){
+    def SONARQUBE_CREDENTIAL_ID = SONARQUBE_CREDENTIAL_ID
+    parallel(
+        [
+            failFast: true,
+            'Checking sonarqube Settings': {
+                node(){
+                    try{
+                        withCredentials([string(credentialsId: SONARQUBE_CREDENTIAL_ID, variable: 'dddd')]) {
+                            echo 'Found credentials for sonarqube'
+                        }
+                        defaultParameterValues.USE_SONARQUBE = true
+                    } catch(e){
+                        echo "Setting defaultValue for USE_SONARQUBE to false. Reason: ${e}"
+                        defaultParameterValues.USE_SONARQUBE = false
+                    }
+                }
+            },
+            'Getting Distribution Info': {
+                node('linux && docker') {
+                    timeout(2){
+                        ws{
+                            checkout scm
+                            try{
+                                docker.image('python:3.8').inside {
+                                    sh(
+                                       label: 'Running setup.py with dist_info',
+                                       script: '''python --version
+                                                  python setup.py dist_info
+                                               '''
+                                    )
+                                    stash includes: '*.dist-info/**', name: 'DIST-INFO'
+                                    archiveArtifacts artifacts: '*.dist-info/**'
+                                }
+                            } finally{
+                                deleteDir()
+                            }
+                        }
+                    }
+                }
+            }
+        ]
+    )
 }
-
+def get_props(){
+    stage('Reading Package Metadata'){
+        node(){
+            unstash 'DIST-INFO'
+            def metadataFile = findFiles( glob: '*.dist-info/METADATA')[0]
+            def metadata = readProperties(interpolate: true, file: metadataFile.path )
+            echo """Version = ${metadata.Version}
+Name = ${metadata.Name}
+"""
+            return metadata
+        }
+    }
+}
+startup()
+def props = get_props()
 pipeline {
     agent none
 
@@ -285,8 +344,10 @@ pipeline {
     }
     parameters {
         string(name: "PROJECT_NAME", defaultValue: "Hathi Validate", description: "Name given to the project")
-        booleanParam(name: "TEST_RUN_TOX", defaultValue: false, description: "Run Tox Tests")
+        booleanParam(name: 'RUN_CHECKS', defaultValue: true, description: 'Run checks on code')
+        booleanParam(name: 'TEST_RUN_TOX', defaultValue: false, description: 'Run Tox Tests')
         booleanParam(name: "BUILD_PACKAGES", defaultValue: false, description: "Build Python packages")
+        booleanParam(name: 'USE_SONARQUBE', defaultValue: defaultParameterValues.USE_SONARQUBE, description: 'Send data test data to SonarQube')
         booleanParam(name: "DEPLOY_DEVPI", defaultValue: false, description: "Deploy to devpi on http://devpy.library.illinois.edu/DS_Jenkins/${env.BRANCH_NAME}")
         booleanParam(name: "DEPLOY_DEVPI_PRODUCTION", defaultValue: false, description: "Deploy to https://devpi.library.illinois.edu/production/release")
         booleanParam(name: "DEPLOY_ADD_TAG", defaultValue: false, description: "Tag commit to current version")
@@ -295,7 +356,7 @@ pipeline {
         string(name: 'URL_SUBFOLDER', defaultValue: "hathi_validate", description: 'The directory that the docs should be saved under')
     }
     stages {
-        stage("Getting Distribution Info"){
+        stage("Build Documentation"){
             agent {
                 dockerfile {
                     filename 'ci/docker/python/linux/jenkins/Dockerfile'
@@ -303,86 +364,210 @@ pipeline {
                 }
             }
             steps{
-                timeout(4){
-                    sh "python setup.py dist_info"
-                }
+                echo "Building docs on ${env.NODE_NAME}"
+                sh(script: """mkdir -p logs
+                              python -m sphinx -b html docs/source build/docs/html -d build/docs/doctrees -w logs/build_sphinx.log
+                           """
+                )
             }
             post{
+                always {
+                    archiveArtifacts artifacts: "logs/build_sphinx.log", allowEmptyArchive: true
+                    script{
+                        zip archive: true, dir: 'build/docs/html', glob: '', zipFile: "dist/${props.Name}-${props.Version}.doc.zip"
+                        stash includes: 'dist/*.doc.zip,build/docs/html/**', name: 'DOCUMENTATION'
+                    }
+                }
                 success{
-                    stash includes: "HathiValidate.dist-info/**", name: 'DIST-INFO'
-                    archiveArtifacts artifacts: "HathiValidate.dist-info/**"
+                    publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'build/docs/html', reportFiles: 'index.html', reportName: 'Documentation', reportTitles: ''])
+                }
+                cleanup{
+                    cleanWs notFailBuild: true
                 }
             }
         }
-        stage("Build"){
-            parallel{
-                stage("Python Package"){
+        stage('Checks') {
+            when{
+                equals expected: true, actual: params.RUN_CHECKS
+            }
+            stages{
+                stage('Code Quality'){
                     agent {
                         dockerfile {
                             filename 'ci/docker/python/linux/jenkins/Dockerfile'
                             label 'linux && docker'
                         }
                     }
-                    steps {
-                        timeout(4){
-                            sh "python setup.py build -b build"
-                        }
-                    }
-                }
-                stage("Docs"){
-                    agent {
-                        dockerfile {
-                            filename 'ci/docker/python/linux/jenkins/Dockerfile'
-                            label 'linux && docker'
-                        }
-                    }
-                    environment{
-                        PKG_NAME = get_package_name("DIST-INFO", "HathiValidate.dist-info/METADATA")
-                        PKG_VERSION = get_package_version("DIST-INFO", "HathiValidate.dist-info/METADATA")
-                    }
-                    steps{
-                        echo "Building docs on ${env.NODE_NAME}"
-                        sh(script: """mkdir -p logs
-                                      python -m sphinx -b html docs/source build/docs/html -d build/docs/doctrees -w logs/build_sphinx.log
-                                   """
-                        )
-                    }
-                    post{
-                        always {
-                            archiveArtifacts artifacts: "logs/build_sphinx.log", allowEmptyArchive: true
-                            script{
-                                def DOC_ZIP_FILENAME = "${env.PKG_NAME}-${env.PKG_VERSION}.doc.zip"
-                                zip archive: true, dir: "build/docs/html", glob: '', zipFile: "dist/${DOC_ZIP_FILENAME}"
-                                stash includes: "build/docs/**,dist/${DOC_ZIP_FILENAME}", name: "DOCUMENTATION"
+                    stages{
+                        stage('Set up Tests') {
+                            steps{
+                                sh(label: "Adding logs and reports directories",
+                                   script: '''
+                                        mkdir -p logs
+                                        mkdir -p reports
+                                        '''
+                                   )
                             }
                         }
-                        success{
-                            publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'build/docs/html', reportFiles: 'index.html', reportName: 'Documentation', reportTitles: ''])
-                        }
-                        cleanup{
-                            cleanWs notFailBuild: true
-                        }
-                    }
-                }
-            }
-        }
-        stage("Tests") {
-            parallel {
-                stage("PyTest"){
-                    agent {
-                        dockerfile {
-                            filename 'ci/docker/python/linux/jenkins/Dockerfile'
-                            label 'linux && docker'
-                        }
-                    }
-                    steps{
-                        sh "python -m pytest --junitxml=reports/junit-${env.NODE_NAME}-pytest.xml --junit-prefix=${env.NODE_NAME}-pytest --cov-report html:reports/coverage/ --cov=hathi_validate" //  --basetemp={envtmpdir}"
+                        stage('Running Tests') {
+                            parallel {
+                                stage('PyTest'){
+                                    steps{
+                                        sh(
+                                            label: 'Running pytest',
+                                            script: 'coverage run --parallel-mode --source=hathi_validate -m pytest --junitxml=./reports/pytest-junit.xml -p no:cacheprovider'
+                                        )
 
-                    }
-                    post {
-                        always{
-                            junit "reports/junit-${env.NODE_NAME}-pytest.xml"
-                            publishHTML([allowMissing: true, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'reports/coverage', reportFiles: 'index.html', reportName: 'Coverage', reportTitles: ''])
+                                    }
+                                    post {
+                                        always{
+                                            junit 'reports/pytest-junit.xml'
+                                            stash includes: 'reports/pytest-junit.xml', name: 'PYTEST_UNIT_TEST_RESULTS'
+                                        }
+                                    }
+                                }
+                                stage('MyPy'){
+                                    steps{
+                                        catchError(buildResult: 'SUCCESS', message: 'MyPy found issues', stageResult: 'UNSTABLE') {
+                                            sh(label: 'Running MyPy',
+                                               script: '''mypy -p hathi_validate --html-report reports/mypy_html --cache-dir=/dev/null > logs/mypy.log'''
+                                              )
+                                        }
+                                    }
+                                    post{
+                                        always {
+                                            publishHTML([allowMissing: true, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'reports/mypy_html', reportFiles: 'index.html', reportName: 'MyPy', reportTitles: ''])
+                                            recordIssues tools: [myPy(pattern: 'logs/mypy.log')]
+                                        }
+                                    }
+                                }
+                                stage('Flake8') {
+                                    steps{
+                                        catchError(buildResult: 'SUCCESS', message: 'flake8 found some warnings', stageResult: 'UNSTABLE') {
+                                            sh(label: 'Running flake8',
+                                               script: 'flake8 hathi_validate --tee --output-file=logs/flake8.log'
+                                            )
+                                        }
+                                    }
+                                    post {
+                                        always {
+                                            stash includes: 'logs/flake8.log', name: 'FLAKE8_REPORT'
+                                            recordIssues(tools: [flake8(name: 'Flake8', pattern: 'logs/flake8.log')])
+                                        }
+                                    }
+                                }
+                                stage('Pylint') {
+                                    steps{
+                                        catchError(buildResult: 'SUCCESS', message: 'Pylint found issues', stageResult: 'UNSTABLE') {
+                                            sh(label: 'Running pylint',
+                                                script: 'pylint hathi_validate -r n --msg-template="{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}" --persistent=no > reports/pylint.txt'
+                                            )
+                                        }
+                                        sh(
+                                            script: 'pylint hathi_validate -r n --msg-template="{path}:{module}:{line}: [{msg_id}({symbol}), {obj}] {msg}" --persistent=no | tee reports/pylint_issues.txt',
+                                            label: 'Running pylint for sonarqube',
+                                            returnStatus: true
+                                        )
+                                    }
+                                    post{
+                                        always{
+                                            recordIssues(tools: [pyLint(pattern: 'reports/pylint.txt')])
+                                            stash includes: 'reports/pylint_issues.txt,reports/pylint.txt', name: 'PYLINT_REPORT'
+                                        }
+                                    }
+                                }
+                                stage("Doctest"){
+                                    steps{
+                                        sh "python -m sphinx -b doctest docs/source build/docs -d build/docs/doctrees -v"
+                                    }
+
+                                }
+                            }
+                            post{
+                                always{
+                                    sh(label: 'Combining Coverage Data',
+                                       script: '''coverage combine
+                                                  coverage xml -o ./reports/coverage.xml
+                                                  '''
+                                    )
+                                    stash(includes: 'reports/coverage*.xml', name: 'COVERAGE_REPORT_DATA')
+                                    publishCoverage(
+                                        adapters: [
+                                                coberturaAdapter('reports/coverage.xml')
+                                            ],
+                                        sourceFileResolver: sourceFiles('STORE_ALL_BUILD')
+                                    )
+                                }
+                                cleanup{
+                                    cleanWs(
+                                        deleteDirs: true,
+                                        patterns: [
+                                            [pattern: 'logs/', type: 'INCLUDE'],
+                                            [pattern: 'reports/', type: 'INCLUDE'],
+                                            [pattern: '.coverage.*/', type: 'INCLUDE'],
+                                            [pattern: '**/__pycache__/', type: 'INCLUDE'],
+                                        ]
+                                    )
+                                }
+                            }
+                        }
+                        stage('Run Sonarqube Analysis'){
+                            options{
+                                lock('hathivalidate-sonarscanner')
+                            }
+                            when{
+                                equals expected: true, actual: params.USE_SONARQUBE
+                                beforeAgent true
+                                beforeOptions true
+                            }
+                            steps{
+                                script{
+                                    def sonarqube = load('ci/jenkins/scripts/sonarqube.groovy')
+                                    def stashes = [
+                                        'COVERAGE_REPORT_DATA',
+                                        'PYTEST_UNIT_TEST_RESULTS',
+                                        'PYLINT_REPORT',
+                                        'FLAKE8_REPORT'
+                                    ]
+                                    def sonarqubeConfig = [
+                                        installationName: 'sonarcloud',
+                                        credentialsId: SONARQUBE_CREDENTIAL_ID,
+                                    ]
+                                    if (env.CHANGE_ID){
+                                        sonarqube.submitToSonarcloud(
+                                            reportStashes: stashes,
+                                            artifactStash: 'sonarqube artifacts',
+                                            sonarqube: sonarqubeConfig,
+                                            pullRequest: [
+                                                source: env.CHANGE_ID,
+                                                destination: env.BRANCH_NAME,
+                                            ],
+                                            package: [
+                                                version: props.Version,
+                                                name: props.Name
+                                            ],
+                                        )
+                                    } else {
+                                        sonarqube.submitToSonarcloud(
+                                            reportStashes: stashes,
+                                            artifactStash: 'sonarqube artifacts',
+                                            sonarqube: sonarqubeConfig,
+                                            package: [
+                                                version: props.Version,
+                                                name: props.Name
+                                            ]
+                                        )
+                                    }
+                                }
+                            }
+                            post {
+                                always{
+                                    node(''){
+                                        unstash 'sonarqube artifacts'
+                                        recordIssues(tools: [sonarQube(pattern: 'reports/sonar-report.json')])
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -392,55 +577,37 @@ pipeline {
                     }
                     steps {
                         script{
+                            def tox
+
+                            node(){
+                                checkout scm
+                                tox = load("ci/jenkins/scripts/tox.groovy")
+                            }
+
                             def windowsJobs
                             def linuxJobs
                             parallel(
                                 "Scanning Tox Environments for Linux":{
-                                    linuxJobs = tox.getToxTestsParallel("Tox Linux", "linux && docker", "ci/docker/python/linux/tox/Dockerfile", "--build-arg PIP_EXTRA_INDEX_URL --build-arg PIP_INDEX_URL")
+                                    linuxJobs = tox.getToxTestsParallel(
+                                                envNamePrefix: 'Tox Linux',
+                                                label: 'linux && docker',
+                                                dockerfile: 'ci/docker/python/linux/tox/Dockerfile',
+                                                dockerArgs: '--build-arg PIP_EXTRA_INDEX_URL --build-arg PIP_INDEX_UR'
+                                            )
                                 },
                                 "Scanning Tox Environments for Windows":{
-                                    windowsJobs = tox.getToxTestsParallel("Tox Windows", "windows && docker", "ci/docker/python/windows/tox/Dockerfile", "--build-arg PIP_EXTRA_INDEX_URL --build-arg PIP_INDEX_URL --build-arg CHOCOLATEY_SOURCE")
+                                    windowsJobs = tox.getToxTestsParallel(
+                                                envNamePrefix: 'Tox Windows',
+                                                label: 'windows && docker',
+                                                dockerfile: 'ci/docker/python/windows/tox/Dockerfile',
+                                                dockerArgs: '--build-arg PIP_EXTRA_INDEX_URL --build-arg PIP_INDEX_URL --build-arg CHOCOLATEY_SOURCE'
+                                            )
                                 },
                                 failFast: true
                             )
                             parallel(windowsJobs + linuxJobs)
                         }
                     }
-                }
-                stage("MyPy"){
-                    agent {
-                        dockerfile {
-                            filename 'ci/docker/python/linux/jenkins/Dockerfile'
-                            label 'linux && docker'
-                        }
-                    }
-                    steps{
-                        catchError(buildResult: "SUCCESS", message: 'MyPy found issues', stageResult: "UNSTABLE") {
-                            sh(label: "Running MyPy",
-                               script: """mkdir -p logs
-                                          mypy -p hathi_validate --html-report reports/mypy_html > logs/mypy.log
-                                          """
-                              )
-                        }
-                    }
-                    post{
-                        always {
-                            publishHTML([allowMissing: true, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'reports/mypy_html', reportFiles: 'index.html', reportName: 'MyPy', reportTitles: ''])
-                            recordIssues tools: [myPy(pattern: 'logs/mypy.log')]
-                        }
-                    }
-                }
-                stage("Doctest"){
-                    agent {
-                        dockerfile {
-                            filename 'ci/docker/python/linux/jenkins/Dockerfile'
-                            label 'linux && docker'
-                        }
-                    }
-                    steps{
-                        sh "python -m sphinx -b doctest docs/source build/docs -d build/docs/doctrees -v"
-                    }
-
                 }
             }
         }
@@ -683,10 +850,7 @@ pipeline {
                                   }
                                 }
                                 steps{
-                                    unstash "DIST-INFO"
                                     script{
-                                        def props = readProperties interpolate: true, file: "HathiValidate.dist-info/METADATA"
-
                                         if(isUnix()){
                                             sh(
                                                 label: "Checking Python version",
@@ -740,8 +904,6 @@ pipeline {
                     }
                     steps {
                         script {
-                            unstash "DIST-INFO"
-                            def props = readProperties interpolate: true, file: 'HathiValidate.dist-info/METADATA'
                             try{
                                 timeout(30) {
                                     input "Release ${props.Name} ${props.Version} (https://devpi.library.illinois.edu/DS_Jenkins/${env.BRANCH_NAME}_staging/${props.Name}/${props.Version}) to DevPi Production? "
@@ -760,8 +922,6 @@ pipeline {
                         checkout scm
                         script{
                             docker.build("hathivalidate:devpi",'-f ./ci/docker/python/linux/jenkins/Dockerfile --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g) .').inside{
-                                unstash "DIST-INFO"
-                                def props = readProperties interpolate: true, file: 'HathiValidate.dist-info/METADATA'
                                 sh(
                                     label: "Connecting to DevPi Server",
                                     script: 'devpi use https://devpi.library.illinois.edu --clientdir ${WORKSPACE}/devpi && devpi login $DEVPI_USR --password $DEVPI_PSW --clientdir ${WORKSPACE}/devpi'
@@ -776,8 +936,6 @@ pipeline {
                     node('linux && docker') {
                        script{
                             docker.build("hathivalidate:devpi",'-f ./ci/docker/python/linux/jenkins/Dockerfile --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g) .').inside{
-                                unstash "DIST-INFO"
-                                def props = readProperties interpolate: true, file: 'HathiValidate.dist-info/METADATA'
                                 sh(
                                     label: "Connecting to DevPi Server",
                                     script: 'devpi use https://devpi.library.illinois.edu --clientdir ${WORKSPACE}/devpi && devpi login $DEVPI_USR --password $DEVPI_PSW --clientdir ${WORKSPACE}/devpi'
@@ -818,9 +976,7 @@ pipeline {
                           }
                     }
                     steps{
-                        unstash "DIST-INFO"
                         script{
-                            def props = readProperties interpolate: true, file: "HathiValidate.dist-info/METADATA"
                             def commitTag = input message: 'git commit', parameters: [string(defaultValue: "v${props.Version}", description: 'Version to use a a git tag', name: 'Tag', trim: false)]
                             withCredentials([usernamePassword(credentialsId: gitCreds, passwordVariable: 'password', usernameVariable: 'username')]) {
                                 sh(label: "Tagging ${commitTag}",
