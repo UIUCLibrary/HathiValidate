@@ -31,7 +31,7 @@ RUN curl --create-dirs -sSLo /tmp/sonar-scanner.zip \
     unzip -o /tmp/sonar-scanner.zip -d /opt/sonar/ && \
     rm /tmp/sonar-scanner.zip && \
     mkdir -p $SONAR_USER_HOME/cache && \
-    chmod -R a+rw $SONAR_USER_HOME/cache &&\
+    chmod -R 777 "${SONAR_USER_HOME}" &&\
     mkdir -p /home/user/.sonar/cache && \
     chown user:user /home/user/.sonar/cache && \
     ln -s /opt/sonar/sonar-scanner-$SONAR_SCANNER_VERSION-linux/bin/sonar-scanner /usr/local/bin/sonar-scanner
