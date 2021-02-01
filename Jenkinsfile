@@ -401,7 +401,12 @@ pipeline {
                     stages{
                         stage('Set up Tests') {
                             steps{
-                                sh "mkdir -p logs"
+                                sh(label: "Adding logs and reports directories",
+                                   script: '''
+                                        mkdir -p logs
+                                        mkdir -p reports
+                                        '''
+                                   )
                             }
                         }
                         stage('Running Tests') {
