@@ -399,6 +399,11 @@ pipeline {
                         }
                     }
                     stages{
+                        stage('Set up Tests') {
+                            steps{
+                                sh "mkdir -p logs"
+                            }
+                        }
                         stage('Running Tests') {
                             parallel {
                                 stage('PyTest'){
@@ -420,9 +425,7 @@ pipeline {
                                     steps{
                                         catchError(buildResult: 'SUCCESS', message: 'MyPy found issues', stageResult: 'UNSTABLE') {
                                             sh(label: 'Running MyPy',
-                                               script: '''mkdir -p logs
-                                                          mypy -p hathi_validate --html-report reports/mypy_html --cache-dir=/dev/null > logs/mypy.log
-                                                          '''
+                                               script: '''mypy -p hathi_validate --html-report reports/mypy_html --cache-dir=/dev/null > logs/mypy.log'''
                                               )
                                         }
                                     }
