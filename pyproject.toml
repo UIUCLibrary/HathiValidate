@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=50.3.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.coverage.run]
+branch = true
+source = ["hathi_validate"]
+relative_files = true
+
+[tool.coverage.paths]
+source = ["hathi_validate"]
+
+[tool.coverage.report]
+exclude_lines =[
+    "if TYPE_CHECKING:"
+]
