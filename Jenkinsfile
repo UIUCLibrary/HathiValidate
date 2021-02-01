@@ -382,14 +382,14 @@ pipeline {
                                     steps{
                                         sh(
                                             label: 'Running pytest',
-                                            script: 'coverage run --parallel-mode --source=hathi_validate -m pytest --junitxml=./reports/pytest/pytest-junit.xml'
+                                            script: 'coverage run --parallel-mode --source=hathi_validate -m pytest --junitxml=./reports/pytest-junit.xml'
                                         )
 
                                     }
                                     post {
                                         always{
-                                            junit 'reports/pytest/pytest-junit.xml'
-                                            stash includes: 'reports/tests/pytest/*.xml', name: 'PYTEST_UNIT_TEST_RESULTS'
+                                            junit 'reports/pytest-junit.xml'
+                                            stash includes: 'reports/pytest-junit.xml', name: 'PYTEST_UNIT_TEST_RESULTS'
                                         }
                                     }
                                 }
