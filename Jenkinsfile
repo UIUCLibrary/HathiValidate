@@ -369,34 +369,31 @@ pipeline {
             }
             stages{
                 stage('Code Quality'){
+                    agent {
+                        dockerfile {
+                            filename 'ci/docker/python/linux/jenkins/Dockerfile'
+                            label 'linux && docker'
+                        }
+                    }
                     stages{
-                        stage("Tests") {
+                        stage("Running Tests") {
                             parallel {
                                 stage("PyTest"){
-                                    agent {
-                                        dockerfile {
-                                            filename 'ci/docker/python/linux/jenkins/Dockerfile'
-                                            label 'linux && docker'
-                                        }
-                                    }
                                     steps{
-                                        sh "python -m pytest --junitxml=reports/junit-${env.NODE_NAME}-pytest.xml --junit-prefix=${env.NODE_NAME}-pytest --cov-report html:reports/coverage/ --cov=hathi_validate" //  --basetemp={envtmpdir}"
+                                        sh(
+                                            label: 'Running pytest',
+                                            script: 'coverage run --parallel-mode --source=hathi_validate -m pytest --junitxml=./reports/pytest/pytest-junit.xml'
+                                        )
 
                                     }
                                     post {
                                         always{
-                                            junit "reports/junit-${env.NODE_NAME}-pytest.xml"
-                                            publishHTML([allowMissing: true, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'reports/coverage', reportFiles: 'index.html', reportName: 'Coverage', reportTitles: ''])
+                                            junit 'reports/pytest/pytest-junit.xml'
+                                            stash includes: 'reports/tests/pytest/*.xml', name: 'PYTEST_UNIT_TEST_RESULTS'
                                         }
                                     }
                                 }
                                 stage("MyPy"){
-                                    agent {
-                                        dockerfile {
-                                            filename 'ci/docker/python/linux/jenkins/Dockerfile'
-                                            label 'linux && docker'
-                                        }
-                                    }
                                     steps{
                                         catchError(buildResult: "SUCCESS", message: 'MyPy found issues', stageResult: "UNSTABLE") {
                                             sh(label: "Running MyPy",
@@ -414,12 +411,6 @@ pipeline {
                                     }
                                 }
                                 stage("Doctest"){
-                                    agent {
-                                        dockerfile {
-                                            filename 'ci/docker/python/linux/jenkins/Dockerfile'
-                                            label 'linux && docker'
-                                        }
-                                    }
                                     steps{
                                         sh "python -m sphinx -b doctest docs/source build/docs -d build/docs/doctrees -v"
                                     }
