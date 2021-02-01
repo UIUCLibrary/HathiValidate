@@ -24,12 +24,11 @@ RUN groupadd -g $GROUP_ID user && \
     useradd -u $USER_ID -s /bin/sh -m -d /home/user -g user user
 
 ENV SONAR_SCANNER_VERSION=4.4.0.2170
-ENV SONAR_SCANNER_HOME=/var/opt/sonar/
+ARG SONAR_SCANNER_HOME=/opt/sonar
 RUN curl --create-dirs -sSLo /tmp/sonar-scanner.zip \
         https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-$SONAR_SCANNER_VERSION-linux.zip && \
     unzip -o /tmp/sonar-scanner.zip -d /opt/sonar/ && \
     rm /tmp/sonar-scanner.zip && \
-    mkdir -p $SONAR_SCANNER_HOME/cache && \
     mkdir -p /home/user/.sonar/cache && \
     chown user:user /home/user/.sonar/cache && \
     ln -s /opt/sonar/sonar-scanner-$SONAR_SCANNER_VERSION-linux/bin/sonar-scanner /usr/local/bin/sonar-scanner
