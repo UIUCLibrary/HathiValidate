@@ -630,8 +630,9 @@ pipeline {
                         }
                     }
                     steps{
-                        sh "python setup.py sdist -d dist bdist_wheel -d dist"
-
+                        sh(label:'Building Python packages',
+                           script: 'python -m pep517.build .'
+                           )
                     }
                     post{
                         always{
@@ -647,6 +648,9 @@ pipeline {
                     }
                 }
                 stage('Testing All Packages') {
+                    when{
+                        equals expected: true, actual: params.TEST_PACKAGES
+                    }
                     matrix{
                         axes{
                             axis {
