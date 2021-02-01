@@ -396,6 +396,7 @@ pipeline {
                         dockerfile {
                             filename 'ci/docker/python/linux/jenkins/Dockerfile'
                             label 'linux && docker'
+                            args '--mount source=sonar-cache-hathi_validate,target=/opt/sonar/.sonar/cache'
                         }
                     }
                     stages{
