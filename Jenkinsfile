@@ -347,6 +347,7 @@ pipeline {
         booleanParam(name: 'RUN_CHECKS', defaultValue: true, description: 'Run checks on code')
         booleanParam(name: 'TEST_RUN_TOX', defaultValue: false, description: 'Run Tox Tests')
         booleanParam(name: "BUILD_PACKAGES", defaultValue: false, description: "Build Python packages")
+        booleanParam(name: "TEST_PACKAGES", defaultValue: true, description: "Build Python packages")
         booleanParam(name: 'USE_SONARQUBE', defaultValue: defaultParameterValues.USE_SONARQUBE, description: 'Send data test data to SonarQube')
         booleanParam(name: "DEPLOY_DEVPI", defaultValue: false, description: "Deploy to devpi on http://devpy.library.illinois.edu/DS_Jenkins/${env.BRANCH_NAME}")
         booleanParam(name: "DEPLOY_DEVPI_PRODUCTION", defaultValue: false, description: "Deploy to https://devpi.library.illinois.edu/production/release")
