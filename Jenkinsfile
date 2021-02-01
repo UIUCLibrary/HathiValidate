@@ -458,6 +458,20 @@ pipeline {
                                         }
                                     }
                                 }
+                                stage('Behave') {
+                                    steps {
+                                        catchError(buildResult: 'UNSTABLE', message: 'Did not pass all Behave BDD tests', stageResult: "UNSTABLE") {
+                                            sh(
+                                                script: 'coverage run --parallel-mode --source=hathi_validate -m behave --junit --junit-directory reports/tests/behave'
+                                            )
+                                        }
+                                    }
+                                    post {
+                                        always {
+                                            junit 'reports/tests/behave/*.xml'
+                                        }
+                                    }
+                                }
                                 stage('Pylint') {
                                     steps{
                                         catchError(buildResult: 'SUCCESS', message: 'Pylint found issues', stageResult: 'UNSTABLE') {
