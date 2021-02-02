@@ -354,9 +354,9 @@ pipeline {
     }
     parameters {
         string(name: "PROJECT_NAME", defaultValue: "Hathi Validate", description: "Name given to the project")
-        booleanParam(name: 'RUN_CHECKS', defaultValue: true, description: 'Run checks on code')
+        booleanParam(name: 'RUN_CHECKS', defaultValue: false, description: 'Run checks on code')
         booleanParam(name: 'TEST_RUN_TOX', defaultValue: false, description: 'Run Tox Tests')
-        booleanParam(name: "BUILD_PACKAGES", defaultValue: false, description: "Build Python packages")
+        booleanParam(name: "BUILD_PACKAGES", defaultValue: true, description: "Build Python packages")
         booleanParam(name: "TEST_PACKAGES", defaultValue: true, description: "Build Python packages")
         booleanParam(name: 'TEST_PACKAGES_ON_MAC', defaultValue: false, description: 'Test Python packages on Mac')
         booleanParam(name: 'USE_SONARQUBE', defaultValue: defaultParameterValues.USE_SONARQUBE, description: 'Send data test data to SonarQube')
@@ -811,125 +811,6 @@ pipeline {
                         }
                     }
                 }
-//                 stage('Testing All Packages') {
-//                     when{
-//                         equals expected: true, actual: params.TEST_PACKAGES
-//                     }
-//                     matrix{
-//                         axes{
-//                             axis {
-//                                 name "PLATFORM"
-//                                 values(
-//                                     "windows",
-//                                     "linux"
-//                                 )
-//                             }
-//                             axis {
-//                                 name "PYTHON_VERSION"
-//                                 values(
-//                                     "3.7",
-//                                     "3.8",
-//                                     "3.9",
-//                                 )
-//                             }
-//                         }
-//                         agent {
-//                             dockerfile {
-//                                 filename "ci/docker/python/${PLATFORM}/jenkins/Dockerfile"
-//                                 label "${PLATFORM} && docker"
-//                                 additionalBuildArgs "--build-arg PYTHON_VERSION=${PYTHON_VERSION} --build-arg PIP_EXTRA_INDEX_URL"
-//                             }
-//                         }
-//                         stages{
-//                             stage("Testing Package sdist"){
-//                                 options {
-//                                     warnError('Package Testing Failed')
-//                                 }
-//                                 steps{
-//                                     unstash "sdist"
-//                                     script{
-//                                         def toxEnv = "py${PYTHON_VERSION.replace('.', '')}"
-//                                         findFiles(glob: "**/*.tar.gz").each{
-//                                             timeout(15){
-//                                                 if(PLATFORM == "windows"){
-//                                                     bat(
-//                                                         script: """python --version
-//                                                                    tox --installpkg=${it.path} -e ${toxEnv} -vv
-//                                                                    """,
-//                                                         label: "Testing ${it}"
-//                                                     )
-//                                                 } else {
-//                                                     sh(
-//                                                         script: """python --version
-//                                                                    tox --installpkg=${it.path} -e ${toxEnv} -vv
-//                                                                    """,
-//                                                         label: "Testing ${it}"
-//                                                     )
-//                                                 }
-//                                             }
-//                                         }
-//                                     }
-//                                 }
-//                                 post{
-//                                     cleanup{
-//                                         cleanWs(
-//                                             notFailBuild: true,
-//                                             deleteDirs: true,
-//                                             patterns: [
-//                                                 [pattern: 'dist/', type: 'INCLUDE'],
-//                                                 [pattern: 'build/', type: 'INCLUDE'],
-//                                                 [pattern: '.tox/', type: 'INCLUDE'],
-//                                                 ]
-//                                         )
-//                                     }
-//                                 }
-//                             }
-//                             stage("Testing Package Wheel"){
-//                                 options {
-//                                     warnError('Package Testing Failed')
-//                                 }
-//                                 steps{
-//                                     unstash "wheel"
-//                                     script{
-//                                         def toxEnv = "py${PYTHON_VERSION.replace('.', '')}"
-//                                         findFiles(glob: "**/*.whl").each{
-//                                             timeout(15){
-//                                                 if(PLATFORM == "windows"){
-//                                                     bat(
-//                                                         script: """python --version
-//                                                                    tox --installpkg=${it.path} -e ${toxEnv} -vv
-//                                                                    """,
-//                                                         label: "Testing ${it}"
-//                                                     )
-//                                                 } else {
-//                                                     sh(
-//                                                         script: """python --version
-//                                                                    tox --installpkg=${it.path} -e ${toxEnv} -vv
-//                                                                    """,
-//                                                         label: "Testing ${it}"
-//                                                     )
-//                                                 }
-//                                             }
-//                                         }
-//                                     }
-//                                 }
-//                                 post{
-//                                     cleanup{
-//                                         cleanWs(
-//                                             notFailBuild: true,
-//                                             deleteDirs: true,
-//                                             patterns: [
-//                                                 [pattern: 'dist/', type: 'INCLUDE'],
-//                                                 [pattern: 'build/', type: 'INCLUDE'],
-//                                                 [pattern: '.tox/', type: 'INCLUDE'],
-//                                                 ]
-//                                         )
-//                                     }
-//                                 }
-//                             }
-//                         }
-//                     }
-//                 }
             }
         }
         stage("Deploy to Devpi"){
