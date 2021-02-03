@@ -851,9 +851,6 @@ pipeline {
                 beforeAgent true
             }
             agent none
-            environment{
-                DEVPI = credentials("DS_devpi")
-            }
             options{
                 lock("HathiValidate-devpi")
             }
