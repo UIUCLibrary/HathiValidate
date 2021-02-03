@@ -961,7 +961,7 @@ pipeline {
                                         agent: [
                                             dockerfile: [
                                                 filename: 'ci/docker/python/windows/tox/Dockerfile',
-                                                additionalBuildArgs: "--build-arg PIP_EXTRA_INDEX_URL --build-arg PIP_INDEX_URL ${DOCKER_PLATFORM_BUILD_ARGS['windows']}",
+                                                additionalBuildArgs: '--build-arg PIP_EXTRA_INDEX_URL --build-arg PIP_INDEX_URL',
                                                 label: 'windows && docker'
                                             ]
                                         ],
@@ -985,7 +985,7 @@ pipeline {
                                         agent: [
                                             dockerfile: [
                                                 filename: 'ci/docker/python/windows/tox/Dockerfile',
-                                                additionalBuildArgs: "--build-arg PIP_EXTRA_INDEX_URL --build-arg PIP_INDEX_URL ${DOCKER_PLATFORM_BUILD_ARGS['windows']}",
+                                                additionalBuildArgs: '--build-arg PIP_EXTRA_INDEX_URL --build-arg PIP_INDEX_URL',
                                                 label: 'windows && docker'
                                             ]
                                         ],
@@ -1012,7 +1012,7 @@ pipeline {
                                         agent: [
                                             dockerfile: [
                                                 filename: 'ci/docker/python/linux/tox/Dockerfile',
-                                                additionalBuildArgs: "--build-arg PIP_EXTRA_INDEX_URL --build-arg PIP_INDEX_URL ${DOCKER_PLATFORM_BUILD_ARGS['linux']}",
+                                                additionalBuildArgs: '--build-arg PIP_EXTRA_INDEX_URL --build-arg PIP_INDEX_URL',
                                                 label: 'linux && docker'
                                             ]
                                         ],
@@ -1036,7 +1036,7 @@ pipeline {
                                         agent: [
                                             dockerfile: [
                                                 filename: 'ci/docker/python/linux/tox/Dockerfile',
-                                                additionalBuildArgs: "--build-arg PIP_EXTRA_INDEX_URL --build-arg PIP_INDEX_URL ${DOCKER_PLATFORM_BUILD_ARGS['linux']}",
+                                                additionalBuildArgs: '--build-arg PIP_EXTRA_INDEX_URL --build-arg PIP_INDEX_URL',
                                                 label: 'linux && docker'
                                             ]
                                         ],
