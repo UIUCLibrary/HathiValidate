@@ -3,6 +3,16 @@
 import org.ds.*
 
 @Library(["devpi", "PythonHelpers"]) _
+
+def getDevPiStagingIndex(){
+
+    if (env.TAG_NAME?.trim()){
+        return 'tag_staging'
+    } else{
+        return "${env.BRANCH_NAME}_staging"
+    }
+}
+
 // ****************************************************************************
 //  Constants
 //
@@ -16,6 +26,13 @@ SUPPORTED_WINDOWS_VERSIONS = ['3.6', '3.7', '3.8', '3.9']
 // ============================================================================
 SONARQUBE_CREDENTIAL_ID = 'sonartoken-hathivalidate'
 
+def DEVPI_CONFIG = [
+    stagingIndex: getDevPiStagingIndex(),
+    server: 'https://devpi.library.illinois.edu',
+    credentialsId: 'DS_devpi',
+]
+
+DEVPI_STAGING_INDEX = "DS_Jenkins/${getDevPiStagingIndex()}"
 defaultParameterValues = [
     USE_SONARQUBE: false
 ]
@@ -854,15 +871,14 @@ pipeline {
                             unstash "wheel"
                             unstash "sdist"
                             unstash "DOCUMENTATION"
-                            sh(
-                                label: "Connecting to DevPi Server",
-                                script: 'devpi use https://devpi.library.illinois.edu --clientdir ${WORKSPACE}/devpi && devpi login $DEVPI_USR --password $DEVPI_PSW --clientdir ${WORKSPACE}/devpi'
-                            )
-                            sh(
-                                label: "Uploading to DevPi Staging",
-                                script: """devpi use /${env.DEVPI_USR}/${env.BRANCH_NAME}_staging --clientdir ${WORKSPACE}/devpi
-                                           devpi upload --from-dir dist --clientdir ${WORKSPACE}/devpi"""
-                            )
+                            script{
+                                devpi.upload(
+                                        server: DEVPI_CONFIG.server,
+                                        credentialsId: DEVPI_CONFIG.credentialsId,
+                                        index: DEVPI_CONFIG.stagingIndex,
+                                        clientDir: './devpi'
+                                    )
+                            }
                         }
                     }
                 }
