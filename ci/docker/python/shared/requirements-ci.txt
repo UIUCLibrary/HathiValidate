@@ -4,8 +4,10 @@ devpi-client
 flake8
 lxml
 mypy
+pep517
 pylint
 pytest
 pytest-cov
+pytest-runner
 sphinx
 tox
