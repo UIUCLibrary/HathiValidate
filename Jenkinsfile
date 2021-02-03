@@ -968,6 +968,7 @@ pipeline {
                             }
                         }
                         beforeAgent true
+                        beforeInput true
                     }
                     agent {
                         dockerfile {
