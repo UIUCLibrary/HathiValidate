@@ -62,6 +62,8 @@ RUN $PYTHON_VERSIONS = @(${Env:PYTHON_36_VERSION}, ${Env:PYTHON_37_VERSION}, ${E
     Remove-Item -Force -Recurse ${Env:TEMP}\* ; `
     py --list
 
+RUN py -m pip install pip --upgrade;  py -m pip install wheel; py -m pip wheel -w c:\wheels\ --no-cache-dir wheel
+
 # ==============================================================================
 FROM BASE_BUILDER as WHEEL_BUilDER_PY36
 SHELL ["cmd", "/S", "/C" ]
@@ -122,6 +124,6 @@ COPY --from=WHEEL_BUilDER_PY39 c:/wheels/ c:/wheels/
 
 ENV PIP_FIND_LINKS=c:\wheels
 
-RUN python -m pip install pip --upgrade ; pip install tox devpi-client
+RUN python -m pip install pip --upgrade; pip install wheel; pip install tox devpi-client
 WORKDIR C:/src
 CMD tox --workdir ${Env:TEMP}\tox\ -vv  --recreate
