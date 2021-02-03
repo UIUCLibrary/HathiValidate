@@ -67,5 +67,7 @@ ENV PIP_FIND_LINKS=/wheels
 RUN python3 -m pip install pip --upgrade && \
     python3 -m pip install wheel && \
     pip3 install tox devpi-client
+RUN mkdir -p /.cache/pip && \
+    chmod -R 777 /.cache
 WORKDIR /src
 CMD tox --workdir /tmp/tox --recreate
