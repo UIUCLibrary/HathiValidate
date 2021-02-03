@@ -287,6 +287,7 @@ def get_package_name(stashName, metadataFile){
     }
 }
 
+
 def startup(){
     def SONARQUBE_CREDENTIAL_ID = SONARQUBE_CREDENTIAL_ID
     parallel(
@@ -344,6 +345,13 @@ Name = ${metadata.Name}
         }
     }
 }
+
+node(){
+    checkout scm
+    devpi = load('ci/jenkins/scripts/devpi.groovy')
+}
+
+
 startup()
 def props = get_props()
 pipeline {
