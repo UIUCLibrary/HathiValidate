@@ -3,7 +3,6 @@ import datetime
 import hashlib
 import logging
 import os
-import warnings
 import itertools
 import typing
 import re
@@ -191,9 +190,10 @@ def parse_yaml(filename):
 
 
 def find_errors_meta(filename, path, require_page_data=True):
-    """
-    Validate meta.yml file
-    could also validate that the values are correct by comparing with the images
+    """Validate meta.yml file.
+
+    Could also validate that the values are correct by comparing with the
+    images
 
     Args:
         filename:
@@ -215,8 +215,9 @@ def find_errors_meta(filename, path, require_page_data=True):
 
         if not isinstance(capture_date, datetime.datetime):
             if isinstance(capture_date, str):
-                # Just because the parser wasn't able to convert into a datetime object doesn't mean it's not valid per se.
-                # It can also be a matched to a regex.
+                # Just because the parser wasn't able to convert into a
+                #   datetime object doesn't mean it's not valid per se.
+                #   It can also be a matched to a regex.
                 if DATE_REGEX.fullmatch(capture_date) is None:
                     yield "Invalid YAML capture_date {}".format(capture_date)
             else:
@@ -249,7 +250,9 @@ def find_errors_meta(filename, path, require_page_data=True):
 
 
 def find_errors_ocr(path) -> result.ResultSummary:
-    """ Validate all xml files located in the given path to make sure they are valid to the alto scheme
+    """ Validate all xml files located in the given path.
+
+        Make sure they are valid to the alto scheme
 
     Args:
         path: Path to find the alto xml files
@@ -285,9 +288,13 @@ def find_errors_ocr(path) -> result.ResultSummary:
             doc = etree.fromstring(raw_data.encode("utf8"))
 
             if not alto_scheme.validate(doc):
-                summary_builder.add_error("{} does not validate to ALTO scheme".format(xml_file.name))
+                summary_builder.add_error(
+                    "{} does not validate to ALTO scheme".format(xml_file.name)
+                )
             else:
-                logger.info("{} validates to the ALTO XML scheme".format(xml_file.name))
+                logger.info(
+                    "%s validates to the ALTO XML scheme", xml_file.name
+                )
 
         except FileNotFoundError:
             summary_builder.add_error("File missing")
