@@ -32,7 +32,9 @@ def _split_text_line_by_words(text, max_len):
 
 def make_point(message, width):
     bullet = "* "
-    for i, line in enumerate(_split_text_line_by_words(message, width - len(bullet))):
+    for i, line in \
+            enumerate(_split_text_line_by_words(message, width - len(bullet))):
+
         if i == 0:
             yield "{}{}".format(bullet, line)
         else:
