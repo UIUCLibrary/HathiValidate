@@ -143,7 +143,10 @@ def find_failing_checksums(path, report) -> result.ResultSummary:
                     logger.info("{} successfully matches md5 hash in {}".format(filename, os.path.basename(report)))
             except FileNotFoundError as e:
                 logger.info("Unable to run checksum for missing file, {}".format(filename))
-                report_builder.add_error("Unable to run checksum for missing file, {}".format(filename))
+                report_builder.add_error(
+                    f"Unable to run checksum for missing file, {filename}"
+                )
+
     except FileNotFoundError as e:
         report_builder.add_error("File missing")
     return report_builder.construct()
@@ -206,7 +209,9 @@ def find_errors_meta(filename, path, require_page_data=True):
         pages = metadata["pagedata"]
         for image_name, attributes in pages.items():
             if not os.path.exists(os.path.join(path, image_name)):
-                yield "The pagedata {} contains an nonexistent file {}".format(filename, image_name)
+                yield f"The pagedata {filename} contains an " \
+                      f"nonexistent file {image_name}"
+
             if attributes:
                 pass
 
