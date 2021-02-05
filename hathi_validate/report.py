@@ -44,7 +44,6 @@ def make_point(message, width):
 def get_report_as_str(results: typing.List[result.Result], width=0):
     report_width = width if width > 0 else 80
     sorted_results = sorted(results, key=lambda r: r.source)
-    # grouped = list(itertools.groupby(sorted_results, key=lambda r: r.source))
     grouped2 = []
     for k, v in itertools.groupby(sorted_results, key=lambda r: r.source):
         new_messages = []
