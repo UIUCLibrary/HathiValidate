@@ -92,17 +92,22 @@ class AbsValidation(abc.ABC):
         """Find errors in package"""
 
 
-class ValidateMissingCmponents(AbsValidation):
+class ValidateMissingComponents(AbsValidation):
+
+    def __init__(self, args, logger) -> None:
+        super().__init__(args, logger)
+        self.extensions = [".txt", ".jp2"]
+        if args.check_ocr:
+            self.extensions.append(".xml")
+
     def get_errors(self, pkg):
         # Look for missing components
         errors = []
-        extensions = [".txt", ".jp2"]
-        if self._args.check_ocr:
-            extensions.append(".xml")
+
         self.logger.debug(
             "Looking for missing component files in {}".format(pkg))
         missing_files_errors = process.run_validation(
-            validator.ValidateComponents(pkg, "^\d{8}$", *extensions))
+            validator.ValidateComponents(pkg, "^\d{8}$", *self.extensions))
         if not missing_files_errors:
             self.logger.info(
                 "Found no missing component files in {}".format(pkg))
@@ -222,7 +227,7 @@ class ReportGenerator:
         self.manifest_report = None
         self.checks: List[AbsValidation] = checks or [
             ValidateMissingFiles(args, logger),
-            ValidateMissingCmponents(args, logger),
+            ValidateMissingComponents(args, logger),
             ValidateExtraSubdirectories(args, logger),
             ValidateChecksums(args, logger),
             ValidateMarc(args, logger),

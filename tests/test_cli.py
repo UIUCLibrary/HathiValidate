@@ -61,3 +61,13 @@ def test_generate_report(tmpdir):
     print(report_generator.manifest_report)
 
     sample_dir.remove()
+
+
+def test_validate_missing_components_includes_xml_with_ocr_option():
+    mylogger = Mock()
+    args = argparse.Namespace(check_ocr=True)
+    validator = cli.ValidateMissingComponents(
+        args=args,
+        logger=mylogger
+    )
+    assert ".xml" in validator.extensions
