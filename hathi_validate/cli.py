@@ -107,7 +107,7 @@ class ValidateMissingComponents(AbsValidation):
         self.logger.debug(
             "Looking for missing component files in {}".format(pkg))
         missing_files_errors = process.run_validation(
-            validator.ValidateComponents(pkg, "^\d{8}$", *self.extensions))
+            validator.ValidateComponents(pkg, r"^\d{8}$", *self.extensions))
         if not missing_files_errors:
             self.logger.info(
                 "Found no missing component files in {}".format(pkg))
@@ -212,7 +212,7 @@ class ValidateOcrFiles(AbsValidation):
             ocr_errors = process.run_validation(
                 validator.ValidateOCRFiles(path=pkg))
             if not ocr_errors:
-                self.logger.info("No validation errors found in {}".format(pkg))
+                self.logger.info("No validation errors found in %s", pkg)
             else:
                 for error in ocr_errors:
                     errors.append(error)
