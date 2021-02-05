@@ -2,7 +2,8 @@ import collections
 import os
 import typing
 
-PackageManifest = collections.namedtuple("PackageManifest", ("source", "item_types"))
+PackageManifest = \
+    collections.namedtuple("PackageManifest", ("source", "item_types"))
 
 
 class PackageManifestDirector:

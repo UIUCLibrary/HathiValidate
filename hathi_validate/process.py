@@ -15,8 +15,12 @@ from hathi_validate import xml_schemes
 import re
 from . import validator
 
-DIRECTORY_REGEX = r"^\d+(p\d+(_\d+)?)?(v\d+(_\d+)?)?(i\d+(_\d+)?)?(m\d+(_\d+)?)?$"
-DATE_REGEX = re.compile(r"^(\d{4})-(\d{2})-(\d{2})T(\d{2})\:(\d{2})(\:\d{2})?-(\d{2}):(\d{2})$")
+DIRECTORY_REGEX = \
+    r"^\d+(p\d+(_\d+)?)?(v\d+(_\d+)?)?(i\d+(_\d+)?)?(m\d+(_\d+)?)?$"
+
+DATE_REGEX = re.compile(
+    r"^(\d{4})-(\d{2})-(\d{2})T(\d{2})\:(\d{2})(\:\d{2})?-(\d{2}):(\d{2})$"
+)
 
 
 class ValidationError(Exception):

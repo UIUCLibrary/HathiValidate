@@ -5,7 +5,8 @@ import sys
 
 import os
 
-from hathi_validate import package, process, configure_logging, report, validator, manifest
+from hathi_validate import package, process, configure_logging, report, \
+    validator, manifest
 
 try:
     from importlib import metadata
@@ -29,13 +30,26 @@ def get_parser():
                         action="store_true",
                         help="Check for ocr xml files"
                         )
-    parser.add_argument("--save-report", dest="report_name", help="Save report to a file")
+
+    parser.add_argument(
+        "--save-report",
+        dest="report_name",
+        help="Save report to a file"
+    )
+
     debug_group = parser.add_argument_group("Debug")
+
     debug_group.add_argument(
         '--debug',
         action="store_true",
         help="Run script in debug mode")
-    debug_group.add_argument("--log-debug", dest="log_debug", help="Save debug information to a file")
+
+    debug_group.add_argument(
+        "--log-debug",
+        dest="log_debug",
+        help="Save debug information to a file"
+    )
+
     return parser
 
 
