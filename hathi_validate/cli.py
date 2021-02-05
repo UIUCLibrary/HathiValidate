@@ -1,9 +1,10 @@
 import logging
 import argparse
 
+import abc
 import sys
-
 import os
+from typing import List
 
 from hathi_validate import package, process, configure_logging, report, \
     validator, manifest
@@ -53,103 +54,205 @@ def get_parser():
     return parser
 
 
-def main():
+def main(cli_args=None):
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.DEBUG)
     parser = get_parser()
-    args = parser.parse_args()
+    args = parser.parse_args(cli_args)
 
-    configure_logging.configure_logger(debug_mode=args.debug, log_file=args.log_debug)
-    errors = []
-    batch_manifest_builder = manifest.PackageManifestDirector()
-    for pkg in package.get_dirs(args.path):
-        logger.info("Creating a manifest for {}".format(pkg))
-        package_builder = batch_manifest_builder.add_package(pkg)
+    configure_logging.configure_logger(debug_mode=args.debug,
+                                       log_file=args.log_debug)
 
-        for root, dirs, files in os.walk(pkg):
-            for file_name in files:
-                package_builder.add_file(file_name)
+    report_generator = ReportGenerator(
+        args=args,
+        logger=logger
+    )
 
-        logger.info("Checking {}".format(pkg))
+    report_generator.generate_report()
+    if report_generator.validation_report is not None and \
+            report_generator.manifest_report is not None:
+        console_reporter2 = report.Reporter(report.ConsoleReporter())
+        console_reporter2.report(report_generator.manifest_report)
+        console_reporter2.report(report_generator.validation_report)
+        if args.report_name:
+            file_reporter = report.Reporter(
+                report.FileOutputReporter(args.report_name))
+            file_reporter.report(report_generator.validation_report)
 
-        # Validate missing files
-        logger.debug("Looking for missing package files in {}".format(pkg))
-        missing_files_errors = process.run_validation(validator.ValidateMissingFiles(path=pkg))
-        if not missing_files_errors:
-            logger.info("Found no missing package files in {}".format(pkg))
-        else:
-            for error in missing_files_errors:
-                logger.info(error.message)
-                errors.append(error)
 
+class AbsValidation(abc.ABC):
+
+    def __init__(self, args, logger) -> None:
+        super().__init__()
+        self._args = args
+        self.logger = logger
+
+    @abc.abstractmethod
+    def get_errors(self, pkg):
+        """Find errors in package"""
+
+
+class ValidateMissingCmponents(AbsValidation):
+    def get_errors(self, pkg):
         # Look for missing components
+        errors = []
         extensions = [".txt", ".jp2"]
-        if args.check_ocr:
+        if self._args.check_ocr:
             extensions.append(".xml")
-        logger.debug("Looking for missing component files in {}".format(pkg))
-        missing_files_errors = process.run_validation(validator.ValidateComponents(pkg, "^\d{8}$", *extensions))
+        self.logger.debug(
+            "Looking for missing component files in {}".format(pkg))
+        missing_files_errors = process.run_validation(
+            validator.ValidateComponents(pkg, "^\d{8}$", *extensions))
         if not missing_files_errors:
-            logger.info("Found no missing component files in {}".format(pkg))
+            self.logger.info(
+                "Found no missing component files in {}".format(pkg))
         else:
             for error in missing_files_errors:
-                logger.info(error.message)
+                self.logger.info(error.message)
                 errors.append(error)
-        # exit()
+        return errors
+
+
+class ValidateMissingFiles(AbsValidation):
+
+    def get_errors(self, pkg):
+        errors = []
+        # Validate missing files
+        self.logger.debug("Looking for missing package files in %s", pkg)
+        missing_files_errors = process.run_validation(
+            validator.ValidateMissingFiles(path=pkg)
+        )
+
+        if not missing_files_errors:
+            self.logger.info("Found no missing package files in %s", pkg)
+        else:
+            for error in missing_files_errors:
+                self.logger.info(error.message)
+                errors.append(error)
+        return errors
+
+
+class ValidateExtraSubdirectories(AbsValidation):
+
+    def get_errors(self, pkg):
         # Validate extra subdirectories
-        logger.debug("Looking for extra subdirectories in {}".format(pkg))
-        extra_subdirectories_errors = process.run_validation(validator.ValidateExtraSubdirectories(path=pkg))
+        errors = []
+        self.logger.debug("Looking for extra subdirectories in {}".format(pkg))
+        extra_subdirectories_errors = process.run_validation(
+            validator.ValidateExtraSubdirectories(path=pkg))
         if not extra_subdirectories_errors:
             pass
         else:
             for error in extra_subdirectories_errors:
                 errors.append(error)
+        return errors
 
+
+class ValidateChecksums(AbsValidation):
+
+    def get_errors(self, pkg):
         # Validate Checksums
+        errors = []
         checksum_report = os.path.join(pkg, "checksum.md5")
-        checksum_report_errors = process.run_validation(validator.ValidateChecksumReport(pkg, checksum_report))
+        checksum_report_errors = process.run_validation(
+            validator.ValidateChecksumReport(pkg, checksum_report))
         if not checksum_report_errors:
-            logger.info("All checksums in {} successfully validated".format(checksum_report))
+            self.logger.info(
+                "All checksums in {} successfully validated".format(
+                    checksum_report))
         else:
             for error in checksum_report_errors:
                 errors.append(error)
+        return errors
 
+
+class ValidateMarc(AbsValidation):
+
+    def get_errors(self, pkg):
         # Validate Marc
-        marc_file=os.path.join(pkg, "marc.xml")
+        errors = []
+        marc_file = os.path.join(pkg, "marc.xml")
         marc_errors = process.run_validation(validator.ValidateMarc(marc_file))
         if not marc_errors:
-            logger.info("{} successfully validated".format(marc_file))
+            self.logger.info("{} successfully validated".format(marc_file))
         else:
             for error in marc_errors:
                 errors.append(error)
+        return errors
 
+
+class ValidateYAML(AbsValidation):
+
+    def get_errors(self, pkg):
         # Validate YML
+        errors = []
         yml_file = os.path.join(pkg, "meta.yml")
-        meta_yml_errors = process.run_validation(validator.ValidateMetaYML(yaml_file=yml_file, path=pkg, required_page_data=True))
+        meta_yml_errors = process.run_validation(
+            validator.ValidateMetaYML(yaml_file=yml_file, path=pkg,
+                                      required_page_data=True))
         if not meta_yml_errors:
-            logger.info("{} successfully validated".format(yml_file))
+            self.logger.info("{} successfully validated".format(yml_file))
         else:
             for error in meta_yml_errors:
                 errors.append(error)
-        #
+        return errors
 
+
+class ValidateOcrFiles(AbsValidation):
+
+    def get_errors(self, pkg):
         # Validate ocr files
-        if args.check_ocr:
-            ocr_errors = process.run_validation(validator.ValidateOCRFiles(path=pkg))
+        errors = []
+        if self._args.check_ocr:
+            ocr_errors = process.run_validation(
+                validator.ValidateOCRFiles(path=pkg))
             if not ocr_errors:
-                logger.info("No validation errors found in ".format(pkg))
+                self.logger.info("No validation errors found in {}".format(pkg))
             else:
                 for error in ocr_errors:
                     errors.append(error)
+        return errors
 
-    batch_manifest = batch_manifest_builder.build_manifest()
-    manifest_report = manifest.get_report_as_str(batch_manifest, width=80)
-    console_reporter2 = report.Reporter(report.ConsoleReporter())
-    validation_report = report.get_report_as_str(errors)
-    console_reporter2.report(manifest_report)
-    console_reporter2.report(validation_report)
-    if args.report_name:
-        file_reporter = report.Reporter(report.FileOutputReporter(args.report_name))
-        file_reporter.report(validation_report)
+
+class ReportGenerator:
+    def __init__(self, args, logger, checks=None):
+        self._args = args
+        self.logger = logger
+        self.validation_report = None
+        self.manifest_report = None
+        self.checks: List[AbsValidation] = checks or [
+            ValidateMissingFiles(args, logger),
+            ValidateMissingCmponents(args, logger),
+            ValidateExtraSubdirectories(args, logger),
+            ValidateChecksums(args, logger),
+            ValidateMarc(args, logger),
+            ValidateYAML(args, logger),
+            ValidateOcrFiles(args, logger),
+        ]
+
+    def generate_report(self):
+        errors = []
+        batch_manifest_builder = manifest.PackageManifestDirector()
+        for pkg in package.get_dirs(self._args.path):
+            self.logger.info("Creating a manifest for {}".format(pkg))
+            package_builder = batch_manifest_builder.add_package(pkg)
+
+            for root, dirs, files in os.walk(pkg):
+                for file_name in files:
+                    package_builder.add_file(file_name)
+
+            self.logger.info("Checking {}".format(pkg))
+            for validation in self.checks:
+                errors += validation.get_errors(pkg)
+
+        batch_manifest = batch_manifest_builder.build_manifest()
+
+        self.manifest_report = manifest.get_report_as_str(
+            batch_manifest, width=80
+        )
+
+        self.validation_report = report.get_report_as_str(errors)
+
 
 if __name__ == '__main__':
 
