@@ -6,13 +6,13 @@ import os
 import warnings
 import itertools
 import typing
+import re
 
 import yaml
 from lxml import etree
 
 from hathi_validate import result
 from hathi_validate import xml_schemes
-import re
 from . import validator
 
 DIRECTORY_REGEX = \
@@ -185,8 +185,8 @@ def find_errors_marc(filename) -> result.ResultSummary:
 
 
 def parse_yaml(filename):
-    with open(filename, "r") as f:
-        data = yaml.load(f)
+    with open(filename, "r") as file_handle:
+        data = yaml.load(file_handle)
         return data
 
 
@@ -372,15 +372,15 @@ def run_validation(validation_test: validator.absValidator):
 
 def find_non_utf8_characters(file_path: str) -> result.ResultSummary:
     result_builder = result.SummaryDirector(source=file_path)
-    with open(file_path, "rb") as f:
+    with open(file_path, "rb") as file_handle:
 
-        for line_num, line in enumerate(f):
+        for line_num, line in enumerate(file_handle):
             try:
                 line.decode("utf-8", errors="strict")
-            except UnicodeDecodeError as e:
+            except UnicodeDecodeError as error:
                 result_builder.add_error(
                     f"Line {line_num + 1} contains illegal characters. "
-                    f"Details: {e}"
+                    f"Details: {error}"
                 )
 
     return result_builder.construct()

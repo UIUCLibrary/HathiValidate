@@ -28,8 +28,8 @@ class PackageManifestBuilder:
         self.source = source
 
     def add_file(self, file):
-        bn = os.path.basename(file)
-        _, ext = os.path.splitext(bn)
+        base_namen = os.path.basename(file)
+        _, ext = os.path.splitext(base_namen)
         self._files[ext].add(file)
 
     @property
