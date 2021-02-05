@@ -4,10 +4,10 @@ import argparse
 import abc
 import sys
 import os
-from typing import List
+from typing import List, Optional
 
 from hathi_validate import package, process, configure_logging, report, \
-    validator, manifest
+    validator, manifest, result
 
 try:
     from importlib import metadata
@@ -15,7 +15,7 @@ except ImportError:
     import importlib_metadata as metadata  # type: ignore
 
 
-def get_parser():
+def get_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
     try:
         version = metadata.version("hathiValidate")
@@ -54,7 +54,7 @@ def get_parser():
     return parser
 
 
-def main(cli_args=None):
+def main(cli_args: Optional[List[str]] = None):
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.DEBUG)
     parser = get_parser()
@@ -82,45 +82,48 @@ def main(cli_args=None):
 
 class AbsValidation(abc.ABC):
 
-    def __init__(self, args, logger) -> None:
+    def __init__(self,
+                 args: argparse.Namespace,
+                 logger: logging.Logger) -> None:
+
         super().__init__()
         self._args = args
         self.logger = logger
 
     @abc.abstractmethod
-    def get_errors(self, pkg):
+    def get_errors(self, pkg: str) -> List[result.Result]:
         """Find errors in package"""
 
 
 class ValidateMissingComponents(AbsValidation):
 
-    def __init__(self, args, logger) -> None:
+    def __init__(self,
+                 args: argparse.Namespace,
+                 logger: logging.Logger) -> None:
+
         super().__init__(args, logger)
         self.extensions = [".txt", ".jp2"]
         if args.check_ocr:
             self.extensions.append(".xml")
 
-    def get_errors(self, pkg):
+    def get_errors(self, pkg: str) -> List[result.Result]:
         # Look for missing components
-        errors = []
 
         self.logger.debug(
             "Looking for missing component files in {}".format(pkg))
-        missing_files_errors = process.run_validation(
+        errors = process.run_validation(
             validator.ValidateComponents(pkg, r"^\d{8}$", *self.extensions))
-        if not missing_files_errors:
+        for error in errors:
+            self.logger.info(error.message)
+        if not errors:
             self.logger.info(
                 "Found no missing component files in {}".format(pkg))
-        else:
-            for error in missing_files_errors:
-                self.logger.info(error.message)
-                errors.append(error)
         return errors
 
 
 class ValidateMissingFiles(AbsValidation):
 
-    def get_errors(self, pkg):
+    def get_errors(self, pkg: str) -> List[result.Result]:
         errors = []
         # Validate missing files
         self.logger.debug("Looking for missing package files in %s", pkg)
@@ -139,7 +142,7 @@ class ValidateMissingFiles(AbsValidation):
 
 class ValidateExtraSubdirectories(AbsValidation):
 
-    def get_errors(self, pkg):
+    def get_errors(self, pkg: str) -> List[result.Result]:
         # Validate extra subdirectories
         errors = []
         self.logger.debug("Looking for extra subdirectories in {}".format(pkg))
@@ -155,7 +158,7 @@ class ValidateExtraSubdirectories(AbsValidation):
 
 class ValidateChecksums(AbsValidation):
 
-    def get_errors(self, pkg):
+    def get_errors(self, pkg: str) -> List[result.Result]:
         # Validate Checksums
         errors = []
         checksum_report = os.path.join(pkg, "checksum.md5")
@@ -173,7 +176,7 @@ class ValidateChecksums(AbsValidation):
 
 class ValidateMarc(AbsValidation):
 
-    def get_errors(self, pkg):
+    def get_errors(self, pkg: str) -> List[result.Result]:
         # Validate Marc
         errors = []
         marc_file = os.path.join(pkg, "marc.xml")
@@ -188,7 +191,7 @@ class ValidateMarc(AbsValidation):
 
 class ValidateYAML(AbsValidation):
 
-    def get_errors(self, pkg):
+    def get_errors(self, pkg: str) -> List[result.Result]:
         # Validate YML
         errors = []
         yml_file = os.path.join(pkg, "meta.yml")
@@ -205,7 +208,7 @@ class ValidateYAML(AbsValidation):
 
 class ValidateOcrFiles(AbsValidation):
 
-    def get_errors(self, pkg):
+    def get_errors(self, pkg: str) -> List[result.Result]:
         # Validate ocr files
         errors = []
         if self._args.check_ocr:
@@ -220,10 +223,14 @@ class ValidateOcrFiles(AbsValidation):
 
 
 class ReportGenerator:
-    def __init__(self, args, logger, checks=None):
+    def __init__(self,
+                 args: argparse.Namespace,
+                 logger: logging.Logger,
+                 checks: Optional[List[AbsValidation]] = None) -> None:
+
         self._args = args
         self.logger = logger
-        self.validation_report = None
+        self.validation_report: Optional[str] = None
         self.manifest_report = None
         self.checks: List[AbsValidation] = checks or [
             ValidateMissingFiles(args, logger),
@@ -235,7 +242,7 @@ class ReportGenerator:
             ValidateOcrFiles(args, logger),
         ]
 
-    def generate_report(self):
+    def generate_report(self) -> None:
         errors = []
         batch_manifest_builder = manifest.PackageManifestDirector()
         for pkg in package.get_dirs(self._args.path):
