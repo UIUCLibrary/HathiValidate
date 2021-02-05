@@ -41,7 +41,8 @@ class ValidateComponents(absValidator):
 
         Args:
             path: Directory to find the files
-            component_regex: A regular expression to identify the component names.
+            component_regex: A regular expression to identify the component
+                names.
                 Note: this regex should ignore the extension
             *extensions: All the extensions to check for a given component
         """
