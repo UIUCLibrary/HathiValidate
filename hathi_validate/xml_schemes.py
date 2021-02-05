@@ -156,7 +156,10 @@ in subfieldcodeDataType  the pattern
 
 def get_scheme(scheme_name):
     try:
-        data = pkgutil.get_data("hathi_validate", "xsd/{}.xsd".format(scheme_name))
+        data = pkgutil.get_data(
+            "hathi_validate", "xsd/{}.xsd".format(scheme_name)
+        )
+
         return data
     except FileNotFoundError:
         raise ValueError("Unknown scheme {}".format(scheme_name))
