@@ -62,13 +62,16 @@ def get_report_as_str(results: typing.List[result.Result], width=0):
                     msg_list.append(line)
 
             group_warnings = "\n".join(msg_list)
-            warning_groups.append("{}\n\n{}\n".format(source_group[0], group_warnings))
+
+            warning_groups.append(
+                "{}\n\n{}\n".format(source_group[0], group_warnings)
+            )
+
         warnings = "\n{}\n".format(group_spacer).join(warning_groups)
     else:
         warnings = "No validation errors detected.\n"
 
-
-    return "{}\n{}\n{}\n{}{}".format(main_spacer, header, main_spacer, warnings, main_spacer)
+    return f"{main_spacer}\n{header}\n{main_spacer}\n{warnings}{main_spacer}"
 
 
 class AbsReport(metaclass=abc.ABCMeta):
