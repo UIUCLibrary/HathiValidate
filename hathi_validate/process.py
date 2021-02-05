@@ -297,64 +297,6 @@ def find_errors_ocr(path) -> result.ResultSummary:
     return summary_builder.construct()
 
 
-def process_directory(path: str, require_page_data=True):
-    warnings.warn("Use run_validation instead", DeprecationWarning)
-    # TODO validate directory name
-    logger = logging.getLogger(__name__)
-
-    # Validate missing files
-    logger.debug("Looking for missing files in {}".format(path))
-    missing_errors = []
-    for missing_file in find_missing_files(path):
-        print(missing_file.message)
-        missing_errors.append(missing_file)
-    else:
-        logger.info("Found no missing files in {}".format(path))
-
-    logger.debug("Looking for extra subdirectories in {}".format(path))
-
-    extra_subdirectory_errors = []
-    for extra_subdirectory in find_extra_subdirectory(path=path):
-        print(extra_subdirectory.message)
-        extra_subdirectory_errors.append(extra_subdirectory)
-    else:
-        logger.info("Found no extra subdirectories in {}".format(path))
-
-    # Validate checksum
-    checksum_report = os.path.join(path, "checksum.md5")
-    logger.info("Validating checksums in {}".format(checksum_report))
-    checksum_errors = []
-    for failing_checksum in find_failing_checksums(path=path, report=checksum_report):
-        print(failing_checksum.message)
-        checksum_errors.append(failing_checksum)
-
-    # Validate MARC
-    marc_file = os.path.join(path, "marc.xml")
-    logger.info("Validating {}".format(marc_file))
-    marc_errors = []
-    for error in find_errors_marc(filename=marc_file):
-        marc_errors.append(error)
-    else:
-        logger.info("{} successfully validated".format(marc_file))
-
-    # TODO: validate other xml files, currently ALTO
-    yml_file = os.path.join(path, "meta.yml")
-    logger.info("Validating {}".format(yml_file))
-    yml_errors = []
-    for error in find_errors_meta(filename=yml_file, path=path, require_page_data=require_page_data):
-        print(error.message)
-        yml_errors.append(error)
-    else:
-        logger.info("{} successfully validated".format(yml_file))
-
-    return \
-        yml_errors + \
-        marc_errors + \
-        checksum_errors + \
-        extra_subdirectory_errors + \
-        missing_errors
-
-
 def run_validations(validators: typing.List[validator.absValidator]):
     errors = []
     for tester in validators:
