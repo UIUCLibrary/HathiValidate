@@ -110,26 +110,24 @@ class LogReport(AbsReport):
         self.logger = logger
 
     def generate(self, results: typing.List[result.Result]):
-        summery = ""
         sorted_results = sorted(results, key=lambda r: r.source)
         grouped = itertools.groupby(sorted_results, key=lambda r: r.source)
         top = "Validation Results"
         brace = "==================="
 
-        # self.logger.info(top)
         group_errors_messages = []
         for source_group in grouped:
-
-            # self.logger.info("{}".format(source_group[0]))
             group_errors = []
             for i, res in enumerate(source_group[1]):
                 line = "{}: {}".format(i + 1, res.message)
                 group_errors.append(line)
-                # print(line)
-                # self.logger.info(line)
-            group_errors_messages.append(">{}\n".format(source_group[0], "\n".join(group_errors)))
-            # self.logger.info(group_errors_message)
-        summery = "{}\n{}\n{}".format(top, brace, "\n".join(group_errors_messages))
+            group_errors_messages.append(
+                ">{}\n{}".format(source_group[0], "\n".join(group_errors))
+            )
+
+        summery = \
+            "{}\n{}\n{}".format(top, brace, "\n".join(group_errors_messages))
+
         # print("==============")
         self.logger.info(summery)
 
