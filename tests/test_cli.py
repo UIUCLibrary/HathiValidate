@@ -1,9 +1,11 @@
 import argparse
 import logging
 import sys
-from unittest.mock import Mock
+from unittest.mock import Mock, MagicMock
 
-from hathi_validate import cli
+import pytest
+
+from hathi_validate import cli, process
 
 
 def test_version_exits_after_being_called(monkeypatch):
@@ -55,12 +57,10 @@ def test_generate_report(tmpdir):
     )
 
     report_generator.generate_report()
-    # assert output_log.exists()
 
-    print(report_generator.validation_report)
-    print(report_generator.manifest_report)
-
-    sample_dir.remove()
+    assert \
+        isinstance(report_generator.validation_report, str) and \
+        isinstance(report_generator.manifest_report, str)
 
 
 def test_validate_missing_components_includes_xml_with_ocr_option():
@@ -71,3 +71,31 @@ def test_validate_missing_components_includes_xml_with_ocr_option():
         logger=mylogger
     )
     assert ".xml" in validator.extensions
+
+
+validations = [
+    (cli.ValidateYAML, "successfully validated"),
+    (cli.ValidateMissingComponents, "Found no missing component files"),
+    (cli.ValidateMissingFiles, "Found no missing package files"),
+    (cli.ValidateChecksums, "successfully validated"),
+    (cli.ValidateMarc, "successfully validated"),
+    (cli.ValidateOcrFiles, "No validation errors found in"),
+]
+
+
+@pytest.mark.parametrize("validator_type,included_message", validations)
+def test_validate_success_message(validator_type,included_message, monkeypatch):
+    mylogger = MagicMock()
+    args = argparse.Namespace(check_ocr=True)
+    validator = validator_type(
+        args=args,
+        logger=mylogger
+    )
+
+    def mock_errors(*args, **kwargs):
+        return []
+
+    monkeypatch.setattr(process, "run_validation", mock_errors)
+    validator.get_errors("123")
+    assert mylogger.info.called is True
+    assert included_message in mylogger.info.call_args.args[0]
