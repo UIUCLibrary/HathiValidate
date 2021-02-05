@@ -241,9 +241,14 @@ def find_errors_meta(filename, path, require_page_data=True):
                 for error in find_pagedata_errors(yml_metadata):
                     summary_builder.add_error(error)
         except KeyError as e:
-            summary_builder.add_error("{} is missing key, {}".format(filename, e))
+            summary_builder.add_error(
+                "{} is missing key, {}".format(filename, e)
+            )
+
     except yaml.YAMLError as e:
-        summary_builder.add_error("Unable to read {}. Reason:{}".format(filename, e))
+        summary_builder.add_error(
+            "Unable to read {}. Reason:{}".format(filename, e)
+        )
     except FileNotFoundError as e:
         summary_builder.add_error("Missing {}".format(e))
     return summary_builder.construct()
