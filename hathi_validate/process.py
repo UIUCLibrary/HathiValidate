@@ -138,7 +138,9 @@ def find_failing_checksums(path, report) -> result.ResultSummary:
                     logger.debug('Hash mismatch for "{}". (Actual ({}): expected ({}))'.format(file_path, file_md5_hash,
                                                                                                report_md5_hash))
                     report_builder.add_error(
-                        "Checksum listed in \"{}\" doesn't match for \"{}\"".format(os.path.basename(report), filename))
+                        f"Checksum listed in {os.path.basename(report)} "
+                        f"doesn't match for \"{filename}\""
+                    )
                 else:
                     logger.info(
                         "%s successfully matches md5 hash in %s",
