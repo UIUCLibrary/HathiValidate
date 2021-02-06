@@ -17,7 +17,7 @@ class PackageManifestDirector:
     def build_manifest(self) -> typing.List["PackageManifestBuilder"]:
         return self._packages
 
-    def add_package(self, path):
+    def add_package(self, path: str) -> "PackageManifestBuilder":
         package = PackageManifestBuilder(path)
         self._packages.append(package)
         return package
@@ -34,7 +34,7 @@ class PackageManifestBuilder:
         self._files[ext].add(file)
 
     @property
-    def files(self) -> typing.Dict[str, set]:
+    def files(self) -> typing.Dict[str, Set[str]]:
         return dict(self._files)
 
 
