@@ -6,7 +6,7 @@ import os
 import itertools
 import typing
 import re
-from typing import Tuple, Iterator, List
+from typing import Tuple, Iterator, List, Dict, Any
 import yaml
 from lxml import etree
 
@@ -119,7 +119,7 @@ def is_same_hash(*hashes: str) -> bool:
     return True
 
 
-def find_failing_checksums(path, report) -> result.ResultSummary:
+def find_failing_checksums(path: str, report: str) -> result.ResultSummary:
     """validate that the checksums in the .fil file match
 
     Args:
@@ -226,7 +226,7 @@ def find_errors_meta(
 
     """
 
-    def find_pagedata_errors(metadata):
+    def find_pagedata_errors(metadata) -> Iterator[str]:
         pages = metadata["pagedata"]
         for image_name, attributes in pages.items():
             if not os.path.exists(os.path.join(path, image_name)):
@@ -236,7 +236,7 @@ def find_errors_meta(
             if attributes:
                 pass
 
-    def find_capture_date_errors(metadata):
+    def find_capture_date_errors(metadata: Dict[str, Any]) -> Iterator[str]:
         capture_date = metadata["capture_date"]
 
         if not isinstance(capture_date, datetime.datetime):
@@ -249,7 +249,7 @@ def find_errors_meta(
             else:
                 yield "Invalid YAML data type for in capture_date"
 
-    def find_capture_agent_errors(metadata):
+    def find_capture_agent_errors(metadata) -> Iterator[str]:
         capture_agent = metadata["capture_agent"]
         if not isinstance(capture_agent, str):
             yield "Invalid YAML capture_agent: {}".format(capture_agent)
@@ -292,7 +292,7 @@ def find_errors_ocr(path: str) -> result.ResultSummary:
 
     """
 
-    def ocr_filter(entry: os.DirEntry):
+    def ocr_filter(entry: os.DirEntry) -> bool:
         if not entry.is_file():
             return False
 
