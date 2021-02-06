@@ -2,10 +2,13 @@ import logging
 import sys
 
 
-def configure_logger(debug_mode=False, log_file=None):
+def configure_logger(debug_mode=False, log_file=None) -> logging.Logger:
     logger = logging.getLogger(__package__)
     logger.setLevel(logging.DEBUG)
-    debug_formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
+    debug_formatter = logging.Formatter(
+        '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    )
 
     std_handler = logging.StreamHandler(sys.stdout)
     if log_file:

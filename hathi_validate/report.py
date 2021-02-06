@@ -1,13 +1,15 @@
 import abc
 import typing
+from typing import Iterator
 import itertools
 import sys
+import logging
 import warnings
 
 from . import result
 
 
-def _split_text_line_by_words(text, max_len):
+def _split_text_line_by_words(text: str, max_len: int) -> Iterator[str]:
     words = text.split()
     line = ""
     while words:
@@ -30,7 +32,7 @@ def _split_text_line_by_words(text, max_len):
     yield line
 
 
-def make_point(message, width):
+def make_point(message: str, width: int) -> Iterator[str]:
     bullet = "* "
     for i, line in \
             enumerate(_split_text_line_by_words(message, width - len(bullet))):
@@ -41,9 +43,11 @@ def make_point(message, width):
             yield "{}{}".format(" " * len(bullet), line)
 
 
-def get_report_as_str(results: typing.List[result.Result], width=0):
+def get_report_as_str(results: typing.List[result.Result], width: int = 0) -> str:
     report_width = width if width > 0 else 80
-    sorted_results = sorted(results, key=lambda r: r.source)
+    sorted_results = sorted(
+        results, key=lambda r: r.source if r.source is not None else ""
+    )
     grouped2 = []
     for k, v in itertools.groupby(sorted_results, key=lambda r: r.source):
         new_messages = []
@@ -77,7 +81,7 @@ def get_report_as_str(results: typing.List[result.Result], width=0):
 
 class AbsReport(metaclass=abc.ABCMeta):
     @abc.abstractmethod
-    def generate(self, results: typing.List[result.Result]):
+    def generate(self, results: typing.List[result.Result]) -> None:
         pass
 
 
@@ -86,16 +90,18 @@ class Report:
         warnings.warn("Use reporter class instead", DeprecationWarning)
         self._strategy = report_strategy
 
-    def generate(self, results: typing.List[result.Result]):
+    def generate(self, results: typing.List[result.Result]) -> None:
         self._strategy.generate(results)
 
 
 class ConsoleReport(AbsReport):
-    def __init__(self, file=sys.stdout):
+    def __init__(self, file=sys.stdout) -> None:
         self.file = file
 
-    def generate(self, results: typing.List[result.Result]):
-        sorted_results = sorted(results, key=lambda r: r.source)
+    def generate(self, results: typing.List[result.Result]) -> None:
+        sorted_results = sorted(
+            results, key=lambda r: r.source if r.source is not None else ""
+        )
         grouped = itertools.groupby(sorted_results, key=lambda r: r.source)
         print("\nValidation Results:")
         print("===================")
@@ -107,11 +113,13 @@ class ConsoleReport(AbsReport):
 
 
 class LogReport(AbsReport):
-    def __init__(self, logger):
+    def __init__(self, logger: logging.Logger):
         self.logger = logger
 
-    def generate(self, results: typing.List[result.Result]):
-        sorted_results = sorted(results, key=lambda r: r.source)
+    def generate(self, results: typing.List[result.Result]) -> None:
+        sorted_results = sorted(
+            results, key=lambda r: r.source if r.source is not None else ""
+        )
         grouped = itertools.groupby(sorted_results, key=lambda r: r.source)
         top = "Validation Results"
         brace = "==================="
@@ -134,11 +142,13 @@ class LogReport(AbsReport):
 
 
 class TextReport(AbsReport):
-    def __init__(self, file):
+    def __init__(self, file: str):
         self.file = file
 
-    def generate(self, results: typing.List[result.Result]):
-        sorted_results = sorted(results, key=lambda r: r.source)
+    def generate(self, results: typing.List[result.Result]) -> None:
+        sorted_results = sorted(
+            results, key=lambda r: r.source if r.source is not None else ""
+        )
         grouped = itertools.groupby(sorted_results, key=lambda r: r.source)
         with open(self.file, "w", encoding="utf8") as w:
             w.write("Validation Results\n\n")
@@ -150,7 +160,7 @@ class TextReport(AbsReport):
 
 class AbsReporter(metaclass=abc.ABCMeta):
     @abc.abstractmethod
-    def report(self, report):
+    def report(self, report: str) -> None:
         pass
 
 
@@ -158,30 +168,30 @@ class Reporter:
     def __init__(self, reporter_strategy: AbsReporter) -> None:
         self._strategy = reporter_strategy
 
-    def report(self, report):
+    def report(self, report: str) -> None:
         self._strategy.report(report)
 
 
 class ConsoleReporter(AbsReporter):
-    def __init__(self, file=sys.stdout):
+    def __init__(self, file=sys.stdout) -> None:
         self.file = file
 
-    def report(self, report):
+    def report(self, report: str) -> None:
         print("\n\n{}".format(report), file=self.file)
 
 
 class FileOutputReporter(AbsReporter):
-    def __init__(self, filename):
+    def __init__(self, filename: str) -> None:
         self.filename = filename
 
-    def report(self, report):
+    def report(self, report: str) -> None:
         with open(self.filename, "w", encoding="utf8") as w:
             w.write("{}\n".format(report))
 
 
 class LogReporter(AbsReporter):
-    def __init__(self, logger):
+    def __init__(self, logger: logging.Logger) -> None:
         self.logger = logger
 
-    def report(self, report):
+    def report(self, report: str) -> None:
         self.logger.info("\n{}".format(report))

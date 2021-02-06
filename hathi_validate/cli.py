@@ -54,7 +54,7 @@ def get_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def main(cli_args: Optional[List[str]] = None):
+def main(cli_args: Optional[List[str]] = None) -> None:
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.DEBUG)
     parser = get_parser()
@@ -74,7 +74,7 @@ def main(cli_args: Optional[List[str]] = None):
         console_reporter2 = report.Reporter(report.ConsoleReporter())
         console_reporter2.report(report_generator.manifest_report)
         console_reporter2.report(report_generator.validation_report)
-        if args.report_name:
+        if 'report_name' in args:
             file_reporter = report.Reporter(
                 report.FileOutputReporter(args.report_name))
             file_reporter.report(report_generator.validation_report)
@@ -231,7 +231,7 @@ class ReportGenerator:
         self._args = args
         self.logger = logger
         self.validation_report: Optional[str] = None
-        self.manifest_report = None
+        self.manifest_report: Optional[str] = None
         self.checks: List[AbsValidation] = checks or [
             ValidateMissingFiles(args, logger),
             ValidateMissingComponents(args, logger),

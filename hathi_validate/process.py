@@ -6,7 +6,7 @@ import os
 import itertools
 import typing
 import re
-
+from typing import Tuple, Iterator, List
 import yaml
 from lxml import etree
 
@@ -82,7 +82,7 @@ def find_extra_subdirectory(path) -> result.ResultSummary:
     return summary_builder.construct()
 
 
-def parse_checksum(line):
+def parse_checksum(line: str) -> Tuple[str, str]:
     chunks = line.strip().split(" ")
     md5_hash = chunks[0]
     raw_filename = chunks[-1]
@@ -96,7 +96,7 @@ def parse_checksum(line):
     return md5_hash, filename
 
 
-def calculate_md5(filename, chunk_size=8192):
+def calculate_md5(filename: str, chunk_size: int = 8192) -> str:
     md5 = hashlib.md5()
 
     with open(filename, "rb") as f:
@@ -152,14 +152,14 @@ def find_failing_checksums(path, report) -> result.ResultSummary:
     return report_builder.construct()
 
 
-def extracts_checksums(report):
+def extracts_checksums(report: str) -> Iterator[Tuple[str, str]]:
     with open(report, "r") as f:
         for line in f:
             md5, filename = parse_checksum(line)
             yield md5, filename
 
 
-def find_errors_marc(filename) -> result.ResultSummary:
+def find_errors_marc(filename: str) -> result.ResultSummary:
     """
     Validate the MARC file
 
@@ -186,13 +186,17 @@ def find_errors_marc(filename) -> result.ResultSummary:
     return summary_builder.construct()
 
 
-def parse_yaml(filename):
+def parse_yaml(filename: str):
     with open(filename, "r") as file_handle:
         data = yaml.load(file_handle)
         return data
 
 
-def find_errors_meta(filename, path, require_page_data=True):
+def find_errors_meta(
+        filename: str,
+        path: str,
+        require_page_data: bool = True):
+
     """Validate meta.yml file.
 
     Could also validate that the values are correct by comparing with the
@@ -200,6 +204,8 @@ def find_errors_meta(filename, path, require_page_data=True):
 
     Args:
         filename:
+        path:
+        require_page_data:
 
     Yields: Error messages
 
@@ -259,7 +265,7 @@ def find_errors_meta(filename, path, require_page_data=True):
     return summary_builder.construct()
 
 
-def find_errors_ocr(path) -> result.ResultSummary:
+def find_errors_ocr(path: str) -> result.ResultSummary:
     """ Validate all xml files located in the given path.
 
         Make sure they are valid to the alto scheme
@@ -271,7 +277,7 @@ def find_errors_ocr(path) -> result.ResultSummary:
 
     """
 
-    def ocr_filter(entry):
+    def ocr_filter(entry: os.DirEntry):
         if not entry.is_file():
             return False
 
@@ -314,7 +320,7 @@ def find_errors_ocr(path) -> result.ResultSummary:
     return summary_builder.construct()
 
 
-def run_validations(validators: typing.List[validator.absValidator]):
+def run_validations(validators: typing.List[validator.absValidator]) -> List[result.Result]:
     errors = []
     for tester in validators:
         tester.validate()
@@ -324,7 +330,7 @@ def run_validations(validators: typing.List[validator.absValidator]):
     return errors
 
 
-def run_validation(validation_test: validator.absValidator):
+def run_validation(validation_test: validator.absValidator) -> List[result.Result]:
     validation_test.validate()
     return validation_test.results
 
