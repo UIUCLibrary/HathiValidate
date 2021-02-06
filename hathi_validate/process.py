@@ -329,8 +329,8 @@ def find_errors_ocr(path: str) -> result.ResultSummary:
 
         except FileNotFoundError:
             summary_builder.add_error("File missing")
-        except etree.XMLSyntaxError as e:
-            summary_builder.add_error("Syntax error: {}".format(e))
+        except etree.XMLSyntaxError as error:
+            summary_builder.add_error("Syntax error: {}".format(error))
     # summary_builder = result.SummaryDirector(source=path)
     return summary_builder.construct()
 
