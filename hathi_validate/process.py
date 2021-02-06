@@ -140,9 +140,14 @@ def find_failing_checksums(path, report) -> result.ResultSummary:
                     report_builder.add_error(
                         "Checksum listed in \"{}\" doesn't match for \"{}\"".format(os.path.basename(report), filename))
                 else:
-                    logger.info("{} successfully matches md5 hash in {}".format(filename, os.path.basename(report)))
+                    logger.info(
+                        "%s successfully matches md5 hash in %s",
+                        filename, os.path.basename(report)
+                    )
             except FileNotFoundError:
-                logger.info("Unable to run checksum for missing file, {}".format(filename))
+                logger.info(
+                    "Unable to run checksum for missing file, %s", filename
+                )
                 report_builder.add_error(
                     f"Unable to run checksum for missing file, {filename}"
                 )
