@@ -187,8 +187,8 @@ class FileOutputReporter(AbsReporter):
         self.filename = filename
 
     def report(self, report: str) -> None:
-        with open(self.filename, "w", encoding="utf8") as w:
-            w.write("{}\n".format(report))
+        with open(self.filename, "w", encoding="utf8") as write_file:
+            write_file.write("{}\n".format(report))
 
 
 class LogReporter(AbsReporter):
