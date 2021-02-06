@@ -141,8 +141,10 @@ def find_failing_checksums(path, report) -> result.ResultSummary:
             try:
                 file_md5_hash = calculate_md5(filename=file_path)
                 if not is_same_hash(file_md5_hash, report_md5_hash):
-                    logger.debug('Hash mismatch for "{}". (Actual ({}): expected ({}))'.format(file_path, file_md5_hash,
-                                                                                               report_md5_hash))
+                    logger.debug(
+                        'Hash mismatch for "%s". (Actual (%s): expected (%s))',
+                        file_path, file_md5_hash, report_md5_hash
+                    )
                     report_builder.add_error(
                         f"Checksum listed in {os.path.basename(report)} "
                         f"doesn't match for \"{filename}\""
