@@ -320,7 +320,9 @@ def find_errors_ocr(path: str) -> result.ResultSummary:
     return summary_builder.construct()
 
 
-def run_validations(validators: typing.List[validator.absValidator]) -> List[result.Result]:
+def run_validations(validators: typing.List[validator.absValidator]) \
+        -> List[result.Result]:
+
     errors = []
     for tester in validators:
         tester.validate()
@@ -330,7 +332,9 @@ def run_validations(validators: typing.List[validator.absValidator]) -> List[res
     return errors
 
 
-def run_validation(validation_test: validator.absValidator) -> List[result.Result]:
+def run_validation(validation_test: validator.absValidator) \
+        -> List[result.Result]:
+
     validation_test.validate()
     return validation_test.results
 

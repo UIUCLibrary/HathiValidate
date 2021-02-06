@@ -43,7 +43,9 @@ def make_point(message: str, width: int) -> Iterator[str]:
             yield "{}{}".format(" " * len(bullet), line)
 
 
-def get_report_as_str(results: typing.List[result.Result], width: int = 0) -> str:
+def get_report_as_str(results: typing.List[result.Result],
+                      width: int = 0) -> str:
+
     report_width = width if width > 0 else 80
     sorted_results = sorted(
         results, key=lambda r: r.source if r.source is not None else ""

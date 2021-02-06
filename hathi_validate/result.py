@@ -5,7 +5,9 @@ import collections.abc
 
 
 class Result:
-    def __init__(self, result_type: str) -> None:
+    def __init__(self,
+                 result_type: str) -> None:
+
         self.result_type: str = result_type
         self.source: Optional[str] = None
         self.message: str = ""

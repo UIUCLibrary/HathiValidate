@@ -38,7 +38,9 @@ class PackageManifestBuilder:
         return dict(self._files)
 
 
-def get_report_as_str(manifest: List[PackageManifestBuilder], width: int) -> str:
+def get_report_as_str(manifest: List[PackageManifestBuilder],
+                      width: int) -> str:
+
     line_sep = "=" * width
     title = "Manifest"
     header = f"{line_sep}" \
