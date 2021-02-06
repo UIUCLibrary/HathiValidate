@@ -112,7 +112,7 @@ def calculate_md5(filename: str, chunk_size: int = 8192) -> str:
         return md5.hexdigest()
 
 
-def is_same_hash(*hashes) -> bool:
+def is_same_hash(*hashes: str) -> bool:
     for hash_value_a, hash_value_b, in itertools.combinations(hashes, 2):
         if hash_value_a.lower() != hash_value_b.lower():
             return False
