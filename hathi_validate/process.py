@@ -78,7 +78,11 @@ def find_extra_subdirectory(path) -> result.ResultSummary:
     summary_builder = result.SummaryDirector(source=path)
     for item in os.scandir(path):
         if item.is_dir():
-            summary_builder.add_error("Extra subdirectory {}".format(item.name))
+
+            summary_builder.add_error(
+                "Extra subdirectory {}".format(item.name)
+            )
+
     return summary_builder.construct()
 
 
@@ -130,7 +134,9 @@ def find_failing_checksums(path, report) -> result.ResultSummary:
     report_builder = result.SummaryDirector(source=path)
     try:
         for report_md5_hash, filename in extracts_checksums(report):
-            logger.debug("Calculating the md5 checksum hash for {}".format(filename))
+            logger.debug(
+                "Calculating the md5 checksum hash for %s", filename
+            )
             file_path = os.path.join(path, filename)
             try:
                 file_md5_hash = calculate_md5(filename=file_path)
