@@ -36,7 +36,7 @@ class ValidateMissingFiles(absValidator):
 
 class ValidateComponents(absValidator):
 
-    def __init__(self, path: str, component_regex: str, *extensions) -> None:
+    def __init__(self, path: str, component_regex: str, *extensions: str) -> None:
         """
 
         Args:
@@ -109,7 +109,7 @@ class ValidateExtraSubdirectories(absValidator):
 
 
 class ValidateChecksumReport(absValidator):
-    def __init__(self, path: str, checksum_report) -> None:
+    def __init__(self, path: str, checksum_report: str) -> None:
         super().__init__()
         self.path: str = path
         self.checksum_report = checksum_report

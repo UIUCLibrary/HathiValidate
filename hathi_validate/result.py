@@ -25,7 +25,7 @@ class ResultSummary(collections.abc.Iterable):  # type: ignore
         self.results: List[Result] = []
         self.source: Optional[str] = None
 
-    def __iadd__(self, other: Result):
+    def __iadd__(self, other: Result) -> "ResultSummary":
         self.results.append(other)
         return self
 

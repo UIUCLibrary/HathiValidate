@@ -12,7 +12,7 @@ from hathi_validate import package, process, configure_logging, report, \
 try:
     from importlib import metadata
 except ImportError:
-    import importlib_metadata as metadata  # type: ignore
+    import importlib_metadata as metadata  # type: ignore  # noqa
 
 
 def get_parser() -> argparse.ArgumentParser:
@@ -269,7 +269,7 @@ class ReportGenerator:
 if __name__ == '__main__':
 
     if len(sys.argv) > 1 and sys.argv[1] == "--pytest":
-        import pytest  # type: ignore
+        import pytest  # type: ignore  # noqa
 
         sys.exit(pytest.main(sys.argv[2:]))
     else:

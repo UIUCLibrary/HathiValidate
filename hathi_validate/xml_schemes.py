@@ -1,5 +1,6 @@
 import os
 import pkgutil
+from typing import Optional
 
 MARC_XSD = r"""<?xml version="1.0"?>
 <xsd:schema targetNamespace="http://www.loc.gov/MARC21/slim" xmlns="http://www.loc.gov/MARC21/slim" xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" attributeFormDefault="unqualified" version="1.1" xml:lang="en">
@@ -154,7 +155,7 @@ in subfieldcodeDataType  the pattern
 """
 
 
-def get_scheme(scheme_name):
+def get_scheme(scheme_name: str) -> Optional[bytes]:
     try:
         data = pkgutil.get_data(
             "hathi_validate", "xsd/{}.xsd".format(scheme_name)

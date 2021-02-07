@@ -1,4 +1,4 @@
-
+import abc
 import datetime
 import hashlib
 import logging
@@ -6,7 +6,7 @@ import os
 import itertools
 import typing
 import re
-from typing import Tuple, Iterator, List, Dict, Any
+from typing import Tuple, Iterator, List, Dict, Any, Generator, Optional
 import yaml
 from lxml import etree
 
@@ -66,7 +66,7 @@ def find_missing_files(path: str) -> result.ResultSummary:
     return summery_builder.construct()
 
 
-def find_extra_subdirectory(path) -> result.ResultSummary:
+def find_extra_subdirectory(path: str) -> result.ResultSummary:
     """Check path for any subdirectories
 
     Args:
@@ -201,16 +201,125 @@ def find_errors_marc(filename: str) -> result.ResultSummary:
     return summary_builder.construct()
 
 
-def parse_yaml(filename: str):
+def parse_yaml(filename: str) -> Dict[str, Any]:
     with open(filename, "r") as file_handle:
         data = yaml.load(file_handle)
         return data
 
 
+class AbsErrorLocator(abc.ABC):
+
+    def __init__(self, metadata: Dict[str, Any]) -> None:
+        self.metadata = metadata
+
+    @abc.abstractmethod
+    def find_errors(self) -> Generator[str, None, None]:
+        """Find errors as strings."""
+
+
+class PageDataErrors(AbsErrorLocator):
+
+    def __init__(self, filename: str, path: str, metadata: Dict[str, Any]) -> None:
+        super().__init__(metadata)
+        self.filename = filename
+        self.path = path
+
+    def find_errors(self) -> Generator[str, None, None]:
+        pages = self.metadata["pagedata"]
+        for image_name, attributes in pages.items():
+            error_result = self.find_pagedata_file(image_name, attributes)
+            if error_result is not None:
+                yield error_result
+
+    def find_pagedata_file(self, image_name: str, attributes: str) -> Optional[str]:
+        if not os.path.exists(os.path.join(self.path, image_name)):
+            return f"The pagedata {self.filename} contains an " \
+                   f"nonexistent file {image_name}"
+
+        if attributes:
+            pass
+        return None
+
+class CaptureDateErrors(AbsErrorLocator):
+
+    def find_errors(self) -> Generator[str, None, None]:
+        capture_date = self.metadata["capture_date"]
+
+        if not isinstance(capture_date, datetime.datetime):
+            if isinstance(capture_date, str):
+                # Just because the parser wasn't able to convert into a
+                #   datetime object doesn't mean it's not valid per se.
+                #   It can also be a matched to a regex.
+                if DATE_REGEX.fullmatch(capture_date) is None:
+                    yield "Invalid YAML capture_date {}".format(
+                        capture_date)
+            else:
+                yield "Invalid YAML data type for in capture_date"
+
+
+class CaptureAgentErrors(AbsErrorLocator):
+
+    def find_errors(self) -> Generator[str, None, None]:
+        capture_agent = self.metadata["capture_agent"]
+        potential_error = self.check_capture_agent_format(capture_agent)
+        if potential_error is not None:
+            yield potential_error
+
+    @staticmethod
+    def check_capture_agent_format(capture_agent_field: Any) -> Optional[str]:
+        if not isinstance(capture_agent_field, str):
+            return "Invalid YAML capture_agent: {}".format(capture_agent_field)
+        return None
+
+class FindErrorsMetadata:
+
+    def __init__(self,
+                 filename: str,
+                 path: str,
+                 require_page_data: bool = True
+                 ) -> None:
+
+        self.filename = filename
+        self.path = path
+        self.require_page_data = require_page_data
+
+    def find_errors(self) -> result.ResultSummary:
+
+        summary_builder = result.SummaryDirector(source=self.filename)
+        try:
+            yml_metadata = parse_yaml(filename=self.filename)
+
+            try:
+                capture_date_error_finder = CaptureDateErrors(yml_metadata)
+                for error in capture_date_error_finder.find_errors():
+                    summary_builder.add_error(error)
+
+                capture_agent_error_finder = CaptureAgentErrors(yml_metadata)
+                for error in capture_agent_error_finder.find_errors():
+                    summary_builder.add_error(error)
+
+                if self.require_page_data:
+                    page_data_error_finder = PageDataErrors(self.filename, self.path, yml_metadata)
+                    for error in page_data_error_finder.find_errors():
+                        summary_builder.add_error(error)
+            except KeyError as e:
+                summary_builder.add_error(
+                    "{} is missing key, {}".format(self.filename, e)
+                )
+
+        except yaml.YAMLError as e:
+            summary_builder.add_error(
+                "Unable to read {}. Reason:{}".format(self.filename, e)
+            )
+        except FileNotFoundError as e:
+            summary_builder.add_error("Missing {}".format(e))
+        return summary_builder.construct()
+
+
 def find_errors_meta(
         filename: str,
         path: str,
-        require_page_data: bool = True):
+        require_page_data: bool = True) -> result.ResultSummary:
 
     """Validate meta.yml file.
 
@@ -225,59 +334,9 @@ def find_errors_meta(
     Yields: Error messages
 
     """
+    finder = FindErrorsMetadata(filename, path, require_page_data)
+    return finder.find_errors()
 
-    def find_pagedata_errors(metadata) -> Iterator[str]:
-        pages = metadata["pagedata"]
-        for image_name, attributes in pages.items():
-            if not os.path.exists(os.path.join(path, image_name)):
-                yield f"The pagedata {filename} contains an " \
-                      f"nonexistent file {image_name}"
-
-            if attributes:
-                pass
-
-    def find_capture_date_errors(metadata: Dict[str, Any]) -> Iterator[str]:
-        capture_date = metadata["capture_date"]
-
-        if not isinstance(capture_date, datetime.datetime):
-            if isinstance(capture_date, str):
-                # Just because the parser wasn't able to convert into a
-                #   datetime object doesn't mean it's not valid per se.
-                #   It can also be a matched to a regex.
-                if DATE_REGEX.fullmatch(capture_date) is None:
-                    yield "Invalid YAML capture_date {}".format(capture_date)
-            else:
-                yield "Invalid YAML data type for in capture_date"
-
-    def find_capture_agent_errors(metadata) -> Iterator[str]:
-        capture_agent = metadata["capture_agent"]
-        if not isinstance(capture_agent, str):
-            yield "Invalid YAML capture_agent: {}".format(capture_agent)
-
-    summary_builder = result.SummaryDirector(source=filename)
-    try:
-        yml_metadata = parse_yaml(filename=filename)
-
-        try:
-            for error in find_capture_date_errors(yml_metadata):
-                summary_builder.add_error(error)
-            for error in find_capture_agent_errors(yml_metadata):
-                summary_builder.add_error(error)
-            if require_page_data:
-                for error in find_pagedata_errors(yml_metadata):
-                    summary_builder.add_error(error)
-        except KeyError as e:
-            summary_builder.add_error(
-                "{} is missing key, {}".format(filename, e)
-            )
-
-    except yaml.YAMLError as e:
-        summary_builder.add_error(
-            "Unable to read {}. Reason:{}".format(filename, e)
-        )
-    except FileNotFoundError as e:
-        summary_builder.add_error("Missing {}".format(e))
-    return summary_builder.construct()
 
 
 def find_errors_ocr(path: str) -> result.ResultSummary:
@@ -310,8 +369,6 @@ def find_errors_ocr(path: str) -> result.ResultSummary:
 
     summary_builder = result.SummaryDirector(source=path)
     for xml_file in filter(ocr_filter, os.scandir(path)):
-
-        # print(xml_file.path)
         try:
             with open(xml_file.path, "r", encoding="utf8") as f:
                 raw_data = f.read()
@@ -331,7 +388,6 @@ def find_errors_ocr(path: str) -> result.ResultSummary:
             summary_builder.add_error("File missing")
         except etree.XMLSyntaxError as error:
             summary_builder.add_error("Syntax error: {}".format(error))
-    # summary_builder = result.SummaryDirector(source=path)
     return summary_builder.construct()
 
 

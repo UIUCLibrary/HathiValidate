@@ -1,6 +1,5 @@
 import abc
-import typing
-from typing import Iterator
+from typing import Iterator, IO, List
 import itertools
 import sys
 import logging
@@ -43,7 +42,7 @@ def make_point(message: str, width: int) -> Iterator[str]:
             yield "{}{}".format(" " * len(bullet), line)
 
 
-def get_report_as_str(results: typing.List[result.Result],
+def get_report_as_str(results: List[result.Result],
                       width: int = 0) -> str:
 
     report_width = width if width > 0 else 80
@@ -83,7 +82,7 @@ def get_report_as_str(results: typing.List[result.Result],
 
 class AbsReport(metaclass=abc.ABCMeta):
     @abc.abstractmethod
-    def generate(self, results: typing.List[result.Result]) -> None:
+    def generate(self, results: List[result.Result]) -> None:
         pass
 
 
@@ -92,15 +91,15 @@ class Report:
         warnings.warn("Use reporter class instead", DeprecationWarning)
         self._strategy = report_strategy
 
-    def generate(self, results: typing.List[result.Result]) -> None:
+    def generate(self, results: List[result.Result]) -> None:
         self._strategy.generate(results)
 
 
 class ConsoleReport(AbsReport):
-    def __init__(self, file=sys.stdout) -> None:
+    def __init__(self, file: IO[str] = sys.stdout) -> None:
         self.file = file
 
-    def generate(self, results: typing.List[result.Result]) -> None:
+    def generate(self, results: List[result.Result]) -> None:
         sorted_results = sorted(
             results, key=lambda r: r.source if r.source is not None else ""
         )
@@ -118,7 +117,7 @@ class LogReport(AbsReport):
     def __init__(self, logger: logging.Logger):
         self.logger = logger
 
-    def generate(self, results: typing.List[result.Result]) -> None:
+    def generate(self, results: List[result.Result]) -> None:
         sorted_results = sorted(
             results, key=lambda r: r.source if r.source is not None else ""
         )
@@ -147,7 +146,7 @@ class TextReport(AbsReport):
     def __init__(self, file: str):
         self.file = file
 
-    def generate(self, results: typing.List[result.Result]) -> None:
+    def generate(self, results: List[result.Result]) -> None:
         sorted_results = sorted(
             results, key=lambda r: r.source if r.source is not None else ""
         )
@@ -175,7 +174,7 @@ class Reporter:
 
 
 class ConsoleReporter(AbsReporter):
-    def __init__(self, file=sys.stdout) -> None:
+    def __init__(self, file: IO[str] = sys.stdout) -> None:
         self.file = file
 
     def report(self, report: str) -> None:
