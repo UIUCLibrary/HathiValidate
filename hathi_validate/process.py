@@ -219,7 +219,11 @@ class AbsErrorLocator(abc.ABC):
 
 class PageDataErrors(AbsErrorLocator):
 
-    def __init__(self, filename: str, path: str, metadata: Dict[str, Any]) -> None:
+    def __init__(self,
+                 filename: str,
+                 path: str,
+                 metadata: Dict[str, Any]) -> None:
+
         super().__init__(metadata)
         self.filename = filename
         self.path = path
@@ -231,7 +235,10 @@ class PageDataErrors(AbsErrorLocator):
             if error_result is not None:
                 yield error_result
 
-    def find_pagedata_file(self, image_name: str, attributes: str) -> Optional[str]:
+    def find_pagedata_file(self,
+                           image_name: str,
+                           attributes: str) -> Optional[str]:
+
         if not os.path.exists(os.path.join(self.path, image_name)):
             return f"The pagedata {self.filename} contains an " \
                    f"nonexistent file {image_name}"
@@ -239,6 +246,7 @@ class PageDataErrors(AbsErrorLocator):
         if attributes:
             pass
         return None
+
 
 class CaptureDateErrors(AbsErrorLocator):
 
@@ -271,6 +279,7 @@ class CaptureAgentErrors(AbsErrorLocator):
             return "Invalid YAML capture_agent: {}".format(capture_agent_field)
         return None
 
+
 class FindErrorsMetadata:
 
     def __init__(self,
@@ -299,7 +308,9 @@ class FindErrorsMetadata:
                     summary_builder.add_error(error)
 
                 if self.require_page_data:
-                    page_data_error_finder = PageDataErrors(self.filename, self.path, yml_metadata)
+                    page_data_error_finder = PageDataErrors(
+                        self.filename, self.path, yml_metadata
+                    )
                     for error in page_data_error_finder.find_errors():
                         summary_builder.add_error(error)
             except KeyError as e:
@@ -336,7 +347,6 @@ def find_errors_meta(
     """
     finder = FindErrorsMetadata(filename, path, require_page_data)
     return finder.find_errors()
-
 
 
 def find_errors_ocr(path: str) -> result.ResultSummary:

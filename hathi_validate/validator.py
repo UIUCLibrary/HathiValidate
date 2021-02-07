@@ -36,7 +36,10 @@ class ValidateMissingFiles(absValidator):
 
 class ValidateComponents(absValidator):
 
-    def __init__(self, path: str, component_regex: str, *extensions: str) -> None:
+    def __init__(self,
+                 path: str,
+                 component_regex: str,
+                 *extensions: str) -> None:
         """
 
         Args:
