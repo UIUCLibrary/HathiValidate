@@ -12,7 +12,7 @@ setup(
     install_requires=[
         "lxml",
         "PyYAML",
-        'importlib_resources;python_version<"3.7"',
+        'importlib_resources;python_version<"3.9"',
                       ],
     tests_require=['pytest'],
 
