@@ -377,7 +377,7 @@ def test_find_errors_ocr_valid_no_errors(monkeypatch):
     """
     mock_path = Mock()
 
-    def mock_scandir(_):
+    def mock_scandir(*args, **kwargs):
         mock_xml = MagicMock()
         mock_xml.name = "alto.xml"
         return [

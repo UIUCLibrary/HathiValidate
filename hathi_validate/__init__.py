@@ -8,6 +8,5 @@
 
 """
 
-from .xml_schemes import get_scheme
 
 FULL_TITLE = "DS Hathi Trust Validate"

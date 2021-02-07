@@ -18,7 +18,6 @@ except ImportError:
 
 
 from hathi_validate import result
-from hathi_validate import xml_schemes
 from . import validator
 
 DIRECTORY_REGEX = \
@@ -383,8 +382,13 @@ def find_errors_ocr(path: str) -> result.ResultSummary:
         return True
 
     logger = logging.getLogger(__name__)
-    alto_xsd = etree.XML(xml_schemes.get_scheme("alto"))
-    alto_scheme = etree.XMLSchema(alto_xsd)
+    alto_xsd_file_path = files("hathi_validate").joinpath("xsd/alto.xsd")
+    with as_file(alto_xsd_file_path) as schema:
+        with schema.open() as file:
+            xsd = \
+                etree.XML(bytes(file.read(), encoding="utf-8"))  # type: ignore
+
+    alto_scheme = etree.XMLSchema(xsd)
 
     summary_builder = result.SummaryDirector(source=path)
     for xml_file in filter(ocr_filter, os.scandir(path)):
