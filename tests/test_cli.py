@@ -98,4 +98,4 @@ def test_validate_success_message(validator_type,included_message, monkeypatch):
     monkeypatch.setattr(process, "run_validation", mock_errors)
     validator.get_errors("123")
     assert mylogger.info.called is True
-    assert included_message in mylogger.info.call_args.args[0]
+    assert included_message in mylogger.info.call_args[0][0]
