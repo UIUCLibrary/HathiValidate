@@ -189,8 +189,8 @@ def find_errors_marc(filename: str) -> result.ResultSummary:
     xsd = etree.XML(xml_schemes.MARC_XSD)  # type: ignore
     scheme = etree.XMLSchema(xsd)
     try:
-        with open(filename, "r", encoding="utf8") as f:
-            raw_data = f.read()
+        with open(filename, "r", encoding="utf8") as file_handle:
+            raw_data = file_handle.read()
         doc = etree.fromstring(raw_data)
         if not scheme.validate(doc):  # type: ignore
             summary_builder.add_error("Unable to validate")
@@ -380,8 +380,8 @@ def find_errors_ocr(path: str) -> result.ResultSummary:
     summary_builder = result.SummaryDirector(source=path)
     for xml_file in filter(ocr_filter, os.scandir(path)):
         try:
-            with open(xml_file.path, "r", encoding="utf8") as f:
-                raw_data = f.read()
+            with open(xml_file.path, "r", encoding="utf8") as file_handle:
+                raw_data = file_handle.read()
 
             doc = etree.fromstring(raw_data.encode("utf8"))
 

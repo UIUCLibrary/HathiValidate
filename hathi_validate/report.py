@@ -60,11 +60,11 @@ class ReportStringBuilder:
         )
 
         grouped_results = []
-        for k, v in itertools.groupby(sorted_results, key=lambda r: r.source):
+        for key, value in itertools.groupby(sorted_results, key=lambda r: r.source):
             new_messages = []
-            for new_message in v:
+            for new_message in value:
                 new_messages.append(new_message)
-            grouped_results.append((k, new_messages))
+            grouped_results.append((key, new_messages))
 
         warnings_section = self.get_warnings_section(grouped_results,
                                                      report_width)
