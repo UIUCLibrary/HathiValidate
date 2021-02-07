@@ -9,6 +9,13 @@ import re
 from typing import Tuple, Iterator, List, Dict, Any, Generator, Optional
 import yaml
 from lxml import etree
+try:
+    from importlib.resources import files
+    from importlib.resources import as_file
+except ImportError:
+    from importlib_resources import files
+    from importlib_resources import as_file
+
 
 from hathi_validate import result
 from hathi_validate import xml_schemes
@@ -185,8 +192,10 @@ def find_errors_marc(filename: str) -> result.ResultSummary:
 
     """
     summary_builder = result.SummaryDirector(source=filename)
-
-    xsd = etree.XML(xml_schemes.MARC_XSD)  # type: ignore
+    xsd = files("hathi_validate").joinpath("xsd/MARC21slim.xsd")
+    with as_file(xsd) as schema:
+        with open(schema) as file:
+            xsd = etree.XML(file.read())  # type: ignore
     scheme = etree.XMLSchema(xsd)
     try:
         with open(filename, "r", encoding="utf8") as file_handle:
