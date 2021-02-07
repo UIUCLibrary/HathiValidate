@@ -103,9 +103,9 @@ def parse_checksum(line: str) -> Tuple[str, str]:
 def calculate_md5(filename: str, chunk_size: int = 8192) -> str:
     md5 = hashlib.md5()
 
-    with open(filename, "rb") as f:
+    with open(filename, "rb") as file_handle:
         while True:
-            data = f.read(chunk_size)
+            data = file_handle.read(chunk_size)
             if not data:
                 break
             md5.update(data)
@@ -168,8 +168,8 @@ def find_failing_checksums(path: str, report: str) -> result.ResultSummary:
 
 
 def extracts_checksums(report: str) -> Iterator[Tuple[str, str]]:
-    with open(report, "r") as f:
-        for line in f:
+    with open(report, "r") as file_read:
+        for line in file_read:
             md5, filename = parse_checksum(line)
             yield md5, filename
 
@@ -196,8 +196,8 @@ def find_errors_marc(filename: str) -> result.ResultSummary:
             summary_builder.add_error("Unable to validate")
     except FileNotFoundError:
         summary_builder.add_error("File missing")
-    except etree.XMLSyntaxError as e:
-        summary_builder.add_error("Syntax error: {}".format(e))
+    except etree.XMLSyntaxError as error:
+        summary_builder.add_error("Syntax error: {}".format(error))
     return summary_builder.construct()
 
 
@@ -313,17 +313,17 @@ class FindErrorsMetadata:
                     )
                     for error in page_data_error_finder.find_errors():
                         summary_builder.add_error(error)
-            except KeyError as e:
+            except KeyError as error:
                 summary_builder.add_error(
-                    "{} is missing key, {}".format(self.filename, e)
+                    "{} is missing key, {}".format(self.filename, error)
                 )
 
-        except yaml.YAMLError as e:
+        except yaml.YAMLError as error:
             summary_builder.add_error(
-                "Unable to read {}. Reason:{}".format(self.filename, e)
+                "Unable to read {}. Reason:{}".format(self.filename, error)
             )
-        except FileNotFoundError as e:
-            summary_builder.add_error("Missing {}".format(e))
+        except FileNotFoundError as error:
+            summary_builder.add_error("Missing {}".format(error))
         return summary_builder.construct()
 
 
