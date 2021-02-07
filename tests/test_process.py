@@ -1,4 +1,6 @@
 import os
+from unittest.mock import Mock, MagicMock, mock_open, patch
+
 import pytest
 import shutil
 from hathi_validate import process
@@ -357,3 +359,61 @@ def file_with_utf8_and_non_utf8(tmpdir_factory):
 def test_utf_check_invalid(file_with_utf8_and_non_utf8):
     result = process.find_non_utf8_characters(file_with_utf8_and_non_utf8)
     assert len(result.results) == 1
+
+def test_find_errors_ocr_valid_no_errors(monkeypatch):
+    valid_xml = """<?xml version="1.0" encoding="UTF-8"?>
+<alto xmlns="http://www.loc.gov/standards/alto/ns-v2#">
+    <Description>
+        <MeasurementUnit>inch1200</MeasurementUnit>
+        <sourceImageInformation>
+            <fileName>\\\\libdpsrv1\\storage\\root\\projects\\NDNP\\win_19101017-19101231\\win_19101017-19101231-scan-1-\\ocr\\0070.tif</fileName>
+        </sourceImageInformation>
+    </Description>
+    <Styles></Styles>
+    <Layout>
+        <Page ID="Dummy" PHYSICAL_IMG_NR="234"></Page>
+    </Layout>
+</alto>
+    """
+    mock_path = Mock()
+
+    def mock_scandir(_):
+        mock_xml = MagicMock()
+        mock_xml.name = "alto.xml"
+        return [
+            mock_xml
+        ]
+
+    monkeypatch.setattr(os, "scandir", mock_scandir)
+    with patch("builtins.open", mock_open(read_data=valid_xml)):
+        summary = process.find_errors_ocr(mock_path)
+    assert len(summary.results) == 0
+
+def test_find_errors_ocr_invalid_errors(monkeypatch):
+    # This missing a Layout element which is a required field
+    invalid_xml = """<?xml version="1.0" encoding="UTF-8"?>
+<alto xmlns="http://www.loc.gov/standards/alto/ns-v2#">
+    <Description>
+        <MeasurementUnit>inch1200</MeasurementUnit>
+        <sourceImageInformation>
+            <fileName>\\\\libdpsrv1\\storage\\root\\projects\\NDNP\\win_19101017-19101231\\win_19101017-19101231-scan-1-\\ocr\\0070.tif</fileName>
+        </sourceImageInformation>
+    </Description>
+    <Styles></Styles>
+</alto>
+    """
+    mock_path = Mock()
+
+    def mock_scandir(_):
+        mock_xml = MagicMock()
+        mock_xml.name = "alto.xml"
+        return [
+            mock_xml
+        ]
+
+    monkeypatch.setattr(os, "scandir", mock_scandir)
+    with patch("builtins.open", mock_open(read_data=invalid_xml)):
+        summary = process.find_errors_ocr(mock_path)
+    assert len(summary.results) == 1
+    assert "does not validate" in summary.results[0].message
+

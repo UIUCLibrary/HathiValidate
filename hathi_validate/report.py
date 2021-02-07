@@ -1,13 +1,18 @@
 import abc
-import typing
+from typing import Iterator, IO, List, Generator
 import itertools
 import sys
+import logging
 import warnings
 
 from . import result
 
 
-def _split_text_line_by_words(text, max_len):
+def _split_text_line_by_words(
+        text: str,
+        max_len: int
+) -> Generator[str, None, None]:
+
     words = text.split()
     line = ""
     while words:
@@ -30,50 +35,88 @@ def _split_text_line_by_words(text, max_len):
     yield line
 
 
-def make_point(message, width):
+def make_point(message: str, width: int) -> Iterator[str]:
     bullet = "* "
-    for i, line in enumerate(_split_text_line_by_words(message, width - len(bullet))):
+    for i, line in \
+            enumerate(_split_text_line_by_words(message, width - len(bullet))):
+
         if i == 0:
             yield "{}{}".format(bullet, line)
         else:
             yield "{}{}".format(" " * len(bullet), line)
 
 
-def get_report_as_str(results: typing.List[result.Result], width=0):
-    report_width = width if width > 0 else 80
-    sorted_results = sorted(results, key=lambda r: r.source)
-    grouped = list(itertools.groupby(sorted_results, key=lambda r: r.source))
-    grouped2 = []
-    for k, v in itertools.groupby(sorted_results, key=lambda r: r.source):
-        new_messages = []
-        for new_message in v:
-            new_messages.append(new_message)
-        grouped2.append((k, new_messages))
-    header = "Validation Results"
-    main_spacer = "=" * report_width
-    group_spacer = "-" * report_width
-    warning_groups = []
-    if len(grouped2) > 0:
-        for source_group in grouped2:
-            msg_list = []
-            for msg in source_group[1]:
-                # if width > 0:
-                for line in make_point(msg.message, report_width):
-                    msg_list.append(line)
+class ReportStringBuilder:
+    def __init__(self, results: List[result.Result]) -> None:
+        self.results = results
+        self.header = "Validation Results"
 
-            group_warnings = "\n".join(msg_list)
-            warning_groups.append("{}\n\n{}\n".format(source_group[0], group_warnings))
-        warnings = "\n{}\n".format(group_spacer).join(warning_groups)
-    else:
-        warnings = "No validation errors detected.\n"
+    def build_string(self, width: int = 0) -> str:
+        report_width = width if width > 0 else 80
+
+        sorted_results = sorted(
+            self.results,
+            key=lambda r: r.source if r.source is not None else ""
+        )
+
+        grouped_results = []
+        for key, value in itertools.groupby(
+                sorted_results, key=lambda r: r.source):
+
+            new_messages = []
+            for new_message in value:
+                new_messages.append(new_message)
+            grouped_results.append((key, new_messages))
+
+        warnings_section = self.get_warnings_section(grouped_results,
+                                                     report_width)
+
+        main_spacer = "=" * report_width
+        return f"{main_spacer}\n" \
+               f"{self.header}\n" \
+               f"{main_spacer}\n" \
+               f"{warnings_section}" \
+               f"{main_spacer}"
+
+    def get_warnings_section(self, grouped_results, report_width: int) -> str:
+        group_spacer = "-" * report_width
+        if len(grouped_results) == 0:
+            return "No validation errors detected.\n"
+
+        warning_groups = []
+        for group_name, source_group in grouped_results:
+            warning_message = \
+                self.build_warning_message(
+                    group_name,
+                    source_group,
+                    report_width
+                )
+            warning_groups.append(warning_message)
+
+        return "\n{}\n".format(group_spacer).join(warning_groups)
+
+    @staticmethod
+    def build_warning_message(group_name: str,
+                              source_group: List[result.Result],
+                              report_width: int) -> str:
+        msg_list = []
+        for msg in source_group:
+            # if width > 0:
+            for line in make_point(msg.message, report_width):
+                msg_list.append(line)
+        group_warnings = "\n".join(msg_list)
+        warning_message = "{}\n\n{}\n".format(group_name, group_warnings)
+        return warning_message
 
 
-    return "{}\n{}\n{}\n{}{}".format(main_spacer, header, main_spacer, warnings, main_spacer)
+def get_report_as_str(results: List[result.Result], width: int = 0) -> str:
+    builder = ReportStringBuilder(results)
+    return builder.build_string(width)
 
 
 class AbsReport(metaclass=abc.ABCMeta):
     @abc.abstractmethod
-    def generate(self, results: typing.List[result.Result]):
+    def generate(self, results: List[result.Result]) -> None:
         pass
 
 
@@ -82,16 +125,18 @@ class Report:
         warnings.warn("Use reporter class instead", DeprecationWarning)
         self._strategy = report_strategy
 
-    def generate(self, results: typing.List[result.Result]):
+    def generate(self, results: List[result.Result]) -> None:
         self._strategy.generate(results)
 
 
 class ConsoleReport(AbsReport):
-    def __init__(self, file=sys.stdout):
+    def __init__(self, file: IO[str] = sys.stdout) -> None:
         self.file = file
 
-    def generate(self, results: typing.List[result.Result]):
-        sorted_results = sorted(results, key=lambda r: r.source)
+    def generate(self, results: List[result.Result]) -> None:
+        sorted_results = sorted(
+            results, key=lambda r: r.source if r.source is not None else ""
+        )
         grouped = itertools.groupby(sorted_results, key=lambda r: r.source)
         print("\nValidation Results:")
         print("===================")
@@ -103,40 +148,42 @@ class ConsoleReport(AbsReport):
 
 
 class LogReport(AbsReport):
-    def __init__(self, logger):
+    def __init__(self, logger: logging.Logger):
         self.logger = logger
 
-    def generate(self, results: typing.List[result.Result]):
-        summery = ""
-        sorted_results = sorted(results, key=lambda r: r.source)
+    def generate(self, results: List[result.Result]) -> None:
+        sorted_results = sorted(
+            results, key=lambda r: r.source if r.source is not None else ""
+        )
         grouped = itertools.groupby(sorted_results, key=lambda r: r.source)
         top = "Validation Results"
         brace = "==================="
 
-        # self.logger.info(top)
         group_errors_messages = []
         for source_group in grouped:
-
-            # self.logger.info("{}".format(source_group[0]))
             group_errors = []
             for i, res in enumerate(source_group[1]):
                 line = "{}: {}".format(i + 1, res.message)
                 group_errors.append(line)
-                # print(line)
-                # self.logger.info(line)
-            group_errors_messages.append(">{}\n".format(source_group[0], "\n".join(group_errors)))
-            # self.logger.info(group_errors_message)
-        summery = "{}\n{}\n{}".format(top, brace, "\n".join(group_errors_messages))
+            group_errors_messages.append(
+                ">{}\n{}".format(source_group[0], "\n".join(group_errors))
+            )
+
+        summery = \
+            "{}\n{}\n{}".format(top, brace, "\n".join(group_errors_messages))
+
         # print("==============")
         self.logger.info(summery)
 
 
 class TextReport(AbsReport):
-    def __init__(self, file):
+    def __init__(self, file: str):
         self.file = file
 
-    def generate(self, results: typing.List[result.Result]):
-        sorted_results = sorted(results, key=lambda r: r.source)
+    def generate(self, results: List[result.Result]) -> None:
+        sorted_results = sorted(
+            results, key=lambda r: r.source if r.source is not None else ""
+        )
         grouped = itertools.groupby(sorted_results, key=lambda r: r.source)
         with open(self.file, "w", encoding="utf8") as w:
             w.write("Validation Results\n\n")
@@ -148,7 +195,7 @@ class TextReport(AbsReport):
 
 class AbsReporter(metaclass=abc.ABCMeta):
     @abc.abstractmethod
-    def report(self, report):
+    def report(self, report: str) -> None:
         pass
 
 
@@ -156,30 +203,30 @@ class Reporter:
     def __init__(self, reporter_strategy: AbsReporter) -> None:
         self._strategy = reporter_strategy
 
-    def report(self, report):
+    def report(self, report: str) -> None:
         self._strategy.report(report)
 
 
 class ConsoleReporter(AbsReporter):
-    def __init__(self, file=sys.stdout):
+    def __init__(self, file: IO[str] = sys.stdout) -> None:
         self.file = file
 
-    def report(self, report):
+    def report(self, report: str) -> None:
         print("\n\n{}".format(report), file=self.file)
 
 
 class FileOutputReporter(AbsReporter):
-    def __init__(self, filename):
+    def __init__(self, filename: str) -> None:
         self.filename = filename
 
-    def report(self, report):
-        with open(self.filename, "w", encoding="utf8") as w:
-            w.write("{}\n".format(report))
+    def report(self, report: str) -> None:
+        with open(self.filename, "w", encoding="utf8") as write_file:
+            write_file.write("{}\n".format(report))
 
 
 class LogReporter(AbsReporter):
-    def __init__(self, logger):
+    def __init__(self, logger: logging.Logger) -> None:
         self.logger = logger
 
-    def report(self, report):
+    def report(self, report: str) -> None:
         self.logger.info("\n{}".format(report))
