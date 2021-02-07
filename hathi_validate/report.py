@@ -8,7 +8,11 @@ import warnings
 from . import result
 
 
-def _split_text_line_by_words(text: str, max_len: int) -> Generator[str, None, None]:
+def _split_text_line_by_words(
+        text: str,
+        max_len: int
+) -> Generator[str, None, None]:
+
     words = text.split()
     line = ""
     while words:
@@ -89,7 +93,10 @@ class ReportStringBuilder:
 
         return "\n{}\n".format(group_spacer).join(warning_groups)
 
-    def build_warning_message(self, group_name: str, source_group: List[result.Result], report_width: int) -> str:
+    @staticmethod
+    def build_warning_message(group_name: str,
+                              source_group: List[result.Result],
+                              report_width: int) -> str:
         msg_list = []
         for msg in source_group:
             # if width > 0:
