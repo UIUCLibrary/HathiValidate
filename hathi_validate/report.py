@@ -1,5 +1,5 @@
 import abc
-from typing import Iterator, IO, List
+from typing import Iterator, IO, List, Generator
 import itertools
 import sys
 import logging
@@ -8,7 +8,7 @@ import warnings
 from . import result
 
 
-def _split_text_line_by_words(text: str, max_len: int) -> Iterator[str]:
+def _split_text_line_by_words(text: str, max_len: int) -> Generator[str, None, None]:
     words = text.split()
     line = ""
     while words:
@@ -42,42 +42,67 @@ def make_point(message: str, width: int) -> Iterator[str]:
             yield "{}{}".format(" " * len(bullet), line)
 
 
-def get_report_as_str(results: List[result.Result],
-                      width: int = 0) -> str:
+class ReportStringBuilder:
+    def __init__(self, results: List[result.Result]) -> None:
+        self.results = results
+        self.header = "Validation Results"
 
-    report_width = width if width > 0 else 80
-    sorted_results = sorted(
-        results, key=lambda r: r.source if r.source is not None else ""
-    )
-    grouped2 = []
-    for k, v in itertools.groupby(sorted_results, key=lambda r: r.source):
-        new_messages = []
-        for new_message in v:
-            new_messages.append(new_message)
-        grouped2.append((k, new_messages))
-    header = "Validation Results"
-    main_spacer = "=" * report_width
-    group_spacer = "-" * report_width
-    warning_groups = []
-    if len(grouped2) > 0:
-        for source_group in grouped2:
-            msg_list = []
-            for msg in source_group[1]:
-                # if width > 0:
-                for line in make_point(msg.message, report_width):
-                    msg_list.append(line)
+    def build_string(self, width: int = 0) -> str:
+        report_width = width if width > 0 else 80
 
-            group_warnings = "\n".join(msg_list)
+        sorted_results = sorted(
+            self.results,
+            key=lambda r: r.source if r.source is not None else ""
+        )
 
-            warning_groups.append(
-                "{}\n\n{}\n".format(source_group[0], group_warnings)
-            )
+        grouped_results = []
+        for k, v in itertools.groupby(sorted_results, key=lambda r: r.source):
+            new_messages = []
+            for new_message in v:
+                new_messages.append(new_message)
+            grouped_results.append((k, new_messages))
 
-        warnings = "\n{}\n".format(group_spacer).join(warning_groups)
-    else:
-        warnings = "No validation errors detected.\n"
+        warnings_section = self.get_warnings_section(grouped_results,
+                                                     report_width)
 
-    return f"{main_spacer}\n{header}\n{main_spacer}\n{warnings}{main_spacer}"
+        main_spacer = "=" * report_width
+        return f"{main_spacer}\n" \
+               f"{self.header}\n" \
+               f"{main_spacer}\n" \
+               f"{warnings_section}" \
+               f"{main_spacer}"
+
+    def get_warnings_section(self, grouped_results, report_width: int) -> str:
+        group_spacer = "-" * report_width
+        if len(grouped_results) == 0:
+            return "No validation errors detected.\n"
+
+        warning_groups = []
+        for group_name, source_group in grouped_results:
+            warning_message = \
+                self.build_warning_message(
+                    group_name,
+                    source_group,
+                    report_width
+                )
+            warning_groups.append(warning_message)
+
+        return "\n{}\n".format(group_spacer).join(warning_groups)
+
+    def build_warning_message(self, group_name: str, source_group: List[result.Result], report_width: int) -> str:
+        msg_list = []
+        for msg in source_group:
+            # if width > 0:
+            for line in make_point(msg.message, report_width):
+                msg_list.append(line)
+        group_warnings = "\n".join(msg_list)
+        warning_message = "{}\n\n{}\n".format(group_name, group_warnings)
+        return warning_message
+
+
+def get_report_as_str(results: List[result.Result], width: int = 0) -> str:
+    builder = ReportStringBuilder(results)
+    return builder.build_string(width)
 
 
 class AbsReport(metaclass=abc.ABCMeta):

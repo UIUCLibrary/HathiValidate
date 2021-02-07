@@ -34,6 +34,7 @@ def get_parser() -> argparse.ArgumentParser:
 
     parser.add_argument(
         "--save-report",
+        type=str,
         dest="report_name",
         help="Save report to a file"
     )
@@ -74,9 +75,10 @@ def main(cli_args: Optional[List[str]] = None) -> None:
         console_reporter2 = report.Reporter(report.ConsoleReporter())
         console_reporter2.report(report_generator.manifest_report)
         console_reporter2.report(report_generator.validation_report)
-        if 'report_name' in args:
+        report_name = args.report_name
+        if isinstance(report_name, str):
             file_reporter = report.Reporter(
-                report.FileOutputReporter(args.report_name))
+                report.FileOutputReporter(report_name))
             file_reporter.report(report_generator.validation_report)
 
 

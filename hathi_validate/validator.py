@@ -89,7 +89,7 @@ class ValidateComponents(absValidator):
         results = [result for result in report_builder.construct()]
         self.results = results
 
-    def _component_filter(self, entry: os.DirEntry) -> bool:
+    def _component_filter(self, entry: os.DirEntry[str]) -> bool:
         if not entry.is_file():
             return False
 
