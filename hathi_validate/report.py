@@ -60,7 +60,9 @@ class ReportStringBuilder:
         )
 
         grouped_results = []
-        for key, value in itertools.groupby(sorted_results, key=lambda r: r.source):
+        for key, value in itertools.groupby(
+                sorted_results, key=lambda r: r.source):
+
             new_messages = []
             for new_message in value:
                 new_messages.append(new_message)
