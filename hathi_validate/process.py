@@ -203,7 +203,7 @@ def find_errors_marc(filename: str) -> result.ResultSummary:
 
 def parse_yaml(filename: str) -> Dict[str, Any]:
     with open(filename, "r") as file_handle:
-        data = yaml.load(file_handle)
+        data = yaml.load(file_handle, Loader=yaml.SafeLoader)
         return data
 
 
