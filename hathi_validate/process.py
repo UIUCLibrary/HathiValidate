@@ -173,6 +173,7 @@ def find_errors_marc(filename: str) -> result.ResultSummary:
         filename:
 
     Returns:
+        Returns a ResultSummary
 
     """
     summary_builder = result.SummaryDirector(source=filename)
