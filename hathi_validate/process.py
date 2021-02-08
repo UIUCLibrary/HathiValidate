@@ -10,9 +10,9 @@ from typing import Tuple, Iterator, List, Dict, Any, Generator, Optional
 import yaml
 from lxml import etree
 try:
-    from importlib.resources import read_text  # type: ignore
+    from importlib.resources import read_text  # type: ignore  # pragma: no cover  # noqa
 except ImportError:
-    from importlib_resources import read_text   # type: ignore
+    from importlib_resources import read_text   # type: ignore # pragma: no cover  # noqa
 
 
 from hathi_validate import result
