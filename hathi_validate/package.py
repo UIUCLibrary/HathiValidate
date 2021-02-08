@@ -1,3 +1,5 @@
+"""Package related stuff."""
+
 import os
 from typing import Iterator
 

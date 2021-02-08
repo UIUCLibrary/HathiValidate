@@ -1,3 +1,5 @@
+"""Process that validations."""
+
 import abc
 import datetime
 import hashlib

@@ -1,3 +1,5 @@
+"""Manage file manifests."""
+
 import collections
 import os
 import typing
