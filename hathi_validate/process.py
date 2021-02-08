@@ -35,7 +35,7 @@ class InvalidChecksum(ValidationError):
 
 
 def find_missing_files(path: str) -> result.ResultSummary:
-    """check for expected files exist on the path
+    """Check for expected files exist on the path.
 
     Args:
         path:
@@ -59,7 +59,7 @@ def find_missing_files(path: str) -> result.ResultSummary:
 
 
 def find_extra_subdirectory(path: str) -> result.ResultSummary:
-    """Check path for any subdirectories
+    """Check path for any subdirectories.
 
     Args:
         path:
@@ -112,7 +112,7 @@ def is_same_hash(*hashes: str) -> bool:
 
 
 def find_failing_checksums(path: str, report: str) -> result.ResultSummary:
-    """validate that the checksums in the .fil file match
+    """Validate that the checksums in the .fil file match.
 
     Args:
         path:
@@ -167,8 +167,7 @@ def extracts_checksums(report: str) -> Iterator[Tuple[str, str]]:
 
 
 def find_errors_marc(filename: str) -> result.ResultSummary:
-    """
-    Validate the MARC file
+    """Validate the MARC file.
 
     Args:
         filename:

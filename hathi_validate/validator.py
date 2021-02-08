@@ -40,7 +40,7 @@ class ValidateComponents(absValidator):
                  path: str,
                  component_regex: str,
                  *extensions: str) -> None:
-        """
+        """Create a new ValidateComponents object.
 
         Args:
             path: Directory to find the files
