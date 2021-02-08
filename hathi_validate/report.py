@@ -200,6 +200,7 @@ class Report:
         self._strategy = report_strategy
 
     def generate(self, results: List[result.Result]) -> None:
+        """Generate the report."""
         self._strategy.generate(results)
 
 

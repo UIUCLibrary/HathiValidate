@@ -17,7 +17,7 @@ class absValidator(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def validate(self) -> None:
-        pass
+        """Perform validations."""
 
 
 class ValidateMissingFiles(absValidator):
@@ -27,6 +27,7 @@ class ValidateMissingFiles(absValidator):
         self.path: str = path
 
     def validate(self) -> None:
+        """Perform validations."""
         logger = logging.getLogger(__name__)
         logger.debug("Looking for missing files in %s", self.path)
         for missing_file in process.find_missing_files(self.path):
@@ -56,6 +57,7 @@ class ValidateComponents(absValidator):
         self._component_mask = re.compile(component_regex)
 
     def validate(self) -> None:
+        """Perform validations."""
         components = set()
         found_files = False
 
@@ -107,6 +109,7 @@ class ValidateExtraSubdirectories(absValidator):
         self.path: str = path
 
     def validate(self) -> None:
+        """Perform validations."""
         for extra_subdirectory in process.find_extra_subdirectory(self.path):
             self.results.append(extra_subdirectory)
 
@@ -118,6 +121,7 @@ class ValidateChecksumReport(absValidator):
         self.checksum_report = checksum_report
 
     def validate(self) -> None:
+        """Perform validations."""
         for failing_checksum in process.find_failing_checksums(
                 self.path, self.checksum_report):
 
@@ -136,6 +140,7 @@ class ValidateMetaYML(absValidator):
         self.require_page_data = required_page_data
 
     def validate(self) -> None:
+        """Perform validations."""
         for error in process.find_errors_meta(
                 self.yaml_file, self.path, self.require_page_data):
 
@@ -148,6 +153,7 @@ class ValidateMarc(absValidator):
         self.marc_file = marc_file
 
     def validate(self) -> None:
+        """Perform validations."""
         logger = logging.getLogger(__name__)
         logger.info("Validating {}".format(self.marc_file))
         for error in process.find_errors_marc(filename=self.marc_file):
@@ -160,6 +166,7 @@ class ValidateOCRFiles(absValidator):
         self.path = path
 
     def validate(self) -> None:
+        """Perform validations."""
         for error in process.find_errors_ocr(path=self.path):
             self.results.append(error)
 
@@ -170,5 +177,6 @@ class ValidateUTF8Files(absValidator):
         self.file_path = file_path
 
     def validate(self) -> None:
+        """Perform validations."""
         for error in process.find_non_utf8_characters(self.file_path):
             self.results.append(error)

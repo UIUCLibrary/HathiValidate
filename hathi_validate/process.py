@@ -210,7 +210,12 @@ class AbsErrorLocator(abc.ABC):
 
     @abc.abstractmethod
     def find_errors(self) -> Generator[str, None, None]:
-        """Find errors as strings."""
+        """Find errors as strings.
+
+        Yields:
+            Yields errors as strings if found any, else returns None.
+
+        """
 
 
 class PageDataErrors(AbsErrorLocator):
@@ -225,6 +230,12 @@ class PageDataErrors(AbsErrorLocator):
         self.path = path
 
     def find_errors(self) -> Generator[str, None, None]:
+        """Find errors as strings.
+
+        Yields:
+            Yields errors as strings if found any, else returns None.
+
+        """
         pages = self.metadata["pagedata"]
         for image_name, attributes in pages.items():
             error_result = self.find_pagedata_file(image_name, attributes)
@@ -234,6 +245,17 @@ class PageDataErrors(AbsErrorLocator):
     def find_pagedata_file(self,
                            image_name: str,
                            attributes: str) -> Optional[str]:
+        """Locate pagedata file and check if exists.
+
+        Args:
+            image_name:
+            attributes:
+
+        Returns:
+            If found any errors, returns message as human readable string. If
+                no errors found, returns None.
+
+        """
 
         if not os.path.exists(os.path.join(self.path, image_name)):
             return f"The pagedata {self.filename} contains an " \
@@ -247,6 +269,12 @@ class PageDataErrors(AbsErrorLocator):
 class CaptureDateErrors(AbsErrorLocator):
 
     def find_errors(self) -> Generator[str, None, None]:
+        """Find errors as strings.
+
+        Yields:
+            Yields errors as strings if found any, else returns None.
+
+        """
         capture_date = self.metadata["capture_date"]
 
         if not isinstance(capture_date, datetime.datetime):
@@ -264,6 +292,14 @@ class CaptureDateErrors(AbsErrorLocator):
 class CaptureAgentErrors(AbsErrorLocator):
 
     def find_errors(self) -> Generator[str, None, None]:
+        """Locate any errors with the capture_agent field in the metadata.
+
+
+        Yields:
+            Yields human-readable string of any issues. Otherwise, returns
+                None if no problems discovered.
+
+        """
         capture_agent = self.metadata["capture_agent"]
         potential_error = self.check_capture_agent_format(capture_agent)
         if potential_error is not None:
@@ -271,6 +307,16 @@ class CaptureAgentErrors(AbsErrorLocator):
 
     @staticmethod
     def check_capture_agent_format(capture_agent_field: Any) -> Optional[str]:
+        """Check the given fields matches what is expected of capture agent.
+
+        Args:
+            capture_agent_field:
+
+        Returns:
+            Returns a human-readable string of any issues. Otherwise, returns
+                None if no problems discovered.
+
+        """
         if not isinstance(capture_agent_field, str):
             return "Invalid YAML capture_agent: {}".format(capture_agent_field)
         return None
@@ -289,6 +335,7 @@ class FindErrorsMetadata:
         self.require_page_data = require_page_data
 
     def find_errors(self) -> result.ResultSummary:
+        """Find all metadata errors."""
 
         summary_builder = result.SummaryDirector(source=self.filename)
         try:

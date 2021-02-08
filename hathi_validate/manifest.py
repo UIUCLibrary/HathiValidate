@@ -13,9 +13,16 @@ class PackageManifestDirector:
         self._packages: typing.List["PackageManifestBuilder"] = []
 
     def build_manifest(self) -> typing.List["PackageManifestBuilder"]:
+        """Construct a manifest."""
         return self._packages
 
     def add_package(self, path: str) -> "PackageManifestBuilder":
+        """Add package to the manifest.
+
+        Args:
+            path: file path to package
+
+        """
         package = PackageManifestBuilder(path)
         self._packages.append(package)
         return package
@@ -27,12 +34,19 @@ class PackageManifestBuilder:
         self.source = source
 
     def add_file(self, file: str) -> None:
+        """Add file to the manifest.
+
+        Args:
+            file: File name
+
+        """
         base_name = os.path.basename(file)
         _, ext = os.path.splitext(base_name)
         self._files[ext].add(file)
 
     @property
     def files(self) -> typing.Dict[str, Set[str]]:
+        """Files located inside the package."""
         return dict(self._files)
 
 
