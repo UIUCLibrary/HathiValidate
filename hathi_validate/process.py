@@ -34,18 +34,6 @@ class InvalidChecksum(ValidationError):
     pass
 
 
-#
-# def load_validation(filename="hathi_validate/MARC21slim.xsd"):
-#     def read_file():
-#         with open(filename) as f:
-#             for line in f:
-#                 yield line.strip()
-#
-#     return "".join(read_file())
-
-# XSD = load_validation()
-
-
 def find_missing_files(path: str) -> result.ResultSummary:
     """check for expected files exist on the path
 
