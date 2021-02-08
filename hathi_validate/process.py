@@ -327,7 +327,6 @@ def find_errors_meta(
         filename: str,
         path: str,
         require_page_data: bool = True) -> result.ResultSummary:
-
     """Validate meta.yml file.
 
     Could also validate that the values are correct by comparing with the
