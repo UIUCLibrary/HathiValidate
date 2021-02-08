@@ -5,7 +5,10 @@ from setuptools import setup
 
 
 setup(
-    packages=['hathi_validate'],
+    packages=[
+        'hathi_validate',
+        'hathi_validate.xsd',
+    ],
     package_data={'hathi_validate':["xsd/*.xsd"]},
     test_suite="tests",
     setup_requires=['pytest-runner'],
