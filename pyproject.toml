@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [tool.coverage.run]
 branch = true
 source = ["hathi_validate"]
-#relative_files = true
+relative_files = true
 
 [tool.coverage.paths]
 source = ["hathi_validate"]
