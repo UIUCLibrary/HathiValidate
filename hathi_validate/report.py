@@ -195,7 +195,13 @@ class AbsReport(metaclass=abc.ABCMeta):
 
 
 class Report:
+    """Report.
+
+    This was deprecated. Use reporter class instead
+    """
+
     def __init__(self, report_strategy: AbsReport) -> None:
+        """Use reporter class instead."""
         warnings.warn("Use reporter class instead", DeprecationWarning)
         self._strategy = report_strategy
 
