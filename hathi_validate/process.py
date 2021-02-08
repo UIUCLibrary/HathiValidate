@@ -345,7 +345,7 @@ def find_errors_meta(
 
 
 def find_errors_ocr(path: str) -> result.ResultSummary:
-    """ Validate all xml files located in the given path.
+    """Validate all xml files located in the given path.
 
         Make sure they are valid to the alto scheme
 
