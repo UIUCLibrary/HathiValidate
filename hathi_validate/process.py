@@ -43,7 +43,6 @@ def find_missing_files(path: str) -> result.ResultSummary:
     Yields: Any files missing
 
     """
-
     expected_files = [
         "checksum.md5",
         "marc.xml",
@@ -116,7 +115,6 @@ def calculate_md5(filename: str, chunk_size: int = 8192) -> str:
 
 def is_same_hash(*hashes: str) -> bool:
     """Compare hash values to see if they are the same."""
-
     for hash_value_a, hash_value_b, in itertools.combinations(hashes, 2):
         if hash_value_a.lower() != hash_value_b.lower():
             return False
@@ -133,7 +131,6 @@ def find_failing_checksums(path: str, report: str) -> result.ResultSummary:
     Returns: Error report
 
     """
-
     logger = logging.getLogger(__name__)
     report_builder = result.SummaryDirector(source=path)
     try:
@@ -220,6 +217,11 @@ def parse_yaml(filename: str) -> Dict[str, Any]:
 class AbsErrorLocator(abc.ABC):
 
     def __init__(self, metadata: Dict[str, Any]) -> None:
+        """Create new AbsErrorLocator object.
+
+        Args:
+            metadata:
+        """
         self.metadata = metadata
 
     @abc.abstractmethod
@@ -238,7 +240,13 @@ class PageDataErrors(AbsErrorLocator):
                  filename: str,
                  path: str,
                  metadata: Dict[str, Any]) -> None:
+        """Create new PageDataErrors object.
 
+        Args:
+            filename:
+            path:
+            metadata:
+        """
         super().__init__(metadata)
         self.filename = filename
         self.path = path
@@ -270,7 +278,6 @@ class PageDataErrors(AbsErrorLocator):
                 no errors found, returns None.
 
         """
-
         if not os.path.exists(os.path.join(self.path, image_name)):
             return f"The pagedata {self.filename} contains an " \
                    f"nonexistent file {image_name}"
@@ -308,7 +315,6 @@ class CaptureAgentErrors(AbsErrorLocator):
     def find_errors(self) -> Generator[str, None, None]:
         """Locate any errors with the capture_agent field in the metadata.
 
-
         Yields:
             Yields human-readable string of any issues. Otherwise, returns
                 None if no problems discovered.
@@ -343,14 +349,19 @@ class FindErrorsMetadata:
                  path: str,
                  require_page_data: bool = True
                  ) -> None:
+        """Create new FindErrorsMetadata object.
 
+        Args:
+            filename:
+            path:
+            require_page_data:
+        """
         self.filename = filename
         self.path = path
         self.require_page_data = require_page_data
 
     def find_errors(self) -> result.ResultSummary:
         """Find all metadata errors."""
-
         summary_builder = result.SummaryDirector(source=self.filename)
         try:
             yml_metadata = parse_yaml(filename=self.filename)
@@ -414,6 +425,7 @@ def find_errors_ocr(path: str) -> result.ResultSummary:
         path: Path to find the alto xml files
 
     Returns:
+        returns a ResultSummary of all the errors found in the alto ocr file.
 
     """
 
@@ -482,7 +494,6 @@ def run_validation(validation_test: validator.absValidator) \
 
 def find_non_utf8_characters(file_path: str) -> result.ResultSummary:
     """Locate any non utf-8 characters in a file."""
-
     result_builder = result.SummaryDirector(source=file_path)
     with open(file_path, "rb") as file_handle:
 

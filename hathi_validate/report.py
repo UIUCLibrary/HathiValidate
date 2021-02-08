@@ -403,7 +403,7 @@ class LogReporter(AbsReporter):
         """Report the report.
 
         Args:
-            report:
+            report: message to report
 
         """
         self.logger.info("\n{}".format(report))

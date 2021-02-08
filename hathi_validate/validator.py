@@ -13,6 +13,7 @@ from . import process
 class absValidator(metaclass=abc.ABCMeta):
 
     def __init__(self) -> None:
+        """Create new absValidator object."""
         self.results: typing.List[result.Result] = []
 
     @abc.abstractmethod
@@ -23,6 +24,11 @@ class absValidator(metaclass=abc.ABCMeta):
 class ValidateMissingFiles(absValidator):
 
     def __init__(self, path: str) -> None:
+        """Create new ValidateMissingFiles object.
+
+        Args:
+            path:
+        """
         super().__init__()
         self.path: str = path
 
@@ -105,6 +111,11 @@ class ValidateComponents(absValidator):
 class ValidateExtraSubdirectories(absValidator):
 
     def __init__(self, path: str) -> None:
+        """Create new ValidateExtraSubdirectories object.
+
+        Args:
+            path:
+        """
         super().__init__()
         self.path: str = path
 
@@ -116,6 +127,12 @@ class ValidateExtraSubdirectories(absValidator):
 
 class ValidateChecksumReport(absValidator):
     def __init__(self, path: str, checksum_report: str) -> None:
+        """Create new ValidateChecksumReport object.
+
+        Args:
+            path:
+            checksum_report:
+        """
         super().__init__()
         self.path: str = path
         self.checksum_report = checksum_report
@@ -133,6 +150,13 @@ class ValidateMetaYML(absValidator):
                  yaml_file: str,
                  path: str,
                  required_page_data: bool) -> None:
+        """Create new ValidateMetaYML object.
+
+        Args:
+            yaml_file:
+            path:
+            required_page_data:
+        """
 
         super().__init__()
         self.yaml_file = yaml_file
@@ -149,6 +173,11 @@ class ValidateMetaYML(absValidator):
 
 class ValidateMarc(absValidator):
     def __init__(self, marc_file: str) -> None:
+        """Create new ValidateMarc object.
+
+        Args:
+            marc_file:
+        """
         super().__init__()
         self.marc_file = marc_file
 
@@ -162,6 +191,11 @@ class ValidateMarc(absValidator):
 
 class ValidateOCRFiles(absValidator):
     def __init__(self, path: str) -> None:
+        """Create new ValidateOCRFiles object.
+
+        Args:
+            path:
+        """
         super().__init__()
         self.path = path
 
@@ -173,6 +207,11 @@ class ValidateOCRFiles(absValidator):
 
 class ValidateUTF8Files(absValidator):
     def __init__(self, file_path: str) -> None:
+        """Create new ValidateUTF8Files object.
+
+        Args:
+            file_path:
+        """
         super().__init__()
         self.file_path = file_path
 

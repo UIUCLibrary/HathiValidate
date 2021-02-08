@@ -10,6 +10,7 @@ PackageManifest = \
 class PackageManifestDirector:
 
     def __init__(self) -> None:
+        """Create new PackageManifestDirector object."""
         self._packages: typing.List["PackageManifestBuilder"] = []
 
     def build_manifest(self) -> typing.List["PackageManifestBuilder"]:
@@ -30,6 +31,11 @@ class PackageManifestDirector:
 
 class PackageManifestBuilder:
     def __init__(self, source: str) -> None:
+        """Create new PackageManifestBuilder object.
+
+        Args:
+            source:
+        """
         self._files: typing.Dict[str, Set[str]] = collections.defaultdict(set)
         self.source = source
 
