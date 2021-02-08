@@ -12,8 +12,6 @@ class PackageManifestDirector:
     def __init__(self) -> None:
         self._packages: typing.List["PackageManifestBuilder"] = []
 
-    #     self.source = source
-
     def build_manifest(self) -> typing.List["PackageManifestBuilder"]:
         return self._packages
 
