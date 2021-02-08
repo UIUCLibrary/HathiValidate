@@ -9,9 +9,13 @@ import re
 from typing import Tuple, Iterator, List, Dict, Any, Generator, Optional
 import yaml
 from lxml import etree
+try:
+    from importlib.resources import read_text  # type: ignore
+except ImportError:
+    from importlib_resources import read_text   # type: ignore
+
 
 from hathi_validate import result
-from hathi_validate import xml_schemes
 from . import validator
 
 DIRECTORY_REGEX = \
@@ -186,8 +190,12 @@ def find_errors_marc(filename: str) -> result.ResultSummary:
     """
     summary_builder = result.SummaryDirector(source=filename)
 
-    xsd = etree.XML(xml_schemes.MARC_XSD)  # type: ignore
-    scheme = etree.XMLSchema(xsd)
+    scheme = etree.XMLSchema(
+        etree.XML(
+            read_text("hathi_validate.xsd", "MARC21slim.xsd").encode("utf-8")
+        )
+    )
+
     try:
         with open(filename, "r", encoding="utf8") as file_handle:
             raw_data = file_handle.read()
@@ -374,8 +382,12 @@ def find_errors_ocr(path: str) -> result.ResultSummary:
         return True
 
     logger = logging.getLogger(__name__)
-    alto_xsd = etree.XML(xml_schemes.get_scheme("alto"))
-    alto_scheme = etree.XMLSchema(alto_xsd)
+
+    alto_scheme = etree.XMLSchema(
+        etree.XML(
+            read_text("hathi_validate.xsd", "alto.xsd").encode("utf-8")
+        )
+    )
 
     summary_builder = result.SummaryDirector(source=path)
     for xml_file in filter(ocr_filter, os.scandir(path)):

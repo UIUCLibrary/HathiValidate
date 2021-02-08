@@ -379,7 +379,7 @@ def test_find_errors_ocr_valid_no_errors(monkeypatch):
     """
     mock_path = Mock()
 
-    def mock_scandir(_):
+    def mock_scandir(*args, **kwargs):
         mock_xml = MagicMock()
         mock_xml.name = "alto.xml"
         return [
@@ -387,7 +387,7 @@ def test_find_errors_ocr_valid_no_errors(monkeypatch):
         ]
 
     monkeypatch.setattr(os, "scandir", mock_scandir)
-    with patch("builtins.open", mock_open(read_data=valid_xml)):
+    with patch("hathi_validate.process.open", mock_open(read_data=valid_xml)):
         summary = process.find_errors_ocr(mock_path)
     assert len(summary.results) == 0
 
@@ -414,7 +414,7 @@ def test_find_errors_ocr_invalid_errors(monkeypatch):
         ]
 
     monkeypatch.setattr(os, "scandir", mock_scandir)
-    with patch("builtins.open", mock_open(read_data=invalid_xml)):
+    with patch("hathi_validate.process.open", mock_open(read_data=invalid_xml)):
         summary = process.find_errors_ocr(mock_path)
     assert len(summary.results) == 1
     assert "does not validate" in summary.results[0].message
