@@ -27,11 +27,11 @@ DATE_REGEX = re.compile(
 
 
 class ValidationError(Exception):
-    pass
+    """Validation failed."""
 
 
 class InvalidChecksum(ValidationError):
-    pass
+    """Checksum is invalid."""
 
 
 def find_missing_files(path: str) -> result.ResultSummary:
@@ -215,6 +215,7 @@ def parse_yaml(filename: str) -> Dict[str, Any]:
 
 
 class AbsErrorLocator(abc.ABC):
+    """Abstract base class for error locators."""
 
     def __init__(self, metadata: Dict[str, Any]) -> None:
         """Create new AbsErrorLocator object.
@@ -235,6 +236,7 @@ class AbsErrorLocator(abc.ABC):
 
 
 class PageDataErrors(AbsErrorLocator):
+    """Find errors in pagedata field."""
 
     def __init__(self,
                  filename: str,
@@ -288,6 +290,7 @@ class PageDataErrors(AbsErrorLocator):
 
 
 class CaptureDateErrors(AbsErrorLocator):
+    """Find errors in capture_date field."""
 
     def find_errors(self) -> Generator[str, None, None]:
         """Find errors as strings.
@@ -311,6 +314,7 @@ class CaptureDateErrors(AbsErrorLocator):
 
 
 class CaptureAgentErrors(AbsErrorLocator):
+    """Find errors in capture_agent field."""
 
     def find_errors(self) -> Generator[str, None, None]:
         """Locate any errors with the capture_agent field in the metadata.
@@ -343,6 +347,7 @@ class CaptureAgentErrors(AbsErrorLocator):
 
 
 class FindErrorsMetadata:
+    """Find errors metadata."""
 
     def __init__(self,
                  filename: str,

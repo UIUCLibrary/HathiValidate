@@ -8,6 +8,7 @@ PackageManifest = \
 
 
 class PackageManifestDirector:
+    """Director class for building package manifests."""
 
     def __init__(self) -> None:
         """Create new PackageManifestDirector object."""
@@ -30,6 +31,8 @@ class PackageManifestDirector:
 
 
 class PackageManifestBuilder:
+    """Builder class for package manifests."""
+
     def __init__(self, source: str) -> None:
         """Create new PackageManifestBuilder object.
 

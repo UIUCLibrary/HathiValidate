@@ -11,6 +11,7 @@ from . import process
 
 
 class absValidator(metaclass=abc.ABCMeta):
+    """Abstract validator base class."""
 
     def __init__(self) -> None:
         """Create new absValidator object."""
@@ -22,6 +23,7 @@ class absValidator(metaclass=abc.ABCMeta):
 
 
 class ValidateMissingFiles(absValidator):
+    """Validator for missing files."""
 
     def __init__(self, path: str) -> None:
         """Create new ValidateMissingFiles object.
@@ -42,6 +44,7 @@ class ValidateMissingFiles(absValidator):
 
 
 class ValidateComponents(absValidator):
+    """Validator for components."""
 
     def __init__(self,
                  path: str,
@@ -109,6 +112,7 @@ class ValidateComponents(absValidator):
 
 
 class ValidateExtraSubdirectories(absValidator):
+    """Validator for testing extra subdirectories in a package."""
 
     def __init__(self, path: str) -> None:
         """Create new ValidateExtraSubdirectories object.
@@ -126,6 +130,8 @@ class ValidateExtraSubdirectories(absValidator):
 
 
 class ValidateChecksumReport(absValidator):
+    """Validator for testing checksum report files."""
+
     def __init__(self, path: str, checksum_report: str) -> None:
         """Create new ValidateChecksumReport object.
 
@@ -146,6 +152,8 @@ class ValidateChecksumReport(absValidator):
 
 
 class ValidateMetaYML(absValidator):
+    """Validator for testing meta.yml files."""
+
     def __init__(self,
                  yaml_file: str,
                  path: str,
@@ -171,6 +179,8 @@ class ValidateMetaYML(absValidator):
 
 
 class ValidateMarc(absValidator):
+    """Validator for testing MARC.xml files."""
+
     def __init__(self, marc_file: str) -> None:
         """Create new ValidateMarc object.
 
@@ -189,6 +199,8 @@ class ValidateMarc(absValidator):
 
 
 class ValidateOCRFiles(absValidator):
+    """Validator for testing OCR files."""
+
     def __init__(self, path: str) -> None:
         """Create new ValidateOCRFiles object.
 
@@ -205,6 +217,8 @@ class ValidateOCRFiles(absValidator):
 
 
 class ValidateUTF8Files(absValidator):
+    """Validator for testing utf8 encoded files."""
+
     def __init__(self, file_path: str) -> None:
         """Create new ValidateUTF8Files object.
 
