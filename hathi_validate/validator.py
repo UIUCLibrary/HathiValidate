@@ -157,7 +157,6 @@ class ValidateMetaYML(absValidator):
             path:
             required_page_data:
         """
-
         super().__init__()
         self.yaml_file = yaml_file
         self.path = path
