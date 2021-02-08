@@ -79,6 +79,15 @@ def find_extra_subdirectory(path: str) -> result.ResultSummary:
 
 
 def parse_checksum(line: str) -> Tuple[str, str]:
+    """Parse a line for checksum data.
+
+    Args:
+        line:
+
+    Returns:
+        Returns a tuple, (hash value, file name)
+
+    """
     chunks = line.strip().split(" ")
     md5_hash = chunks[0]
     raw_filename = chunks[-1]
@@ -93,6 +102,7 @@ def parse_checksum(line: str) -> Tuple[str, str]:
 
 
 def calculate_md5(filename: str, chunk_size: int = 8192) -> str:
+    """Calculate the md5 hash value of a file."""
     md5 = hashlib.md5()
 
     with open(filename, "rb") as file_handle:
@@ -105,6 +115,8 @@ def calculate_md5(filename: str, chunk_size: int = 8192) -> str:
 
 
 def is_same_hash(*hashes: str) -> bool:
+    """Compare hash values to see if they are the same."""
+
     for hash_value_a, hash_value_b, in itertools.combinations(hashes, 2):
         if hash_value_a.lower() != hash_value_b.lower():
             return False
@@ -160,6 +172,7 @@ def find_failing_checksums(path: str, report: str) -> result.ResultSummary:
 
 
 def extracts_checksums(report: str) -> Iterator[Tuple[str, str]]:
+    """Iterate over checksum hash values from a checksum report."""
     with open(report, "r") as file_read:
         for line in file_read:
             md5, filename = parse_checksum(line)
@@ -198,6 +211,7 @@ def find_errors_marc(filename: str) -> result.ResultSummary:
 
 
 def parse_yaml(filename: str) -> Dict[str, Any]:
+    """Parse a YAML file."""
     with open(filename, "r") as file_handle:
         data = yaml.load(file_handle, Loader=yaml.SafeLoader)
         return data
@@ -449,7 +463,7 @@ def find_errors_ocr(path: str) -> result.ResultSummary:
 
 def run_validations(validators: typing.List[validator.absValidator]) \
         -> List[result.Result]:
-
+    """Run validations."""
     errors = []
     for tester in validators:
         tester.validate()
@@ -461,12 +475,14 @@ def run_validations(validators: typing.List[validator.absValidator]) \
 
 def run_validation(validation_test: validator.absValidator) \
         -> List[result.Result]:
-
+    """Run validation."""
     validation_test.validate()
     return validation_test.results
 
 
 def find_non_utf8_characters(file_path: str) -> result.ResultSummary:
+    """Locate any non utf-8 characters in a file."""
+
     result_builder = result.SummaryDirector(source=file_path)
     with open(file_path, "rb") as file_handle:
 

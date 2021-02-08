@@ -52,7 +52,7 @@ class PackageManifestBuilder:
 
 def get_report_as_str(manifest: List[PackageManifestBuilder],
                       width: int) -> str:
-
+    """Convert the manifest object into a report string."""
     line_sep = "=" * width
     title = "Manifest"
     header = f"{line_sep}" \
