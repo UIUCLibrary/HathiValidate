@@ -12,5 +12,6 @@ source = ["hathi_validate"]
 
 [tool.coverage.report]
 exclude_lines =[
-    "if TYPE_CHECKING:"
+    "if TYPE_CHECKING:",
+    "except ImportError"
 ]
