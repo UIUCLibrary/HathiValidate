@@ -1,3 +1,5 @@
+"""Command line interface."""
+
 import logging
 import argparse
 
@@ -16,6 +18,7 @@ except ImportError:
 
 
 def get_parser() -> argparse.ArgumentParser:
+    """Get argument parser."""
     parser = argparse.ArgumentParser()
     try:
         version = metadata.version("hathiValidate")
@@ -56,6 +59,7 @@ def get_parser() -> argparse.ArgumentParser:
 
 
 def main(cli_args: Optional[List[str]] = None) -> None:
+    """Start main entry point for command line interface."""
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.DEBUG)
     parser = get_parser()
@@ -83,34 +87,61 @@ def main(cli_args: Optional[List[str]] = None) -> None:
 
 
 class AbsValidation(abc.ABC):
+    """Base class for performing validations."""
 
     def __init__(self,
                  args: argparse.Namespace,
                  logger: logging.Logger) -> None:
+        """Create a new validation object.
 
+        Args:
+            args:
+            logger: Python logger.
+        """
         super().__init__()
         self._args = args
         self.logger = logger
 
     @abc.abstractmethod
     def get_errors(self, pkg: str) -> List[result.Result]:
-        """Find errors in package"""
+        """Get the results of the validations.
+
+        Args:
+            pkg: Path to the directory containing the files.
+
+        Returns:
+            Any errors found in the validation.
+
+        """
 
 
 class ValidateMissingComponents(AbsValidation):
+    """Look for missing components."""
 
     def __init__(self,
                  args: argparse.Namespace,
                  logger: logging.Logger) -> None:
+        """Create a new validation object.
 
+        Args:
+            args:
+            logger: Python logger.
+        """
         super().__init__(args, logger)
         self.extensions = [".txt", ".jp2"]
         if args.check_ocr:
             self.extensions.append(".xml")
 
     def get_errors(self, pkg: str) -> List[result.Result]:
-        # Look for missing components
+        """Get the results of the validations.
 
+        Args:
+            pkg: Path to the directory containing the files.
+
+        Returns:
+            Any errors found in the validation.
+
+        """
         self.logger.debug(
             "Looking for missing component files in {}".format(pkg))
         errors = process.run_validation(
@@ -124,10 +155,20 @@ class ValidateMissingComponents(AbsValidation):
 
 
 class ValidateMissingFiles(AbsValidation):
+    """Validate missing files."""
 
     def get_errors(self, pkg: str) -> List[result.Result]:
+        """Get the results of the validations.
+
+        Args:
+            pkg: Path to the directory containing the files.
+
+        Returns:
+            Any errors found in the validation.
+
+        """
         errors = []
-        # Validate missing files
+
         self.logger.debug("Looking for missing package files in %s", pkg)
         missing_files_errors = process.run_validation(
             validator.ValidateMissingFiles(path=pkg)
@@ -143,9 +184,18 @@ class ValidateMissingFiles(AbsValidation):
 
 
 class ValidateExtraSubdirectories(AbsValidation):
+    """Validate extra subdirectories."""
 
     def get_errors(self, pkg: str) -> List[result.Result]:
-        # Validate extra subdirectories
+        """Get the results of the validations.
+
+        Args:
+            pkg: Path to the directory containing the files.
+
+        Returns:
+            Any errors found in the validation.
+
+        """
         errors = []
         self.logger.debug("Looking for extra subdirectories in {}".format(pkg))
         extra_subdirectories_errors = process.run_validation(
@@ -159,9 +209,18 @@ class ValidateExtraSubdirectories(AbsValidation):
 
 
 class ValidateChecksums(AbsValidation):
+    """Validate Checksums."""
 
     def get_errors(self, pkg: str) -> List[result.Result]:
-        # Validate Checksums
+        """Get the results of the validations.
+
+        Args:
+            pkg: Path to the directory containing the files.
+
+        Returns:
+            Any errors found in the validation.
+
+        """
         errors = []
         checksum_report = os.path.join(pkg, "checksum.md5")
         checksum_report_errors = process.run_validation(
@@ -177,9 +236,18 @@ class ValidateChecksums(AbsValidation):
 
 
 class ValidateMarc(AbsValidation):
+    """Validate Marc."""
 
     def get_errors(self, pkg: str) -> List[result.Result]:
-        # Validate Marc
+        """Get the results of the validations.
+
+        Args:
+            pkg: Path to the directory containing the files.
+
+        Returns:
+            Any errors found in the validation.
+
+        """
         errors = []
         marc_file = os.path.join(pkg, "marc.xml")
         marc_errors = process.run_validation(validator.ValidateMarc(marc_file))
@@ -192,9 +260,18 @@ class ValidateMarc(AbsValidation):
 
 
 class ValidateYAML(AbsValidation):
+    """Validate YML."""
 
     def get_errors(self, pkg: str) -> List[result.Result]:
-        # Validate YML
+        """Get the results of the validations.
+
+        Args:
+            pkg: Path to the directory containing the files.
+
+        Returns:
+            Any errors found in the validation.
+
+        """
         errors = []
         yml_file = os.path.join(pkg, "meta.yml")
         meta_yml_errors = process.run_validation(
@@ -209,9 +286,18 @@ class ValidateYAML(AbsValidation):
 
 
 class ValidateOcrFiles(AbsValidation):
+    """Validate ocr files."""
 
     def get_errors(self, pkg: str) -> List[result.Result]:
-        # Validate ocr files
+        """Get the results of the validations.
+
+        Args:
+            pkg: Path to the directory containing the files.
+
+        Returns:
+            Any errors found in the validation.
+
+        """
         errors = []
         if self._args.check_ocr:
             ocr_errors = process.run_validation(
@@ -225,11 +311,19 @@ class ValidateOcrFiles(AbsValidation):
 
 
 class ReportGenerator:
+    """Create a report for cli."""
+
     def __init__(self,
                  args: argparse.Namespace,
                  logger: logging.Logger,
                  checks: Optional[List[AbsValidation]] = None) -> None:
+        """Create a new report generator object.
 
+        Args:
+            args:
+            logger:
+            checks:
+        """
         self._args = args
         self.logger = logger
         self.validation_report: Optional[str] = None
@@ -245,6 +339,7 @@ class ReportGenerator:
         ]
 
     def generate_report(self) -> None:
+        """Output the report to stdout."""
         errors = []
         batch_manifest_builder = manifest.PackageManifestDirector()
         for pkg in package.get_dirs(self._args.path):

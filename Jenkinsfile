@@ -507,6 +507,25 @@ pipeline {
                                         }
                                     }
                                 }
+                                stage("pyDocStyle"){
+                                    steps{
+                                        catchError(buildResult: 'SUCCESS', message: 'pyDocStyle found issues', stageResult: 'UNSTABLE') {
+                                            tee("reports/pydocstyle-report.txt"){
+                                                sh(
+                                                    label: "Run pydocstyle",
+                                                    script: '''mkdir -p reports
+                                                               pydocstyle hathi_validate
+                                                               '''
+                                                )
+                                            }
+                                        }
+                                    }
+                                    post {
+                                        always{
+                                            recordIssues(tools: [pyDocStyle(pattern: 'reports/pydocstyle-report.txt')])
+                                        }
+                                    }
+                                }
                                 stage('Pylint') {
                                     steps{
                                         catchError(buildResult: 'SUCCESS', message: 'Pylint found issues', stageResult: 'UNSTABLE') {

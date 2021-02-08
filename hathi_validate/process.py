@@ -1,3 +1,5 @@
+"""Process that validations."""
+
 import abc
 import datetime
 import hashlib
@@ -27,15 +29,15 @@ DATE_REGEX = re.compile(
 
 
 class ValidationError(Exception):
-    pass
+    """Validation failed."""
 
 
 class InvalidChecksum(ValidationError):
-    pass
+    """Checksum is invalid."""
 
 
 def find_missing_files(path: str) -> result.ResultSummary:
-    """check for expected files exist on the path
+    """Check for expected files exist on the path.
 
     Args:
         path:
@@ -43,7 +45,6 @@ def find_missing_files(path: str) -> result.ResultSummary:
     Yields: Any files missing
 
     """
-
     expected_files = [
         "checksum.md5",
         "marc.xml",
@@ -59,7 +60,7 @@ def find_missing_files(path: str) -> result.ResultSummary:
 
 
 def find_extra_subdirectory(path: str) -> result.ResultSummary:
-    """Check path for any subdirectories
+    """Check path for any subdirectories.
 
     Args:
         path:
@@ -79,6 +80,15 @@ def find_extra_subdirectory(path: str) -> result.ResultSummary:
 
 
 def parse_checksum(line: str) -> Tuple[str, str]:
+    """Parse a line for checksum data.
+
+    Args:
+        line:
+
+    Returns:
+        Returns a tuple, (hash value, file name)
+
+    """
     chunks = line.strip().split(" ")
     md5_hash = chunks[0]
     raw_filename = chunks[-1]
@@ -93,6 +103,7 @@ def parse_checksum(line: str) -> Tuple[str, str]:
 
 
 def calculate_md5(filename: str, chunk_size: int = 8192) -> str:
+    """Calculate the md5 hash value of a file."""
     md5 = hashlib.md5()
 
     with open(filename, "rb") as file_handle:
@@ -105,6 +116,7 @@ def calculate_md5(filename: str, chunk_size: int = 8192) -> str:
 
 
 def is_same_hash(*hashes: str) -> bool:
+    """Compare hash values to see if they are the same."""
     for hash_value_a, hash_value_b, in itertools.combinations(hashes, 2):
         if hash_value_a.lower() != hash_value_b.lower():
             return False
@@ -112,7 +124,7 @@ def is_same_hash(*hashes: str) -> bool:
 
 
 def find_failing_checksums(path: str, report: str) -> result.ResultSummary:
-    """validate that the checksums in the .fil file match
+    """Validate that the checksums in the .fil file match.
 
     Args:
         path:
@@ -121,7 +133,6 @@ def find_failing_checksums(path: str, report: str) -> result.ResultSummary:
     Returns: Error report
 
     """
-
     logger = logging.getLogger(__name__)
     report_builder = result.SummaryDirector(source=path)
     try:
@@ -160,6 +171,7 @@ def find_failing_checksums(path: str, report: str) -> result.ResultSummary:
 
 
 def extracts_checksums(report: str) -> Iterator[Tuple[str, str]]:
+    """Iterate over checksum hash values from a checksum report."""
     with open(report, "r") as file_read:
         for line in file_read:
             md5, filename = parse_checksum(line)
@@ -167,13 +179,13 @@ def extracts_checksums(report: str) -> Iterator[Tuple[str, str]]:
 
 
 def find_errors_marc(filename: str) -> result.ResultSummary:
-    """
-    Validate the MARC file
+    """Validate the MARC file.
 
     Args:
         filename:
 
     Returns:
+        Returns a ResultSummary
 
     """
     summary_builder = result.SummaryDirector(source=filename)
@@ -198,33 +210,58 @@ def find_errors_marc(filename: str) -> result.ResultSummary:
 
 
 def parse_yaml(filename: str) -> Dict[str, Any]:
+    """Parse a YAML file."""
     with open(filename, "r") as file_handle:
         data = yaml.load(file_handle, Loader=yaml.SafeLoader)
         return data
 
 
 class AbsErrorLocator(abc.ABC):
+    """Abstract base class for error locators."""
 
     def __init__(self, metadata: Dict[str, Any]) -> None:
+        """Create new AbsErrorLocator object.
+
+        Args:
+            metadata:
+        """
         self.metadata = metadata
 
     @abc.abstractmethod
     def find_errors(self) -> Generator[str, None, None]:
-        """Find errors as strings."""
+        """Find errors as strings.
+
+        Yields:
+            Yields errors as strings if found any, else returns None.
+
+        """
 
 
 class PageDataErrors(AbsErrorLocator):
+    """Find errors in pagedata field."""
 
     def __init__(self,
                  filename: str,
                  path: str,
                  metadata: Dict[str, Any]) -> None:
+        """Create new PageDataErrors object.
 
+        Args:
+            filename:
+            path:
+            metadata:
+        """
         super().__init__(metadata)
         self.filename = filename
         self.path = path
 
     def find_errors(self) -> Generator[str, None, None]:
+        """Find errors as strings.
+
+        Yields:
+            Yields errors as strings if found any, else returns None.
+
+        """
         pages = self.metadata["pagedata"]
         for image_name, attributes in pages.items():
             error_result = self.find_pagedata_file(image_name, attributes)
@@ -234,7 +271,17 @@ class PageDataErrors(AbsErrorLocator):
     def find_pagedata_file(self,
                            image_name: str,
                            attributes: str) -> Optional[str]:
+        """Locate pagedata file and check if exists.
 
+        Args:
+            image_name:
+            attributes:
+
+        Returns:
+            If found any errors, returns message as human readable string. If
+                no errors found, returns None.
+
+        """
         if not os.path.exists(os.path.join(self.path, image_name)):
             return f"The pagedata {self.filename} contains an " \
                    f"nonexistent file {image_name}"
@@ -245,8 +292,15 @@ class PageDataErrors(AbsErrorLocator):
 
 
 class CaptureDateErrors(AbsErrorLocator):
+    """Find errors in capture_date field."""
 
     def find_errors(self) -> Generator[str, None, None]:
+        """Find errors as strings.
+
+        Yields:
+            Yields errors as strings if found any, else returns None.
+
+        """
         capture_date = self.metadata["capture_date"]
 
         if not isinstance(capture_date, datetime.datetime):
@@ -262,8 +316,16 @@ class CaptureDateErrors(AbsErrorLocator):
 
 
 class CaptureAgentErrors(AbsErrorLocator):
+    """Find errors in capture_agent field."""
 
     def find_errors(self) -> Generator[str, None, None]:
+        """Locate any errors with the capture_agent field in the metadata.
+
+        Yields:
+            Yields human-readable string of any issues. Otherwise, returns
+                None if no problems discovered.
+
+        """
         capture_agent = self.metadata["capture_agent"]
         potential_error = self.check_capture_agent_format(capture_agent)
         if potential_error is not None:
@@ -271,25 +333,42 @@ class CaptureAgentErrors(AbsErrorLocator):
 
     @staticmethod
     def check_capture_agent_format(capture_agent_field: Any) -> Optional[str]:
+        """Check the given fields matches what is expected of capture agent.
+
+        Args:
+            capture_agent_field:
+
+        Returns:
+            Returns a human-readable string of any issues. Otherwise, returns
+                None if no problems discovered.
+
+        """
         if not isinstance(capture_agent_field, str):
             return "Invalid YAML capture_agent: {}".format(capture_agent_field)
         return None
 
 
 class FindErrorsMetadata:
+    """Find errors metadata."""
 
     def __init__(self,
                  filename: str,
                  path: str,
                  require_page_data: bool = True
                  ) -> None:
+        """Create new FindErrorsMetadata object.
 
+        Args:
+            filename:
+            path:
+            require_page_data:
+        """
         self.filename = filename
         self.path = path
         self.require_page_data = require_page_data
 
     def find_errors(self) -> result.ResultSummary:
-
+        """Find all metadata errors."""
         summary_builder = result.SummaryDirector(source=self.filename)
         try:
             yml_metadata = parse_yaml(filename=self.filename)
@@ -327,7 +406,6 @@ def find_errors_meta(
         filename: str,
         path: str,
         require_page_data: bool = True) -> result.ResultSummary:
-
     """Validate meta.yml file.
 
     Could also validate that the values are correct by comparing with the
@@ -346,7 +424,7 @@ def find_errors_meta(
 
 
 def find_errors_ocr(path: str) -> result.ResultSummary:
-    """ Validate all xml files located in the given path.
+    """Validate all xml files located in the given path.
 
         Make sure they are valid to the alto scheme
 
@@ -354,6 +432,7 @@ def find_errors_ocr(path: str) -> result.ResultSummary:
         path: Path to find the alto xml files
 
     Returns:
+        returns a ResultSummary of all the errors found in the alto ocr file.
 
     """
 
@@ -403,7 +482,7 @@ def find_errors_ocr(path: str) -> result.ResultSummary:
 
 def run_validations(validators: typing.List[validator.absValidator]) \
         -> List[result.Result]:
-
+    """Run validations."""
     errors = []
     for tester in validators:
         tester.validate()
@@ -415,12 +494,13 @@ def run_validations(validators: typing.List[validator.absValidator]) \
 
 def run_validation(validation_test: validator.absValidator) \
         -> List[result.Result]:
-
+    """Run validation."""
     validation_test.validate()
     return validation_test.results
 
 
 def find_non_utf8_characters(file_path: str) -> result.ResultSummary:
+    """Locate any non utf-8 characters in a file."""
     result_builder = result.SummaryDirector(source=file_path)
     with open(file_path, "rb") as file_handle:
 

@@ -1,3 +1,5 @@
+"""Validators."""
+
 import abc
 import logging
 import typing
@@ -11,22 +13,31 @@ from . import process
 
 
 class absValidator(metaclass=abc.ABCMeta):
+    """Abstract validator base class."""
 
     def __init__(self) -> None:
+        """Create new absValidator object."""
         self.results: typing.List[result.Result] = []
 
     @abc.abstractmethod
     def validate(self) -> None:
-        pass
+        """Perform validations."""
 
 
 class ValidateMissingFiles(absValidator):
+    """Validator for missing files."""
 
     def __init__(self, path: str) -> None:
+        """Create new ValidateMissingFiles object.
+
+        Args:
+            path:
+        """
         super().__init__()
         self.path: str = path
 
     def validate(self) -> None:
+        """Perform validations."""
         logger = logging.getLogger(__name__)
         logger.debug("Looking for missing files in %s", self.path)
         for missing_file in process.find_missing_files(self.path):
@@ -35,12 +46,13 @@ class ValidateMissingFiles(absValidator):
 
 
 class ValidateComponents(absValidator):
+    """Validator for components."""
 
     def __init__(self,
                  path: str,
                  component_regex: str,
                  *extensions: str) -> None:
-        """
+        """Create a new ValidateComponents object.
 
         Args:
             path: Directory to find the files
@@ -56,6 +68,7 @@ class ValidateComponents(absValidator):
         self._component_mask = re.compile(component_regex)
 
     def validate(self) -> None:
+        """Perform validations."""
         components = set()
         found_files = False
 
@@ -101,23 +114,39 @@ class ValidateComponents(absValidator):
 
 
 class ValidateExtraSubdirectories(absValidator):
+    """Validator for testing extra subdirectories in a package."""
 
     def __init__(self, path: str) -> None:
+        """Create new ValidateExtraSubdirectories object.
+
+        Args:
+            path:
+        """
         super().__init__()
         self.path: str = path
 
     def validate(self) -> None:
+        """Perform validations."""
         for extra_subdirectory in process.find_extra_subdirectory(self.path):
             self.results.append(extra_subdirectory)
 
 
 class ValidateChecksumReport(absValidator):
+    """Validator for testing checksum report files."""
+
     def __init__(self, path: str, checksum_report: str) -> None:
+        """Create new ValidateChecksumReport object.
+
+        Args:
+            path:
+            checksum_report:
+        """
         super().__init__()
         self.path: str = path
         self.checksum_report = checksum_report
 
     def validate(self) -> None:
+        """Perform validations."""
         for failing_checksum in process.find_failing_checksums(
                 self.path, self.checksum_report):
 
@@ -125,17 +154,26 @@ class ValidateChecksumReport(absValidator):
 
 
 class ValidateMetaYML(absValidator):
+    """Validator for testing meta.yml files."""
+
     def __init__(self,
                  yaml_file: str,
                  path: str,
                  required_page_data: bool) -> None:
+        """Create new ValidateMetaYML object.
 
+        Args:
+            yaml_file:
+            path:
+            required_page_data:
+        """
         super().__init__()
         self.yaml_file = yaml_file
         self.path = path
         self.require_page_data = required_page_data
 
     def validate(self) -> None:
+        """Perform validations."""
         for error in process.find_errors_meta(
                 self.yaml_file, self.path, self.require_page_data):
 
@@ -143,11 +181,19 @@ class ValidateMetaYML(absValidator):
 
 
 class ValidateMarc(absValidator):
+    """Validator for testing MARC.xml files."""
+
     def __init__(self, marc_file: str) -> None:
+        """Create new ValidateMarc object.
+
+        Args:
+            marc_file:
+        """
         super().__init__()
         self.marc_file = marc_file
 
     def validate(self) -> None:
+        """Perform validations."""
         logger = logging.getLogger(__name__)
         logger.info("Validating {}".format(self.marc_file))
         for error in process.find_errors_marc(filename=self.marc_file):
@@ -155,20 +201,36 @@ class ValidateMarc(absValidator):
 
 
 class ValidateOCRFiles(absValidator):
+    """Validator for testing OCR files."""
+
     def __init__(self, path: str) -> None:
+        """Create new ValidateOCRFiles object.
+
+        Args:
+            path:
+        """
         super().__init__()
         self.path = path
 
     def validate(self) -> None:
+        """Perform validations."""
         for error in process.find_errors_ocr(path=self.path):
             self.results.append(error)
 
 
 class ValidateUTF8Files(absValidator):
+    """Validator for testing utf8 encoded files."""
+
     def __init__(self, file_path: str) -> None:
+        """Create new ValidateUTF8Files object.
+
+        Args:
+            file_path:
+        """
         super().__init__()
         self.file_path = file_path
 
     def validate(self) -> None:
+        """Perform validations."""
         for error in process.find_non_utf8_characters(self.file_path):
             self.results.append(error)

@@ -1,3 +1,5 @@
+"""Logging configurations."""
+
 import logging
 import sys
 from typing import Optional
@@ -7,7 +9,16 @@ def configure_logger(
         debug_mode: bool = False,
         log_file: Optional[str] = None
 ) -> logging.Logger:
+    """Configure the logger.
 
+    Args:
+        debug_mode:
+        log_file:
+
+    Returns:
+        Python logger
+
+    """
     logger = logging.getLogger(__package__)
     logger.setLevel(logging.DEBUG)
 
