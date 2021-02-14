@@ -65,8 +65,8 @@ COPY --from=WHEEL_BUILDER_PY38 /wheels/* /wheels/
 COPY --from=WHEEL_BUILDER_PY39 /wheels/* /wheels/
 RUN python3 -m pip install pip --upgrade && \
     python3 -m pip install wheel && \
-    python3 -m pip install tox devpi-client && \
-    python3 -m pip wheel -w wheels wheel
+    python3 -m pip install tox devpi-client  && \
+    python3 -m pip wheel -w /wheels wheel pytest-runner
 
 ENV PIP_FIND_LINKS=/wheels
 RUN mkdir -p /.cache/pip && \
