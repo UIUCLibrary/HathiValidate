@@ -70,6 +70,7 @@ RUN python3 -m pip install pip --upgrade && \
 
 ENV PIP_FIND_LINKS=/wheels
 RUN mkdir -p /.cache/pip && \
-    chmod -R 777 /.cache
+    chmod -R 777 /.cache && \
+    chmod -R 777 /wheels
 WORKDIR /src
 CMD tox --workdir /tmp/tox --recreate
