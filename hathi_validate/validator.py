@@ -99,8 +99,10 @@ class ValidateComponents(AbsValidator):
                     )
 
                     logger.info("Missing %s", component_file_name)
-        results = [result for result in report_builder.construct()]
-        self.results = results
+
+        self.results = [
+            report_result for report_result in report_builder.construct()
+        ]
 
     def _component_filter(self, entry: os.DirEntry) -> bool:
         if not entry.is_file():
