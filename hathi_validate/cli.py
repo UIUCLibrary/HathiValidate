@@ -200,9 +200,7 @@ class ValidateExtraSubdirectories(AbsValidation):
         self.logger.debug("Looking for extra subdirectories in {}".format(pkg))
         extra_subdirectories_errors = process.run_validation(
             validator.ValidateExtraSubdirectories(path=pkg))
-        if not extra_subdirectories_errors:
-            pass
-        else:
+        if extra_subdirectories_errors:
             for error in extra_subdirectories_errors:
                 errors.append(error)
         return errors
