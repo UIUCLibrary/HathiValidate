@@ -531,12 +531,14 @@ pipeline {
                                 stage('Pylint') {
                                     steps{
                                         catchError(buildResult: 'SUCCESS', message: 'Pylint found issues', stageResult: 'UNSTABLE') {
-                                            sh(label: 'Running pylint',
-                                                script: 'pylint hathi_validate -r n --msg-template="{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}" --persistent=no > reports/pylint.txt'
-                                            )
+                                            tee('reports/pylint.txt'){
+                                                sh(label: 'Running pylint',
+                                                    script: 'pylint hathi_validate -r n --msg-template="{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}" --persistent=no'
+                                                )
+                                            }
                                         }
                                         sh(
-                                            script: 'pylint hathi_validate -r n --msg-template="{path}:{module}:{line}: [{msg_id}({symbol}), {obj}] {msg}" --persistent=no | tee reports/pylint_issues.txt',
+                                            script: 'pylint hathi_validate -r n --msg-template="{path}:{module}:{line}: [{msg_id}({symbol}), {obj}] {msg}" --persistent=no > reports/pylint_issues.txt',
                                             label: 'Running pylint for sonarqube',
                                             returnStatus: true
                                         )
