@@ -570,17 +570,6 @@ pipeline {
                                         sourceFileResolver: sourceFiles('STORE_ALL_BUILD')
                                     )
                                 }
-                                cleanup{
-                                    cleanWs(
-                                        deleteDirs: true,
-                                        patterns: [
-                                            [pattern: 'logs/', type: 'INCLUDE'],
-                                            [pattern: 'reports/', type: 'INCLUDE'],
-                                            [pattern: '.coverage.*/', type: 'INCLUDE'],
-                                            [pattern: '**/__pycache__/', type: 'INCLUDE'],
-                                        ]
-                                    )
-                                }
                             }
                         }
                         stage('Run Sonarqube Analysis'){
@@ -639,7 +628,21 @@ pipeline {
                                         recordIssues(tools: [sonarQube(pattern: 'reports/sonar-report.json')])
                                     }
                                 }
+
                             }
+                        }
+                    }
+                    post{
+                        cleanup{
+                            cleanWs(
+                                deleteDirs: true,
+                                patterns: [
+                                    [pattern: 'logs/', type: 'INCLUDE'],
+                                    [pattern: 'reports/', type: 'INCLUDE'],
+                                    [pattern: '.coverage.*/', type: 'INCLUDE'],
+                                    [pattern: '**/__pycache__/', type: 'INCLUDE'],
+                                ]
+                            )
                         }
                     }
                 }
