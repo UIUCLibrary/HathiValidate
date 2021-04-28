@@ -480,7 +480,7 @@ def find_errors_ocr(path: str) -> result.ResultSummary:
     return summary_builder.construct()
 
 
-def run_validations(validators: typing.List[validator.absValidator]) \
+def run_validations(validators: typing.List[validator.AbsValidator]) \
         -> List[result.Result]:
     """Run validations."""
     errors = []
@@ -492,7 +492,7 @@ def run_validations(validators: typing.List[validator.absValidator]) \
     return errors
 
 
-def run_validation(validation_test: validator.absValidator) \
+def run_validation(validation_test: validator.AbsValidator) \
         -> List[result.Result]:
     """Run validation."""
     validation_test.validate()

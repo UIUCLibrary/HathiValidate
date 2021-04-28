@@ -12,7 +12,7 @@ from . import result
 from . import process
 
 
-class absValidator(metaclass=abc.ABCMeta):
+class AbsValidator(metaclass=abc.ABCMeta):
     """Abstract validator base class."""
 
     def __init__(self) -> None:
@@ -24,7 +24,7 @@ class absValidator(metaclass=abc.ABCMeta):
         """Perform validations."""
 
 
-class ValidateMissingFiles(absValidator):
+class ValidateMissingFiles(AbsValidator):
     """Validator for missing files."""
 
     def __init__(self, path: str) -> None:
@@ -45,7 +45,7 @@ class ValidateMissingFiles(absValidator):
         # super().validate(path, *args, **kwargs)
 
 
-class ValidateComponents(absValidator):
+class ValidateComponents(AbsValidator):
     """Validator for components."""
 
     def __init__(self,
@@ -113,7 +113,7 @@ class ValidateComponents(absValidator):
         return True
 
 
-class ValidateExtraSubdirectories(absValidator):
+class ValidateExtraSubdirectories(AbsValidator):
     """Validator for testing extra subdirectories in a package."""
 
     def __init__(self, path: str) -> None:
@@ -131,7 +131,7 @@ class ValidateExtraSubdirectories(absValidator):
             self.results.append(extra_subdirectory)
 
 
-class ValidateChecksumReport(absValidator):
+class ValidateChecksumReport(AbsValidator):
     """Validator for testing checksum report files."""
 
     def __init__(self, path: str, checksum_report: str) -> None:
@@ -153,7 +153,7 @@ class ValidateChecksumReport(absValidator):
             self.results.append(failing_checksum)
 
 
-class ValidateMetaYML(absValidator):
+class ValidateMetaYML(AbsValidator):
     """Validator for testing meta.yml files."""
 
     def __init__(self,
@@ -180,7 +180,7 @@ class ValidateMetaYML(absValidator):
             self.results.append(error)
 
 
-class ValidateMarc(absValidator):
+class ValidateMarc(AbsValidator):
     """Validator for testing MARC.xml files."""
 
     def __init__(self, marc_file: str) -> None:
@@ -200,7 +200,7 @@ class ValidateMarc(absValidator):
             self.results.append(error)
 
 
-class ValidateOCRFiles(absValidator):
+class ValidateOCRFiles(AbsValidator):
     """Validator for testing OCR files."""
 
     def __init__(self, path: str) -> None:
@@ -218,7 +218,7 @@ class ValidateOCRFiles(absValidator):
             self.results.append(error)
 
 
-class ValidateUTF8Files(absValidator):
+class ValidateUTF8Files(AbsValidator):
     """Validator for testing utf8 encoded files."""
 
     def __init__(self, file_path: str) -> None:
