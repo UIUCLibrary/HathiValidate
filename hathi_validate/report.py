@@ -22,8 +22,8 @@ def _split_text_line_by_words(
         #  If the word is longer than the width, split up the word
         if len(word) > max_len:
             args = [iter(word)] * max_len
-            for ch in itertools.zip_longest(*args, fillvalue=""):
-                yield "".join(ch)
+            for chunk in itertools.zip_longest(*args, fillvalue=""):
+                yield "".join(chunk)
             continue
         # otherwise split it up
         potential_line = "{} {}".format(line, word).strip()
