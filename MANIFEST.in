@@ -1,9 +1,7 @@
 # Include the license file
-include LICENSE tox.ini README.rst requirements.txt requirements-dev.txt
+include LICENSE tox.ini README.rst requirements.txt
 include hathi_validate/xsd/*.xsd
 recursive-include tests *.py
-recursive-exclude * __pycache__
-recursive-exclude * *.pyc
 
 recursive-include docs *
 recursive-include features *.feature *.py
