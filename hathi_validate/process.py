@@ -263,18 +263,15 @@ class PageDataErrors(AbsErrorLocator):
         """
         pages = self.metadata["pagedata"]
         for image_name, attributes in pages.items():
-            error_result = self.find_pagedata_file(image_name, attributes)
+            error_result = self.find_pagedata_file(image_name)
             if error_result is not None:
                 yield error_result
 
-    def find_pagedata_file(self,
-                           image_name: str,
-                           attributes: str) -> Optional[str]:
+    def find_pagedata_file(self, image_name: str) -> Optional[str]:
         """Locate pagedata file and check if exists.
 
         Args:
             image_name:
-            attributes:
 
         Returns:
             If found any errors, returns message as human readable string. If
