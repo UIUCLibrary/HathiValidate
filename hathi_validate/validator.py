@@ -195,7 +195,7 @@ class ValidateMarc(AbsValidator):
     def validate(self) -> None:
         """Perform validations."""
         logger = logging.getLogger(__name__)
-        logger.info("Validating {}".format(self.marc_file))
+        logger.info("Validating %s", self.marc_file)
         for error in process.find_errors_marc(filename=self.marc_file):
             self.results.append(error)
 
