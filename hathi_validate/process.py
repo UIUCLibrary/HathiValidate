@@ -430,7 +430,7 @@ def find_errors_ocr(path: str) -> result.ResultSummary:
 
     """
 
-    def ocr_filter(entry: os.DirEntry) -> bool:
+    def ocr_filter(entry: 'os.DirEntry[str]') -> bool:
         if not entry.is_file():
             return False
 
