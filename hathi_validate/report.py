@@ -7,7 +7,7 @@ import sys
 import logging
 import warnings
 
-from . import result
+from hathi_validate import result
 
 
 def _split_text_line_by_words(
