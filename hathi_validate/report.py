@@ -156,8 +156,7 @@ class ReportStringBuilder:
             for line in make_point(msg.message, report_width):
                 msg_list.append(line)
         group_warnings = "\n".join(msg_list)
-        warning_message = "{}\n\n{}\n".format(group_name, group_warnings)
-        return warning_message
+        return "{}\n\n{}\n".format(group_name, group_warnings)
 
 
 def get_report_as_str(results: List[result.Result], width: int = 0) -> str:
