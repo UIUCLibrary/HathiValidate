@@ -538,7 +538,6 @@ pipeline {
                                             }
                                         }
                                         sh(
-                                                 //  pylint hathi_validate -r n --msg-template="{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}" > <report_file>
                                             script: 'pylint hathi_validate -r n --msg-template="{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}" --persistent=no > reports/pylint_issues.txt',
                                             label: 'Running pylint for sonarqube',
                                             returnStatus: true

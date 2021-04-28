@@ -25,7 +25,6 @@ def submitToSonarcloud(args = [:]){
                     unstash "$it"
                 }
                 def projectVersion = args.package.version
-                sh  "ls -aR"
                 if (isPullRequest == true){
                     def pullRequestKey = args.pullRequest.source
                     def pullRequestBase = args.pullRequest.destination
