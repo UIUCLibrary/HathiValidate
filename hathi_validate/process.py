@@ -117,10 +117,10 @@ def calculate_md5(filename: str, chunk_size: int = 8192) -> str:
 
 def is_same_hash(*hashes: str) -> bool:
     """Compare hash values to see if they are the same."""
-    for hash_value_a, hash_value_b, in itertools.combinations(hashes, 2):
-        if hash_value_a.lower() != hash_value_b.lower():
-            return False
-    return True
+    return all(
+        hash_value_a.lower() == hash_value_b.lower()
+        for hash_value_a, hash_value_b, in itertools.combinations(hashes, 2)
+    )
 
 
 def find_failing_checksums(path: str, report: str) -> result.ResultSummary:
@@ -212,8 +212,7 @@ def find_errors_marc(filename: str) -> result.ResultSummary:
 def parse_yaml(filename: str) -> Dict[str, Any]:
     """Parse a YAML file."""
     with open(filename, "r") as file_handle:
-        data = yaml.load(file_handle, Loader=yaml.SafeLoader)
-        return data
+        return yaml.load(file_handle, Loader=yaml.SafeLoader)
 
 
 class AbsErrorLocator(abc.ABC):
@@ -263,19 +262,16 @@ class PageDataErrors(AbsErrorLocator):
 
         """
         pages = self.metadata["pagedata"]
-        for image_name, attributes in pages.items():
-            error_result = self.find_pagedata_file(image_name, attributes)
+        for image_name in pages.keys():
+            error_result = self.find_pagedata_file(image_name)
             if error_result is not None:
                 yield error_result
 
-    def find_pagedata_file(self,
-                           image_name: str,
-                           attributes: str) -> Optional[str]:
+    def find_pagedata_file(self, image_name: str) -> Optional[str]:
         """Locate pagedata file and check if exists.
 
         Args:
             image_name:
-            attributes:
 
         Returns:
             If found any errors, returns message as human readable string. If
@@ -286,8 +282,6 @@ class PageDataErrors(AbsErrorLocator):
             return f"The pagedata {self.filename} contains an " \
                    f"nonexistent file {image_name}"
 
-        if attributes:
-            pass
         return None
 
 
@@ -436,7 +430,7 @@ def find_errors_ocr(path: str) -> result.ResultSummary:
 
     """
 
-    def ocr_filter(entry: os.DirEntry) -> bool:
+    def ocr_filter(entry: 'os.DirEntry[str]') -> bool:
         if not entry.is_file():
             return False
 
@@ -480,7 +474,7 @@ def find_errors_ocr(path: str) -> result.ResultSummary:
     return summary_builder.construct()
 
 
-def run_validations(validators: typing.List[validator.absValidator]) \
+def run_validations(validators: typing.List[validator.AbsValidator]) \
         -> List[result.Result]:
     """Run validations."""
     errors = []
@@ -492,7 +486,7 @@ def run_validations(validators: typing.List[validator.absValidator]) \
     return errors
 
 
-def run_validation(validation_test: validator.absValidator) \
+def run_validation(validation_test: validator.AbsValidator) \
         -> List[result.Result]:
     """Run validation."""
     validation_test.validate()

@@ -52,9 +52,9 @@ class ResultSummary(collections.abc.Iterable):  # type: ignore
         """Get the number of results included in the summary."""
         return len(self.results)
 
-    def __contains__(self, x: Result) -> bool:
+    def __contains__(self, item: Result) -> bool:
         """Check if existing Result is already included."""
-        return x in self.results
+        return item in self.results
 
 
 class AbsResultBuilder(metaclass=abc.ABCMeta):

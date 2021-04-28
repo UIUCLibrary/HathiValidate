@@ -329,13 +329,15 @@ def startup(){
                         ws{
                             checkout scm
                             try{
-                                docker.image('python:3.8').inside {
-                                    sh(
-                                       label: 'Running setup.py with dist_info',
-                                       script: '''python --version
-                                                  python setup.py dist_info
-                                               '''
-                                    )
+                                docker.image('python').inside {
+                                    withEnv(['PIP_NO_CACHE_DIR=off']) {
+                                        sh(
+                                           label: 'Running setup.py with dist_info',
+                                           script: '''python --version
+                                                      python setup.py dist_info
+                                                   '''
+                                        )
+                                    }
                                     stash includes: '*.dist-info/**', name: 'DIST-INFO'
                                     archiveArtifacts artifacts: '*.dist-info/**'
                                 }
@@ -529,12 +531,14 @@ pipeline {
                                 stage('Pylint') {
                                     steps{
                                         catchError(buildResult: 'SUCCESS', message: 'Pylint found issues', stageResult: 'UNSTABLE') {
-                                            sh(label: 'Running pylint',
-                                                script: 'pylint hathi_validate -r n --msg-template="{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}" --persistent=no > reports/pylint.txt'
-                                            )
+                                            tee('reports/pylint.txt'){
+                                                sh(label: 'Running pylint',
+                                                    script: 'pylint hathi_validate -r n --msg-template="{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}" --persistent=no'
+                                                )
+                                            }
                                         }
                                         sh(
-                                            script: 'pylint hathi_validate -r n --msg-template="{path}:{module}:{line}: [{msg_id}({symbol}), {obj}] {msg}" --persistent=no | tee reports/pylint_issues.txt',
+                                            script: 'pylint hathi_validate -r n --msg-template="{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}" --persistent=no > reports/pylint_issues.txt',
                                             label: 'Running pylint for sonarqube',
                                             returnStatus: true
                                         )
@@ -566,17 +570,6 @@ pipeline {
                                                 coberturaAdapter('reports/coverage.xml')
                                             ],
                                         sourceFileResolver: sourceFiles('STORE_ALL_BUILD')
-                                    )
-                                }
-                                cleanup{
-                                    cleanWs(
-                                        deleteDirs: true,
-                                        patterns: [
-                                            [pattern: 'logs/', type: 'INCLUDE'],
-                                            [pattern: 'reports/', type: 'INCLUDE'],
-                                            [pattern: '.coverage.*/', type: 'INCLUDE'],
-                                            [pattern: '**/__pycache__/', type: 'INCLUDE'],
-                                        ]
                                     )
                                 }
                             }
@@ -638,6 +631,19 @@ pipeline {
                                     }
                                 }
                             }
+                        }
+                    }
+                    post{
+                        cleanup{
+                            cleanWs(
+                                deleteDirs: true,
+                                patterns: [
+                                    [pattern: 'logs/', type: 'INCLUDE'],
+                                    [pattern: 'reports/', type: 'INCLUDE'],
+                                    [pattern: '.coverage.*/', type: 'INCLUDE'],
+                                    [pattern: '**/__pycache__/', type: 'INCLUDE'],
+                                ]
+                            )
                         }
                     }
                 }

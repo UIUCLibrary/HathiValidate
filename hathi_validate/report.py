@@ -7,7 +7,7 @@ import sys
 import logging
 import warnings
 
-from . import result
+from hathi_validate import result
 
 
 def _split_text_line_by_words(
@@ -22,8 +22,8 @@ def _split_text_line_by_words(
         #  If the word is longer than the width, split up the word
         if len(word) > max_len:
             args = [iter(word)] * max_len
-            for ch in itertools.zip_longest(*args, fillvalue=""):
-                yield "".join(ch)
+            for chunk in itertools.zip_longest(*args, fillvalue=""):
+                yield "".join(chunk)
             continue
         # otherwise split it up
         potential_line = "{} {}".format(line, word).strip()
@@ -91,10 +91,7 @@ class ReportStringBuilder:
         for key, value in itertools.groupby(
                 sorted_results, key=lambda r: r.source):
 
-            new_messages = []
-            for new_message in value:
-                new_messages.append(new_message)
-            grouped_results.append((key, new_messages))
+            grouped_results.append((key, list(value)))
 
         warnings_section = self.get_warnings_section(grouped_results,
                                                      report_width)
@@ -156,8 +153,7 @@ class ReportStringBuilder:
             for line in make_point(msg.message, report_width):
                 msg_list.append(line)
         group_warnings = "\n".join(msg_list)
-        warning_message = "{}\n\n{}\n".format(group_name, group_warnings)
-        return warning_message
+        return "{}\n\n{}\n".format(group_name, group_warnings)
 
 
 def get_report_as_str(results: List[result.Result], width: int = 0) -> str:
@@ -305,12 +301,12 @@ class TextReport(AbsReport):
             results, key=lambda r: r.source if r.source is not None else ""
         )
         grouped = itertools.groupby(sorted_results, key=lambda r: r.source)
-        with open(self.file, "w", encoding="utf8") as w:
-            w.write("Validation Results\n\n")
+        with open(self.file, "w", encoding="utf8") as write_file:
+            write_file.write("Validation Results\n\n")
             for source_group in grouped:
-                w.write("\n{}\n".format(source_group[0]))
+                write_file.write("\n{}\n".format(source_group[0]))
                 for res in source_group[1]:
-                    w.write("{}\n".format(res.message))
+                    write_file.write("{}\n".format(res.message))
 
 
 class AbsReporter(metaclass=abc.ABCMeta):

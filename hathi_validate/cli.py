@@ -200,9 +200,7 @@ class ValidateExtraSubdirectories(AbsValidation):
         self.logger.debug("Looking for extra subdirectories in {}".format(pkg))
         extra_subdirectories_errors = process.run_validation(
             validator.ValidateExtraSubdirectories(path=pkg))
-        if not extra_subdirectories_errors:
-            pass
-        else:
+        if extra_subdirectories_errors:
             for error in extra_subdirectories_errors:
                 errors.append(error)
         return errors
@@ -346,7 +344,7 @@ class ReportGenerator:
             self.logger.info("Creating a manifest for {}".format(pkg))
             package_builder = batch_manifest_builder.add_package(pkg)
 
-            for root, dirs, files in os.walk(pkg):
+            for _, __, files in os.walk(pkg):
                 for file_name in files:
                     package_builder.add_file(file_name)
 
