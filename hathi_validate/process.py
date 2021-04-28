@@ -262,7 +262,7 @@ class PageDataErrors(AbsErrorLocator):
 
         """
         pages = self.metadata["pagedata"]
-        for image_name, attributes in pages.items():
+        for image_name in pages.keys():
             error_result = self.find_pagedata_file(image_name)
             if error_result is not None:
                 yield error_result
