@@ -212,8 +212,7 @@ def find_errors_marc(filename: str) -> result.ResultSummary:
 def parse_yaml(filename: str) -> Dict[str, Any]:
     """Parse a YAML file."""
     with open(filename, "r") as file_handle:
-        data = yaml.load(file_handle, Loader=yaml.SafeLoader)
-        return data
+        return yaml.load(file_handle, Loader=yaml.SafeLoader)
 
 
 class AbsErrorLocator(abc.ABC):
