@@ -302,12 +302,12 @@ class TextReport(AbsReport):
             results, key=lambda r: r.source if r.source is not None else ""
         )
         grouped = itertools.groupby(sorted_results, key=lambda r: r.source)
-        with open(self.file, "w", encoding="utf8") as w:
-            w.write("Validation Results\n\n")
+        with open(self.file, "w", encoding="utf8") as write_file:
+            write_file.write("Validation Results\n\n")
             for source_group in grouped:
-                w.write("\n{}\n".format(source_group[0]))
+                write_file.write("\n{}\n".format(source_group[0]))
                 for res in source_group[1]:
-                    w.write("{}\n".format(res.message))
+                    write_file.write("{}\n".format(res.message))
 
 
 class AbsReporter(metaclass=abc.ABCMeta):
