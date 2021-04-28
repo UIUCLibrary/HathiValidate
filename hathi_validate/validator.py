@@ -108,7 +108,7 @@ class ValidateComponents(AbsValidator):
         if not entry.is_file():
             return False
 
-        base, ext = os.path.splitext(entry.name)
+        base, _ = os.path.splitext(entry.name)
         if not self._component_mask.fullmatch(base):
             return False
 
