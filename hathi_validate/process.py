@@ -285,8 +285,6 @@ class PageDataErrors(AbsErrorLocator):
             return f"The pagedata {self.filename} contains an " \
                    f"nonexistent file {image_name}"
 
-        if attributes:
-            pass
         return None
 
 
