@@ -109,10 +109,7 @@ class ValidateComponents(AbsValidator):
             return False
 
         base, _ = os.path.splitext(entry.name)
-        if not self._component_mask.fullmatch(base):
-            return False
-
-        return True
+        return bool(self._component_mask.fullmatch(base))
 
 
 class ValidateExtraSubdirectories(AbsValidator):
