@@ -117,10 +117,10 @@ def calculate_md5(filename: str, chunk_size: int = 8192) -> str:
 
 def is_same_hash(*hashes: str) -> bool:
     """Compare hash values to see if they are the same."""
-    for hash_value_a, hash_value_b, in itertools.combinations(hashes, 2):
-        if hash_value_a.lower() != hash_value_b.lower():
-            return False
-    return True
+    return all(
+        hash_value_a.lower() == hash_value_b.lower()
+        for hash_value_a, hash_value_b, in itertools.combinations(hashes, 2)
+    )
 
 
 def find_failing_checksums(path: str, report: str) -> result.ResultSummary:
