@@ -37,6 +37,13 @@ defaultParameterValues = [
     USE_SONARQUBE: false
 ]
 
+PYPI_SERVERS = [
+    'https://jenkins.library.illinois.edu/nexus/repository/uiuc_prescon_python_public/',
+    'https://jenkins.library.illinois.edu/nexus/repository/uiuc_prescon_python/',
+    'https://jenkins.library.illinois.edu/nexus/repository/uiuc_prescon_python_testing/'
+    ]
+
+
 def remove_from_devpi(devpiExecutable, pkgName, pkgVersion, devpiIndex, devpiUsername, devpiPassword){
     script {
             try {
@@ -388,6 +395,7 @@ pipeline {
         booleanParam(name: 'TEST_PACKAGES_ON_MAC', defaultValue: false, description: 'Test Python packages on Mac')
         booleanParam(name: 'USE_SONARQUBE', defaultValue: defaultParameterValues.USE_SONARQUBE, description: 'Send data test data to SonarQube')
         booleanParam(name: "DEPLOY_DEVPI", defaultValue: false, description: "Deploy to devpi on http://devpy.library.illinois.edu/DS_Jenkins/${env.BRANCH_NAME}")
+        booleanParam(name: 'DEPLOY_PYPI', defaultValue: false, description: 'Deploy to pypi')
         booleanParam(name: "DEPLOY_DEVPI_PRODUCTION", defaultValue: false, description: "Deploy to https://devpi.library.illinois.edu/production/release")
         booleanParam(name: "DEPLOY_HATHI_TOOL_BETA", defaultValue: false, description: "Deploy standalone to \\\\storage.library.illinois.edu\\HathiTrust\\Tools\\beta\\")
         booleanParam(name: "DEPLOY_DOCS", defaultValue: false, description: "Update online documentation")
@@ -1157,6 +1165,65 @@ pipeline {
         }
         stage("Deploy"){
             parallel {
+                stage('Deploy to pypi') {
+                    agent {
+                        dockerfile {
+                            filename 'ci/docker/python/linux/jenkins/Dockerfile'
+                            label 'linux&&docker'
+                            additionalBuildArgs '--build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
+                        }
+                    }
+                    when{
+                        allOf{
+                            equals expected: true, actual: params.DEPLOY_PYPI
+                            equals expected: true, actual: params.BUILD_PACKAGES
+
+                        }
+                        beforeAgent true
+                        beforeInput true
+                    }
+                    options{
+                        retry(3)
+                    }
+                    input {
+                        message 'Upload to pypi server?'
+                        parameters {
+                            choice(
+                                choices: PYPI_SERVERS,
+                                description: 'Url to the pypi index to upload python packages.',
+                                name: 'SERVER_URL'
+                            )
+                        }
+                    }
+                    steps{
+                        unstash 'sdist'
+                        unstash 'wheel'
+                        script{
+                            def pypi = fileLoader.fromGit(
+                                    'pypi',
+                                    'https://github.com/UIUCLibrary/jenkins_helper_scripts.git',
+                                    '2',
+                                    null,
+                                    ''
+                                )
+                            pypi.pypiUpload(
+                                credentialsId: 'jenkins-nexus',
+                                repositoryUrl: SERVER_URL,
+                                glob: 'dist/*'
+                                )
+                        }
+                    }
+                    post{
+                        cleanup{
+                            cleanWs(
+                                deleteDirs: true,
+                                patterns: [
+                                        [pattern: 'dist/', type: 'INCLUDE']
+                                    ]
+                            )
+                        }
+                    }
+                }
                 stage("Deploy Online Documentation") {
                     agent{
                         label "!aws"
