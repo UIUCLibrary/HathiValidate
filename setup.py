@@ -9,7 +9,7 @@ setup(
         'hathi_validate',
         'hathi_validate.xsd',
     ],
-    package_data={'hathi_validate':["xsd/*.xsd"]},
+    package_data={'hathi_validate':["xsd/*.xsd", "py.typed"]},
     test_suite="tests",
     setup_requires=['pytest-runner'],
     install_requires=[
