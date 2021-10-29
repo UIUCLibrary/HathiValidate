@@ -503,6 +503,11 @@ pipeline {
                                         }
                                     }
                                 }
+                                stage('Task Scanner'){
+                                    steps{
+                                        recordIssues(tools: [taskScanner(highTags: 'FIXME', includePattern: 'hathi_validate/**/*.py', normalTags: 'TODO')])
+                                    }
+                                }
                                 stage('Behave') {
                                     steps {
                                         catchError(buildResult: 'UNSTABLE', message: 'Did not pass all Behave BDD tests', stageResult: "UNSTABLE") {
