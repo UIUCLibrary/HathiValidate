@@ -399,7 +399,6 @@ pipeline {
         booleanParam(name: "DEPLOY_DEVPI_PRODUCTION", defaultValue: false, description: "Deploy to https://devpi.library.illinois.edu/production/release")
         booleanParam(name: "DEPLOY_HATHI_TOOL_BETA", defaultValue: false, description: "Deploy standalone to \\\\storage.library.illinois.edu\\HathiTrust\\Tools\\beta\\")
         booleanParam(name: "DEPLOY_DOCS", defaultValue: false, description: "Update online documentation")
-        string(name: 'URL_SUBFOLDER', defaultValue: "hathi_validate", description: 'The directory that the docs should be saved under')
     }
     stages {
         stage("Build Documentation"){
@@ -1233,44 +1232,43 @@ pipeline {
                         }
                     }
                 }
-                stage("Deploy Online Documentation") {
-                    agent{
-                        label "!aws"
-                    }
+                stage('Deploy Online Documentation') {
                     when{
                         equals expected: true, actual: params.DEPLOY_DOCS
                         beforeAgent true
+                        beforeInput true
+                    }
+                    agent {
+                        dockerfile {
+                            filename 'ci/docker/python/linux/jenkins/Dockerfile'
+                            label 'linux && docker'
+                            additionalBuildArgs '--build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
+                        }
+                    }
+                    options{
+                        timeout(time: 1, unit: 'DAYS')
+                    }
+                    input {
+                        message 'Update project documentation?'
                     }
                     steps{
-                        unstash "DOCUMENTATION"
-                        dir("build/docs/html/"){
-                            input 'Update project documentation?'
-                            sshPublisher(
-                                publishers: [
-                                    sshPublisherDesc(
-                                        configName: 'apache-ns - lib-dccuser-updater',
-                                        sshLabel: [label: 'Linux'],
-                                        transfers: [sshTransfer(excludes: '',
-                                        execCommand: '',
-                                        execTimeout: 120000,
-                                        flatten: false,
-                                        makeEmptyDirs: false,
-                                        noDefaultExcludes: false,
-                                        patternSeparator: '[, ]+',
-                                        remoteDirectory: "${params.DEPLOY_DOCS_URL_SUBFOLDER}",
-                                        remoteDirectorySDF: false,
-                                        removePrefix: '',
-                                        sourceFiles: '**')],
-                                    usePromotionTimestamp: false,
-                                    useWorkspaceInPromotion: false,
-                                    verbose: true
-                                    )
-                                ]
-                            )
+                        unstash 'DOCUMENTATION'
+                        withCredentials([usernamePassword(credentialsId: 'dccdocs-server', passwordVariable: 'docsPassword', usernameVariable: 'docsUsername')]) {
+                            sh 'python utils/upload_docs.py --username=$docsUsername --password=$docsPassword --subroute=hathi_validate build/docs/html apache-ns.library.illinois.edu'
+                        }
+                    }
+                    post{
+                        cleanup{
+                            cleanWs(
+                                    deleteDirs: true,
+                                    patterns: [
+                                        [pattern: 'build/', type: 'INCLUDE'],
+                                        [pattern: 'dist/', type: 'INCLUDE'],
+                                        ]
+                                )
                         }
                     }
                 }
-
             }
         }
     }
