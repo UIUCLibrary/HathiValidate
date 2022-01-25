@@ -4,6 +4,7 @@ devpi-client
 flake8
 lxml
 mypy
+paramiko
 pep517
 pydocstyle
 pylint
