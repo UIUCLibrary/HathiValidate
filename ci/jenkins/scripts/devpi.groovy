@@ -249,14 +249,17 @@ def testDevpiPackage2(args=[:]){
     def toxEnv = args.test.toxEnv
     def testSetup = args.test['setup'] ? args.test['setup'] : {}
     def testTeardown = args.test['teardown'] ? args.test['teardown'] : {}
+    def retries = args.containsKey('retry') ? args.retry : 1
 
-    agent{
-        testSetup()
-        try{
-            logIntoDevpiServer(devpiExec, devpiServerUrl, credentialsId, clientDir)
-            runDevpiTest(devpiExec, devpiIndex, pkgName, pkgVersion, pkgSelector, clientDir, toxEnv)
-        } finally {
-            testTeardown()
+    retry(retries){
+        agent{
+            testSetup()
+            try{
+                logIntoDevpiServer(devpiExec, devpiServerUrl, credentialsId, clientDir)
+                runDevpiTest(devpiExec, devpiIndex, pkgName, pkgVersion, pkgSelector, clientDir, toxEnv)
+            } finally {
+                testTeardown()
+            }
         }
     }
 }
