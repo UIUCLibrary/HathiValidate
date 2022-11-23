@@ -79,7 +79,7 @@ COPY --from=WHEEL_BUILDER_PY39 /wheels/* /wheels/
 COPY --from=WHEEL_BUILDER_PY310 /wheels/* /wheels/
 RUN python3 -m pip install pip --upgrade && \
     python3 -m pip install wheel && \
-    python3 -m pip install tox devpi-client && \
+    python3 -m pip install tox "devpi-client<6.0" && \
     python3 -m pip wheel -w wheels wheel
 
 ENV PIP_FIND_LINKS=/wheels
