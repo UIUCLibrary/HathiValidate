@@ -471,28 +471,42 @@ pipeline {
                 beforeAgent true
             }
             stages{
-                stage("Building Python Distribution Packages"){
+                stage("Building Source and Wheel formats"){
                     agent {
-                        dockerfile {
-                            filename 'ci/docker/python/linux/jenkins/Dockerfile'
-                            label 'linux && docker && x86'
-                        }
+                        docker{
+                            image 'python'
+                            label 'linux && docker'
+                          }
                     }
                     steps{
-                        sh(label:'Building Python packages',
-                           script: 'python -m pep517.build .'
-                           )
+                        timeout(5){
+                            withEnv(['PIP_NO_CACHE_DIR=off']) {
+                                sh(label: 'Build Python Package',
+                                   script: '''python -m venv venv --upgrade-deps
+                                              venv/bin/pip install build
+                                              venv/bin/python -m build .
+                                              '''
+                                    )
+                            }
+                        }
                     }
                     post{
+                        success{
+                            archiveArtifacts artifacts: "dist/*.whl,dist/*.tar.g,dist/*.zip", fingerprint: true
+                        }
                         always{
                             stash includes: 'dist/*.whl', name: "wheel"
-                            stash includes: 'dist/*.zip,dist/*.tar.gz', name: "sdist"
-                        }
-                        success{
-                            archiveArtifacts artifacts: "dist/*.whl,dist/*.tar.gz,dist/*.zip", fingerprint: true
+                                                        stash includes: 'dist/*.zip,dist/*.tar.gz', name: "sdist"
                         }
                         cleanup{
-                            cleanWs notFailBuild: true
+                            cleanWs(
+                                deleteDirs: true,
+                                patterns: [
+                                    [pattern: '**/__pycache__/', type: 'INCLUDE'],
+                                    [pattern: 'venv/', type: 'INCLUDE'],
+                                    [pattern: 'dist/', type: 'INCLUDE']
+                                ]
+                            )
                         }
                     }
                 }
