@@ -12,5 +12,5 @@ pytest
 pytest-cov
 pytest-runner
 sphinx
-tox
+-r requirements/requirements_tox.txt
 twine

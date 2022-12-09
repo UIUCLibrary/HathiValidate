@@ -26,11 +26,22 @@ SUPPORTED_WINDOWS_VERSIONS = ['3.7', '3.8', '3.9', '3.10']
 // ============================================================================
 SONARQUBE_CREDENTIAL_ID = 'sonartoken-hathivalidate'
 
-def DEVPI_CONFIG = [
-    stagingIndex: getDevPiStagingIndex(),
-    server: 'https://devpi.library.illinois.edu',
-    credentialsId: 'DS_devpi',
-]
+def getDevpiConfig() {
+    node(){
+        configFileProvider([configFile(fileId: 'devpi_config', variable: 'CONFIG_FILE')]) {
+            def configProperties = readProperties(file: CONFIG_FILE)
+            configProperties.stagingIndex = {
+                if (env.TAG_NAME?.trim()){
+                    return 'tag_staging'
+                } else{
+                    return "${env.BRANCH_NAME}_staging"
+                }
+            }()
+            return configProperties
+        }
+    }
+}
+def DEVPI_CONFIG = getDevpiConfig()
 
 DEVPI_STAGING_INDEX = "DS_Jenkins/${getDevPiStagingIndex()}"
 defaultParameterValues = [
@@ -42,274 +53,6 @@ PYPI_SERVERS = [
     'https://jenkins.library.illinois.edu/nexus/repository/uiuc_prescon_python/',
     'https://jenkins.library.illinois.edu/nexus/repository/uiuc_prescon_python_testing/'
     ]
-
-
-def remove_from_devpi(devpiExecutable, pkgName, pkgVersion, devpiIndex, devpiUsername, devpiPassword){
-    script {
-            try {
-                bat "${devpiExecutable} login ${devpiUsername} --password ${devpiPassword}"
-                bat "${devpiExecutable} use ${devpiIndex}"
-                bat "${devpiExecutable} remove -y ${pkgName}==${pkgVersion}"
-            } catch (Exception ex) {
-                echo "Failed to remove ${pkgName}==${pkgVersion} from ${devpiIndex}"
-        }
-
-    }
-}
-
-def CONFIGURATIONS = [
-        "3.6" : [
-            os: [
-                windows:[
-                    agents: [
-                        build: [
-                            dockerfile: [
-                                filename: 'ci/docker/python/windows/jenkins/Dockerfile',
-                                label: 'windows && docker && x86',
-                                additionalBuildArgs: '--build-arg PYTHON_DOCKER_IMAGE_BASE=python:3.6-windowsservercore'
-                            ]
-                        ],
-                        test:[
-                            dockerfile: [
-                                filename: 'ci/docker/python/windows/jenkins/Dockerfile',
-                                label: 'windows && docker && x86',
-                                additionalBuildArgs: '--build-arg PYTHON_DOCKER_IMAGE_BASE=python:3.6-windowsservercore'
-                            ]
-                        ],
-                        devpi: [
-                            dockerfile: [
-                                filename: 'ci/docker/python/windows/jenkins/Dockerfile',
-                                label: 'windows && docker && x86',
-                                additionalBuildArgs: '--build-arg PYTHON_DOCKER_IMAGE_BASE=python:3.6-windowsservercore'
-                            ]
-                        ]
-                    ],
-                    pkgRegex: [
-                        wheel: "*.whl",
-                        sdist: "*.zip"
-                    ]
-                ],
-                linux: [
-                    agents: [
-                        build: [
-                            dockerfile: [
-                                filename: 'ci/docker/python/linux/jenkins/Dockerfile',
-                                label: 'linux&&docker',
-                                additionalBuildArgs: '--build-arg PYTHON_VERSION=3.6 --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
-                            ]
-                        ],
-                        test: [
-                            dockerfile: [
-                                filename: 'ci/docker/python/linux/jenkins/Dockerfile',
-                                label: 'linux&&docker',
-                                additionalBuildArgs: '--build-arg PYTHON_VERSION=3.6 --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
-                            ]
-                        ],
-                        devpi: [
-                            dockerfile: [
-                                filename: 'ci/docker/python/linux/jenkins/Dockerfile',
-                                label: 'linux&&docker',
-                                additionalBuildArgs: '--build-arg PYTHON_VERSION=3.6 --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
-                            ]
-                        ]
-                    ],
-                    pkgRegex: [
-                        wheel: "*.whl",
-                        sdist: "*.zip"
-                    ]
-                ]
-            ],
-            tox_env: "py36",
-            devpiSelector: [
-                sdist: "zip",
-                wheel: "whl",
-            ],
-            pkgRegex: [
-                wheel: "*.whl",
-                sdist: "*.zip"
-            ]
-        ],
-        "3.7" : [
-            os: [
-                windows: [
-                    agents: [
-                        build: [
-                            dockerfile: [
-                                filename: 'ci/docker/python/windows/jenkins/Dockerfile',
-                                label: 'windows && docker && x86',
-                                additionalBuildArgs: '--build-arg PYTHON_DOCKER_IMAGE_BASE=python:3.7'
-                            ]
-                        ],
-                        test: [
-                            dockerfile: [
-                                filename: 'ci/docker/python/windows/jenkins/Dockerfile',
-                                label: 'windows && docker && x86',
-                                additionalBuildArgs: '--build-arg PYTHON_DOCKER_IMAGE_BASE=python:3.7'
-                            ]
-                        ],
-                        devpi: [
-                            dockerfile: [
-                                filename: 'ci/docker/python/windows/jenkins/Dockerfile',
-                                label: 'windows && docker && x86',
-                                additionalBuildArgs: '--build-arg PYTHON_DOCKER_IMAGE_BASE=python:3.7'
-                            ]
-                        ]
-                    ],
-                    pkgRegex: [
-                        wheel: "*.whl",
-                        sdist: "*.zip"
-                    ]
-                ],
-                linux: [
-                    agents: [
-                        build: [
-                            dockerfile: [
-                                filename: 'ci/docker/python/linux/jenkins/Dockerfile',
-                                label: 'linux&&docker',
-                                additionalBuildArgs: '--build-arg PYTHON_VERSION=3.7 --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
-                            ]
-                        ],
-                        test: [
-                            dockerfile: [
-                                filename: 'ci/docker/python/linux/jenkins/Dockerfile',
-                                label: 'linux&&docker',
-                                additionalBuildArgs: '--build-arg PYTHON_VERSION=3.7 --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
-                            ]
-                        ],
-                        devpi: [
-                            dockerfile: [
-                                filename: 'ci/docker/python/linux/jenkins/Dockerfile',
-                                label: 'linux&&docker',
-                                additionalBuildArgs: '--build-arg PYTHON_VERSION=3.7 --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
-                            ]
-                        ]
-                    ],
-                    pkgRegex: [
-                        wheel: "*.whl",
-                        sdist: "*.zip"
-                    ]
-                ]
-            ],
-            tox_env: "py37",
-            devpiSelector: [
-                sdist: "zip",
-                wheel: "whl",
-            ],
-            pkgRegex: [
-                wheel: "*.whl",
-                sdist: "*.zip"
-            ]
-        ],
-        "3.8" : [
-            os: [
-                windows: [
-                    agents: [
-                        build: [
-                            dockerfile: [
-                                filename: 'ci/docker/python/windows/jenkins/Dockerfile',
-                                label: 'windows && docker && x86',
-                                additionalBuildArgs: '--build-arg PYTHON_DOCKER_IMAGE_BASE=python:3.8'
-                            ]
-                        ],
-                        test: [
-                            dockerfile: [
-                                filename: 'ci/docker/python/windows/jenkins/Dockerfile',
-                                label: 'windows && docker && x86',
-                                additionalBuildArgs: '--build-arg PYTHON_DOCKER_IMAGE_BASE=python:3.8'
-                            ]
-                        ],
-                        devpi: [
-                            dockerfile: [
-                                filename: 'ci/docker/python/windows/jenkins/Dockerfile',
-                                label: 'windows && docker && x86',
-                                additionalBuildArgs: '--build-arg PYTHON_DOCKER_IMAGE_BASE=python:3.8'
-                            ]
-                        ]
-
-                    ],
-                    pkgRegex: [
-                        wheel: "*.whl",
-                        sdist: "*.zip"
-                    ]
-                ],
-                linux: [
-                    agents: [
-                        build: [
-                            dockerfile: [
-                                filename: 'ci/docker/python/linux/jenkins/Dockerfile',
-                                label: 'linux&&docker',
-                                additionalBuildArgs: '--build-arg PYTHON_VERSION=3.8 --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
-                            ]
-                        ],
-                        test: [
-                            dockerfile: [
-                                filename: 'ci/docker/python/linux/jenkins/Dockerfile',
-                                label: 'linux&&docker',
-                                additionalBuildArgs: '--build-arg PYTHON_VERSION=3.8 --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
-                            ]
-                        ],
-                        devpi: [
-                            dockerfile: [
-                                filename: 'ci/docker/python/linux/jenkins/Dockerfile',
-                                label: 'linux&&docker',
-                                additionalBuildArgs: '--build-arg PYTHON_VERSION=3.8 --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
-                            ]
-                        ]
-                    ],
-                    pkgRegex: [
-                        wheel: "*.whl",
-                        sdist: "*.zip"
-                    ]
-                ]
-            ],
-            tox_env: "py38",
-            devpiSelector: [
-                sdist: "zip",
-                wheel: "whl",
-            ],
-            pkgRegex: [
-                wheel: "*.whl",
-                sdist: "*.zip"
-            ]
-        ],
-    ]
-def get_tox_jobs(){
-    sh "tox --workdir .tox -vv -e py"
-}
-
-def test_devpi(DevpiPath, DevpiIndex, packageName, PackageRegex, certsDir="certs\\"){
-
-    script{
-        bat "${DevpiPath} use ${DevpiIndex} --clientdir ${certsDir}"
-        withCredentials([usernamePassword(credentialsId: "DS_devpi", usernameVariable: 'DEVPI_USERNAME', passwordVariable: 'DEVPI_PASSWORD')]) {
-           bat "${DevpiPath} login DS_Jenkins --clientdir ${certsDir} --password ${DEVPI_PASSWORD}"
-        }
-    }
-    echo "Testing on ${NODE_NAME}"
-    bat "${DevpiPath} test --index ${DevpiIndex} --verbose ${packageName} -s ${PackageRegex} --clientdir ${certsDir} --tox-args=\"-vv\""
-}
-
-def get_package_version(stashName, metadataFile){
-    ws {
-        unstash "${stashName}"
-        script{
-            def props = readProperties interpolate: true, file: "${metadataFile}"
-            deleteDir()
-            return props.Version
-        }
-    }
-}
-
-def get_package_name(stashName, metadataFile){
-    ws {
-        unstash "${stashName}"
-        script{
-            def props = readProperties interpolate: true, file: "${metadataFile}"
-            deleteDir()
-            return props.Name
-        }
-    }
-}
 
 
 def startup(){
@@ -401,261 +144,280 @@ pipeline {
         booleanParam(name: "DEPLOY_DOCS", defaultValue: false, description: "Update online documentation")
     }
     stages {
-        stage("Build Documentation"){
-            agent {
-                dockerfile {
-                    filename 'ci/docker/python/linux/jenkins/Dockerfile'
-                    label 'linux && docker && x86'
-                }
-            }
-            steps{
-                echo "Building docs on ${env.NODE_NAME}"
-                sh(script: """mkdir -p logs
-                              python -m sphinx -b html docs/source build/docs/html -d build/docs/doctrees -w logs/build_sphinx.log
-                           """
-                )
-            }
-            post{
-                always {
-                    archiveArtifacts artifacts: "logs/build_sphinx.log", allowEmptyArchive: true
-                    script{
-                        zip archive: true, dir: 'build/docs/html', glob: '', zipFile: "dist/${props.Name}-${props.Version}.doc.zip"
-                        stash includes: 'dist/*.doc.zip,build/docs/html/**', name: 'DOCUMENTATION'
-                    }
-                }
-                success{
-                    publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'build/docs/html', reportFiles: 'index.html', reportName: 'Documentation', reportTitles: ''])
-                }
-                cleanup{
-                    cleanWs notFailBuild: true
-                }
-            }
-        }
-        stage('Checks') {
+        stage('Building and Testing'){
             when{
-                equals expected: true, actual: params.RUN_CHECKS
+                anyOf{
+                    equals expected: true, actual: params.RUN_CHECKS
+                    equals expected: true, actual: params.TEST_RUN_TOX
+                    equals expected: true, actual: params.DEPLOY_DEVPI
+                    equals expected: true, actual: params.DEPLOY_DOCS
+                }
             }
             stages{
-                stage('Code Quality'){
+                stage("Build Documentation"){
                     agent {
                         dockerfile {
                             filename 'ci/docker/python/linux/jenkins/Dockerfile'
                             label 'linux && docker && x86'
-                            args '--mount source=sonar-cache-hathi_validate,target=/opt/sonar/.sonar/cache'
                         }
                     }
-                    stages{
-                        stage('Set up Tests') {
-                            steps{
-                                sh(label: "Adding logs and reports directories",
-                                   script: '''
-                                        mkdir -p logs
-                                        mkdir -p reports
-                                        '''
-                                   )
+                    when{
+                        anyOf{
+                            equals expected: true, actual: params.RUN_CHECKS
+                            equals expected: true, actual: params.DEPLOY_DEVPI
+                            equals expected: true, actual: params.DEPLOY_DOCS
+                        }
+                        beforeAgent true
+                    }
+                    steps{
+                        sh(script: '''mkdir -p logs
+                                      python -m sphinx -b html docs/source build/docs/html -d build/docs/doctrees -w logs/build_sphinx.log
+                                   '''
+                        )
+                    }
+                    post{
+                        always {
+                            archiveArtifacts artifacts: 'logs/build_sphinx.log', allowEmptyArchive: true
+                            script{
+                                zip archive: true, dir: 'build/docs/html', glob: '', zipFile: "dist/${props.Name}-${props.Version}.doc.zip"
+                                stash includes: 'dist/*.doc.zip,build/docs/html/**', name: 'DOCUMENTATION'
                             }
                         }
-                        stage('Running Tests') {
-                            parallel {
-                                stage('PyTest'){
+                        success{
+                            publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'build/docs/html', reportFiles: 'index.html', reportName: 'Documentation', reportTitles: ''])
+                        }
+                        cleanup{
+                            cleanWs notFailBuild: true
+                        }
+                    }
+                }
+                stage('Checks') {
+                    when{
+                        equals expected: true, actual: params.RUN_CHECKS
+                    }
+                    stages{
+                        stage('Code Quality'){
+                            agent {
+                                dockerfile {
+                                    filename 'ci/docker/python/linux/jenkins/Dockerfile'
+                                    label 'linux && docker && x86'
+                                    args '--mount source=sonar-cache-hathi_validate,target=/opt/sonar/.sonar/cache'
+                                }
+                            }
+                            stages{
+                                stage('Set up Tests') {
                                     steps{
-                                        sh(
-                                            label: 'Running pytest',
-                                            script: 'coverage run --parallel-mode --source=hathi_validate -m pytest --junitxml=./reports/pytest-junit.xml -p no:cacheprovider'
-                                        )
-
-                                    }
-                                    post {
-                                        always{
-                                            junit 'reports/pytest-junit.xml'
-                                            stash includes: 'reports/pytest-junit.xml', name: 'PYTEST_UNIT_TEST_RESULTS'
-                                        }
+                                        sh(label: "Adding logs and reports directories",
+                                           script: '''
+                                                mkdir -p logs
+                                                mkdir -p reports
+                                                '''
+                                           )
                                     }
                                 }
-                                stage('MyPy'){
-                                    steps{
-                                        catchError(buildResult: 'SUCCESS', message: 'MyPy found issues', stageResult: 'UNSTABLE') {
-                                            sh(label: 'Running MyPy',
-                                               script: '''mypy -p hathi_validate --html-report reports/mypy_html --cache-dir=/dev/null > logs/mypy.log'''
-                                              )
-                                        }
-                                    }
-                                    post{
-                                        always {
-                                            publishHTML([allowMissing: true, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'reports/mypy_html', reportFiles: 'index.html', reportName: 'MyPy', reportTitles: ''])
-                                            recordIssues tools: [myPy(pattern: 'logs/mypy.log')]
-                                        }
-                                    }
-                                }
-                                stage('Flake8') {
-                                    steps{
-                                        catchError(buildResult: 'SUCCESS', message: 'flake8 found some warnings', stageResult: 'UNSTABLE') {
-                                            sh(label: 'Running flake8',
-                                               script: 'flake8 hathi_validate --tee --output-file=logs/flake8.log'
-                                            )
-                                        }
-                                    }
-                                    post {
-                                        always {
-                                            stash includes: 'logs/flake8.log', name: 'FLAKE8_REPORT'
-                                            recordIssues(tools: [flake8(name: 'Flake8', pattern: 'logs/flake8.log')])
-                                        }
-                                    }
-                                }
-                                stage('Task Scanner'){
-                                    steps{
-                                        recordIssues(tools: [taskScanner(highTags: 'FIXME', includePattern: 'hathi_validate/**/*.py', normalTags: 'TODO')])
-                                    }
-                                }
-                                stage('Behave') {
-                                    steps {
-                                        catchError(buildResult: 'UNSTABLE', message: 'Did not pass all Behave BDD tests', stageResult: "UNSTABLE") {
-                                            sh(
-                                                script: 'coverage run --parallel-mode --source=hathi_validate -m behave --junit --junit-directory reports/tests/behave'
-                                            )
-                                        }
-                                    }
-                                    post {
-                                        always {
-                                            junit 'reports/tests/behave/*.xml'
-                                        }
-                                    }
-                                }
-                                stage("pyDocStyle"){
-                                    steps{
-                                        catchError(buildResult: 'SUCCESS', message: 'pyDocStyle found issues', stageResult: 'UNSTABLE') {
-                                            tee("reports/pydocstyle-report.txt"){
+                                stage('Running Tests') {
+                                    parallel {
+                                        stage('PyTest'){
+                                            steps{
                                                 sh(
-                                                    label: "Run pydocstyle",
-                                                    script: '''mkdir -p reports
-                                                               pydocstyle hathi_validate
-                                                               '''
+                                                    label: 'Running pytest',
+                                                    script: 'coverage run --parallel-mode --source=hathi_validate -m pytest --junitxml=./reports/pytest-junit.xml -p no:cacheprovider'
+                                                )
+
+                                            }
+                                            post {
+                                                always{
+                                                    junit 'reports/pytest-junit.xml'
+                                                    stash includes: 'reports/pytest-junit.xml', name: 'PYTEST_UNIT_TEST_RESULTS'
+                                                }
+                                            }
+                                        }
+                                        stage('MyPy'){
+                                            steps{
+                                                catchError(buildResult: 'SUCCESS', message: 'MyPy found issues', stageResult: 'UNSTABLE') {
+                                                    sh(label: 'Running MyPy',
+                                                       script: '''mypy -p hathi_validate --html-report reports/mypy_html --cache-dir=/dev/null > logs/mypy.log'''
+                                                      )
+                                                }
+                                            }
+                                            post{
+                                                always {
+                                                    publishHTML([allowMissing: true, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'reports/mypy_html', reportFiles: 'index.html', reportName: 'MyPy', reportTitles: ''])
+                                                    recordIssues tools: [myPy(pattern: 'logs/mypy.log')]
+                                                }
+                                            }
+                                        }
+                                        stage('Flake8') {
+                                            steps{
+                                                catchError(buildResult: 'SUCCESS', message: 'flake8 found some warnings', stageResult: 'UNSTABLE') {
+                                                    sh(label: 'Running flake8',
+                                                       script: 'flake8 hathi_validate --tee --output-file=logs/flake8.log'
+                                                    )
+                                                }
+                                            }
+                                            post {
+                                                always {
+                                                    stash includes: 'logs/flake8.log', name: 'FLAKE8_REPORT'
+                                                    recordIssues(tools: [flake8(name: 'Flake8', pattern: 'logs/flake8.log')])
+                                                }
+                                            }
+                                        }
+                                        stage('Task Scanner'){
+                                            steps{
+                                                recordIssues(tools: [taskScanner(highTags: 'FIXME', includePattern: 'hathi_validate/**/*.py', normalTags: 'TODO')])
+                                            }
+                                        }
+                                        stage('Behave') {
+                                            steps {
+                                                catchError(buildResult: 'UNSTABLE', message: 'Did not pass all Behave BDD tests', stageResult: "UNSTABLE") {
+                                                    sh(
+                                                        script: 'coverage run --parallel-mode --source=hathi_validate -m behave --junit --junit-directory reports/tests/behave'
+                                                    )
+                                                }
+                                            }
+                                            post {
+                                                always {
+                                                    junit 'reports/tests/behave/*.xml'
+                                                }
+                                            }
+                                        }
+                                        stage("pyDocStyle"){
+                                            steps{
+                                                catchError(buildResult: 'SUCCESS', message: 'pyDocStyle found issues', stageResult: 'UNSTABLE') {
+                                                    tee("reports/pydocstyle-report.txt"){
+                                                        sh(
+                                                            label: "Run pydocstyle",
+                                                            script: '''mkdir -p reports
+                                                                       pydocstyle hathi_validate
+                                                                       '''
+                                                        )
+                                                    }
+                                                }
+                                            }
+                                            post {
+                                                always{
+                                                    recordIssues(tools: [pyDocStyle(pattern: 'reports/pydocstyle-report.txt')])
+                                                }
+                                            }
+                                        }
+                                        stage('Pylint') {
+                                            steps{
+                                                catchError(buildResult: 'SUCCESS', message: 'Pylint found issues', stageResult: 'UNSTABLE') {
+                                                    tee('reports/pylint.txt'){
+                                                        sh(label: 'Running pylint',
+                                                            script: 'pylint hathi_validate -r n --msg-template="{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}" --persistent=no'
+                                                        )
+                                                    }
+                                                }
+                                                sh(
+                                                    script: 'pylint hathi_validate -r n --msg-template="{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}" --persistent=no > reports/pylint_issues.txt',
+                                                    label: 'Running pylint for sonarqube',
+                                                    returnStatus: true
+                                                )
+                                            }
+                                            post{
+                                                always{
+                                                    recordIssues(tools: [pyLint(pattern: 'reports/pylint.txt')])
+                                                    stash includes: 'reports/pylint_issues.txt,reports/pylint.txt', name: 'PYLINT_REPORT'
+                                                }
+                                            }
+                                        }
+                                        stage("Doctest"){
+                                            steps{
+                                                sh "python -m sphinx -b doctest docs/source build/docs -d build/docs/doctrees -v"
+                                            }
+
+                                        }
+                                    }
+                                    post{
+                                        always{
+                                            sh(label: 'Combining Coverage Data',
+                                               script: '''coverage combine
+                                                          coverage xml -o ./reports/coverage.xml
+                                                          '''
+                                            )
+                                            stash(includes: 'reports/coverage*.xml', name: 'COVERAGE_REPORT_DATA')
+                                            publishCoverage(
+                                                adapters: [
+                                                        coberturaAdapter('reports/coverage.xml')
+                                                    ],
+                                                sourceFileResolver: sourceFiles('STORE_ALL_BUILD')
+                                            )
+                                        }
+                                    }
+                                }
+                                stage('Run Sonarqube Analysis'){
+                                    options{
+                                        lock('hathivalidate-sonarscanner')
+                                    }
+                                    when{
+                                        equals expected: true, actual: params.USE_SONARQUBE
+                                        beforeAgent true
+                                        beforeOptions true
+                                    }
+                                    steps{
+                                        script{
+                                            def sonarqube = load('ci/jenkins/scripts/sonarqube.groovy')
+                                            def stashes = [
+                                                'COVERAGE_REPORT_DATA',
+                                                'PYTEST_UNIT_TEST_RESULTS',
+                                                'PYLINT_REPORT',
+                                                'FLAKE8_REPORT'
+                                            ]
+                                            def sonarqubeConfig = [
+                                                installationName: 'sonarcloud',
+                                                credentialsId: SONARQUBE_CREDENTIAL_ID,
+                                            ]
+                                            if (env.CHANGE_ID){
+                                                sonarqube.submitToSonarcloud(
+                                                    reportStashes: stashes,
+                                                    artifactStash: 'sonarqube artifacts',
+                                                    sonarqube: sonarqubeConfig,
+                                                    pullRequest: [
+                                                        source: env.CHANGE_ID,
+                                                        destination: env.BRANCH_NAME,
+                                                    ],
+                                                    package: [
+                                                        version: props.Version,
+                                                        name: props.Name
+                                                    ],
+                                                )
+                                            } else {
+                                                sonarqube.submitToSonarcloud(
+                                                    reportStashes: stashes,
+                                                    artifactStash: 'sonarqube artifacts',
+                                                    sonarqube: sonarqubeConfig,
+                                                    package: [
+                                                        version: props.Version,
+                                                        name: props.Name
+                                                    ]
                                                 )
                                             }
                                         }
                                     }
                                     post {
                                         always{
-                                            recordIssues(tools: [pyDocStyle(pattern: 'reports/pydocstyle-report.txt')])
-                                        }
-                                    }
-                                }
-                                stage('Pylint') {
-                                    steps{
-                                        catchError(buildResult: 'SUCCESS', message: 'Pylint found issues', stageResult: 'UNSTABLE') {
-                                            tee('reports/pylint.txt'){
-                                                sh(label: 'Running pylint',
-                                                    script: 'pylint hathi_validate -r n --msg-template="{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}" --persistent=no'
-                                                )
+                                            node(''){
+                                                unstash 'sonarqube artifacts'
+                                                recordIssues(tools: [sonarQube(pattern: 'reports/sonar-report.json')])
                                             }
                                         }
-                                        sh(
-                                            script: 'pylint hathi_validate -r n --msg-template="{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}" --persistent=no > reports/pylint_issues.txt',
-                                            label: 'Running pylint for sonarqube',
-                                            returnStatus: true
-                                        )
                                     }
-                                    post{
-                                        always{
-                                            recordIssues(tools: [pyLint(pattern: 'reports/pylint.txt')])
-                                            stash includes: 'reports/pylint_issues.txt,reports/pylint.txt', name: 'PYLINT_REPORT'
-                                        }
-                                    }
-                                }
-                                stage("Doctest"){
-                                    steps{
-                                        sh "python -m sphinx -b doctest docs/source build/docs -d build/docs/doctrees -v"
-                                    }
-
                                 }
                             }
                             post{
-                                always{
-                                    sh(label: 'Combining Coverage Data',
-                                       script: '''coverage combine
-                                                  coverage xml -o ./reports/coverage.xml
-                                                  '''
-                                    )
-                                    stash(includes: 'reports/coverage*.xml', name: 'COVERAGE_REPORT_DATA')
-                                    publishCoverage(
-                                        adapters: [
-                                                coberturaAdapter('reports/coverage.xml')
-                                            ],
-                                        sourceFileResolver: sourceFiles('STORE_ALL_BUILD')
+                                cleanup{
+                                    cleanWs(
+                                        deleteDirs: true,
+                                        patterns: [
+                                            [pattern: 'logs/', type: 'INCLUDE'],
+                                            [pattern: 'reports/', type: 'INCLUDE'],
+                                            [pattern: '.coverage.*/', type: 'INCLUDE'],
+                                            [pattern: '**/__pycache__/', type: 'INCLUDE'],
+                                        ]
                                     )
                                 }
                             }
-                        }
-                        stage('Run Sonarqube Analysis'){
-                            options{
-                                lock('hathivalidate-sonarscanner')
-                            }
-                            when{
-                                equals expected: true, actual: params.USE_SONARQUBE
-                                beforeAgent true
-                                beforeOptions true
-                            }
-                            steps{
-                                script{
-                                    def sonarqube = load('ci/jenkins/scripts/sonarqube.groovy')
-                                    def stashes = [
-                                        'COVERAGE_REPORT_DATA',
-                                        'PYTEST_UNIT_TEST_RESULTS',
-                                        'PYLINT_REPORT',
-                                        'FLAKE8_REPORT'
-                                    ]
-                                    def sonarqubeConfig = [
-                                        installationName: 'sonarcloud',
-                                        credentialsId: SONARQUBE_CREDENTIAL_ID,
-                                    ]
-                                    if (env.CHANGE_ID){
-                                        sonarqube.submitToSonarcloud(
-                                            reportStashes: stashes,
-                                            artifactStash: 'sonarqube artifacts',
-                                            sonarqube: sonarqubeConfig,
-                                            pullRequest: [
-                                                source: env.CHANGE_ID,
-                                                destination: env.BRANCH_NAME,
-                                            ],
-                                            package: [
-                                                version: props.Version,
-                                                name: props.Name
-                                            ],
-                                        )
-                                    } else {
-                                        sonarqube.submitToSonarcloud(
-                                            reportStashes: stashes,
-                                            artifactStash: 'sonarqube artifacts',
-                                            sonarqube: sonarqubeConfig,
-                                            package: [
-                                                version: props.Version,
-                                                name: props.Name
-                                            ]
-                                        )
-                                    }
-                                }
-                            }
-                            post {
-                                always{
-                                    node(''){
-                                        unstash 'sonarqube artifacts'
-                                        recordIssues(tools: [sonarQube(pattern: 'reports/sonar-report.json')])
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    post{
-                        cleanup{
-                            cleanWs(
-                                deleteDirs: true,
-                                patterns: [
-                                    [pattern: 'logs/', type: 'INCLUDE'],
-                                    [pattern: 'reports/', type: 'INCLUDE'],
-                                    [pattern: '.coverage.*/', type: 'INCLUDE'],
-                                    [pattern: '**/__pycache__/', type: 'INCLUDE'],
-                                ]
-                            )
                         }
                     }
                 }
@@ -709,28 +471,42 @@ pipeline {
                 beforeAgent true
             }
             stages{
-                stage("Building Python Distribution Packages"){
+                stage("Building Source and Wheel formats"){
                     agent {
-                        dockerfile {
-                            filename 'ci/docker/python/linux/jenkins/Dockerfile'
-                            label 'linux && docker && x86'
-                        }
+                        docker{
+                            image 'python'
+                            label 'linux && docker'
+                          }
                     }
                     steps{
-                        sh(label:'Building Python packages',
-                           script: 'python -m pep517.build .'
-                           )
+                        timeout(5){
+                            withEnv(['PIP_NO_CACHE_DIR=off']) {
+                                sh(label: 'Build Python Package',
+                                   script: '''python -m venv venv --upgrade-deps
+                                              venv/bin/pip install build
+                                              venv/bin/python -m build .
+                                              '''
+                                    )
+                            }
+                        }
                     }
                     post{
+                        success{
+                            archiveArtifacts artifacts: "dist/*.whl,dist/*.tar.g,dist/*.zip", fingerprint: true
+                        }
                         always{
                             stash includes: 'dist/*.whl', name: "wheel"
-                            stash includes: 'dist/*.zip,dist/*.tar.gz', name: "sdist"
-                        }
-                        success{
-                            archiveArtifacts artifacts: "dist/*.whl,dist/*.tar.gz,dist/*.zip", fingerprint: true
+                                                        stash includes: 'dist/*.zip,dist/*.tar.gz', name: "sdist"
                         }
                         cleanup{
-                            cleanWs notFailBuild: true
+                            cleanWs(
+                                deleteDirs: true,
+                                patterns: [
+                                    [pattern: '**/__pycache__/', type: 'INCLUDE'],
+                                    [pattern: 'venv/', type: 'INCLUDE'],
+                                    [pattern: 'dist/', type: 'INCLUDE']
+                                ]
+                            )
                         }
                     }
                 }
@@ -828,7 +604,7 @@ pipeline {
                                                     label:'Install Tox',
                                                     script: '''python3 -m venv venv
                                                                venv/bin/pip install pip --upgrade
-                                                               venv/bin/pip install tox
+                                                               venv/bin/pip install -r requirements/requirements_tox.txt
                                                                '''
                                                 )
                                             },
@@ -854,7 +630,7 @@ pipeline {
                                                     label:'Install Tox',
                                                     script: '''python3 -m venv venv
                                                                venv/bin/pip install pip --upgrade
-                                                               venv/bin/pip install tox
+                                                               venv/bin/pip install -r requirements/requirements_tox.txt
                                                                '''
                                                 )
                                             },
@@ -945,7 +721,7 @@ pipeline {
                                                             label:'Installing Devpi client',
                                                             script: '''python3 -m venv venv
                                                                         venv/bin/python -m pip install pip --upgrade
-                                                                        venv/bin/python -m pip install devpi_client tox
+                                                                        venv/bin/python -m pip install devpi_client -r requirements/requirements_tox.txt
                                                                         '''
                                                         )
                                                     },
@@ -982,7 +758,7 @@ pipeline {
                                                             label:'Installing Devpi client',
                                                             script: '''python3 -m venv venv
                                                                         venv/bin/python -m pip install pip --upgrade
-                                                                        venv/bin/python -m pip install devpi_client tox
+                                                                        venv/bin/python -m pip install devpi_client -r requirements/requirements_tox.txt
                                                                         '''
                                                         )
                                                     },
