@@ -26,11 +26,22 @@ SUPPORTED_WINDOWS_VERSIONS = ['3.7', '3.8', '3.9', '3.10']
 // ============================================================================
 SONARQUBE_CREDENTIAL_ID = 'sonartoken-hathivalidate'
 
-def DEVPI_CONFIG = [
-    stagingIndex: getDevPiStagingIndex(),
-    server: 'https://devpi.library.illinois.edu',
-    credentialsId: 'DS_devpi',
-]
+def getDevpiConfig() {
+    node(){
+        configFileProvider([configFile(fileId: 'devpi_config', variable: 'CONFIG_FILE')]) {
+            def configProperties = readProperties(file: CONFIG_FILE)
+            configProperties.stagingIndex = {
+                if (env.TAG_NAME?.trim()){
+                    return 'tag_staging'
+                } else{
+                    return "${env.BRANCH_NAME}_staging"
+                }
+            }()
+            return configProperties
+        }
+    }
+}
+def DEVPI_CONFIG = getDevpiConfig()
 
 DEVPI_STAGING_INDEX = "DS_Jenkins/${getDevPiStagingIndex()}"
 defaultParameterValues = [
