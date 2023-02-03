@@ -1,6 +1,5 @@
 behave
 coverage
-devpi-client<6.0
 flake8
 lxml
 mypy
@@ -13,4 +12,6 @@ pytest-cov
 pytest-runner
 sphinx
 -r requirements/requirements_tox.txt
+-r requirements/requirements-devpi.txt
+types-PyYAML
 twine

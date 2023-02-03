@@ -1,8 +1,9 @@
-ARG PYTHON_VERSION=3.8
-FROM python:${PYTHON_VERSION} as wheel_builder
+ARG PYTHON_VERSION=3.11
+FROM python:${PYTHON_VERSION} as base
+FROM base as wheel_builder
 
 ADD requirements.txt ci/docker/python/shared/requirements-ci.txt /tmp/
-COPY requirements/ /tmp/requirements/
+COPY requirements/*.txt /tmp/requirements/
 RUN python -m pip install --upgrade pip &&  \
     pip install setuptools && \
     pip install wheel && \
@@ -10,7 +11,7 @@ RUN python -m pip install --upgrade pip &&  \
         -r /tmp/requirements.txt \
         -r /tmp/requirements-ci.txt
 
-FROM python:${PYTHON_VERSION}
+FROM base
 
 RUN mkdir -p /.cache/pip && \
     chmod -R 777 /.cache
@@ -32,15 +33,13 @@ ENV SONAR_SCANNER_OPTS="-server"
 
 COPY --from=wheel_builder /wheels /wheels/
 ADD requirements.txt ci/docker/python/shared/requirements-ci.txt /tmp/
-COPY requirements/ /tmp/requirements/
+COPY requirements/*.txt /tmp/requirements/
 ARG PIP_EXTRA_INDEX_URL
 ARG PIP_TRUSTED_HOST
+ENV PIP_FIND_LINKS=/wheels
 RUN python -m pip install --upgrade pip &&  \
     pip install setuptools && \
     pip install wheel && \
     pip install --no-index --find-links=/wheels \
         -r /tmp/requirements.txt \
         -r /tmp/requirements-ci.txt
-RUN pip install types-PyYAML
-RUN pip install devpi-client
-ENV PIP_FIND_LINKS=/wheels
