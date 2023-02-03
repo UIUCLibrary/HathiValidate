@@ -117,6 +117,6 @@ COPY --from=WHEEL_BUilDER_PY310 c:/wheels/ c:/wheels/
 
 ENV PIP_FIND_LINKS=c:\wheels
 COPY requirements requirements
-RUN python -m pip install pip --upgrade; pip install wheel; pip install -r requirements/requirements_tox.txt devpi-client
+RUN python -m pip install pip --upgrade; pip install wheel; pip install -r requirements/requirements_tox.txt  -r requirements/requirements-devpi.txt
 WORKDIR C:/src
 CMD tox --workdir ${Env:TEMP}\tox\ -vv  --recreate

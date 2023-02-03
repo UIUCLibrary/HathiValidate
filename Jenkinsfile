@@ -718,6 +718,7 @@ pipeline {
                                                 ],
                                                 test:[
                                                     setup: {
+                                                        checkout scm
                                                         sh(
                                                             label:'Installing Devpi client',
                                                             script: '''python3 -m venv venv
@@ -755,6 +756,7 @@ pipeline {
                                                 ],
                                                 test:[
                                                     setup: {
+                                                        checkout scm
                                                         sh(
                                                             label:'Installing Devpi client',
                                                             script: '''python3 -m venv venv
