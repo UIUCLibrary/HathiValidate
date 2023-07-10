@@ -1,4 +1,5 @@
-FROM ubuntu:20.04 as wheel_builder_base
+ARG PIP_DOWNLOAD_CACHE=/.cache/pip
+FROM ubuntu:20.04
 COPY ci/docker/python/linux/tox/apt-packages.txt /tmp/
 RUN apt update && \
     apt-get install -y software-properties-common && \
@@ -8,62 +9,15 @@ RUN apt update && \
 ARG PIP_EXTRA_INDEX_URL
 ARG PIP_INDEX_URL
 
-
-# ==============================================================================
-FROM wheel_builder_base as WHEEL_BUILDER_PY38
-ARG PIP_EXTRA_INDEX_URL
-ARG PIP_INDEX_URL
-
-COPY ci/docker/python/shared/requirements-ci.txt  requirements.txt  /tmp/
-COPY requirements /tmp/requirements
-RUN PYTHON=python3.8 && \
-    $PYTHON -m pip install pip --upgrade pip && \
-    $PYTHON -m pip install wheel && \
-    $PYTHON -m pip wheel -w /wheels --no-cache-dir -r /tmp/requirements-ci.txt && \
-    $PYTHON -m pip wheel -w /wheels --no-cache-dir -v -r /tmp/requirements.txt
-
-# ==============================================================================
-FROM wheel_builder_base as WHEEL_BUILDER_PY39
-ARG PIP_EXTRA_INDEX_URL
-ARG PIP_INDEX_URL
-
-COPY ci/docker/python/shared/requirements-ci.txt  requirements.txt  /tmp/
-COPY requirements /tmp/requirements
-RUN PYTHON=python3.9 && \
-    $PYTHON -m pip install pip --upgrade pip && \
-    $PYTHON -m pip install wheel && \
-    $PYTHON -m pip wheel -w /wheels --no-cache-dir -r /tmp/requirements-ci.txt && \
-    $PYTHON -m pip wheel -w /wheels --no-cache-dir -v -r /tmp/requirements.txt
-
-# ==============================================================================
-FROM wheel_builder_base as WHEEL_BUILDER_PY310
-ARG PIP_EXTRA_INDEX_URL
-ARG PIP_INDEX_URL
-
-COPY ci/docker/python/shared/requirements-ci.txt  requirements.txt  /tmp/
-COPY requirements /tmp/requirements
-RUN PYTHON=python3.10 && \
-    $PYTHON -m ensurepip --upgrade && \
-    $PYTHON -m pip install pip --upgrade pip && \
-    $PYTHON -m pip install wheel && \
-    $PYTHON -m pip wheel -w /wheels --no-cache-dir -r /tmp/requirements-ci.txt && \
-    $PYTHON -m pip wheel -w /wheels --no-cache-dir -v -r /tmp/requirements.txt
-
-# ==============================================================================
-FROM wheel_builder_base
-ARG PIP_EXTRA_INDEX_URL
-ARG PIP_INDEX_URL
-COPY --from=WHEEL_BUILDER_PY38 /wheels/* /wheels/
-COPY --from=WHEEL_BUILDER_PY39 /wheels/* /wheels/
-COPY --from=WHEEL_BUILDER_PY310 /wheels/* /wheels/
 COPY requirements/ /tmp/requirements
 RUN python3 -m pip install pip --upgrade && \
     python3 -m pip install wheel && \
-    python3 -m pip install -r /tmp/requirements/requirements_tox.txt "devpi-client<6.0" && \
+    python3 -m pip install -r /tmp/requirements/requirements_tox.txt devpi-client && \
     python3 -m pip wheel -w wheels wheel
 
-ENV PIP_FIND_LINKS=/wheels
-RUN mkdir -p /.cache/pip && \
-    chmod -R 777 /.cache
+ARG PIP_DOWNLOAD_CACHE
+RUN mkdir -p ${PIP_DOWNLOAD_CACHE} && \
+    chmod -R 777 ${PIP_DOWNLOAD_CACHE}
+
 WORKDIR /src
 CMD tox --workdir /tmp/tox --recreate
