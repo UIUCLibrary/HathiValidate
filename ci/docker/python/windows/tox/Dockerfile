@@ -1,11 +1,11 @@
 # escape=`
 
-
+ARG PIP_DOWNLOAD_CACHE=c:/users/containeradministrator/appdata/local/pip
 ARG FROM_IMAGE=mcr.microsoft.com/dotnet/framework/sdk:4.8
 FROM ${FROM_IMAGE} as certsgen
 RUN certutil -generateSSTFromWU roots.sst
 
-FROM ${FROM_IMAGE} as BASE_BUILDER
+FROM ${FROM_IMAGE}
 
 SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop';"]
 
@@ -50,58 +50,15 @@ RUN C:\ProgramData\chocolatey\bin\choco.exe install -y --stoponfirstfailure --no
     Write-Host "Installing Python with Chocolatey - Done"
 RUN py -m pip install pip --upgrade;  py -m pip install wheel; py -m pip wheel -w c:\wheels\ --no-cache-dir wheel
 
-
-# ==============================================================================
-FROM BASE_BUILDER as WHEEL_BUilDER_PY38
-SHELL ["cmd", "/S", "/C" ]
-ARG PIP_INDEX_URL
-ARG PIP_EXTRA_INDEX_URL
-COPY requirements.txt ci/docker/python/shared/requirements-ci.txt c:/requirements/
-COPY requirements c:/requirements/requirements
-
-ENV PY_PYTHON=3.8
-RUN py -m pip install --upgrade pip wheel && `
-    py -m pip wheel -w c:\wheels\ --no-cache-dir -r c:/requirements/requirements-ci.txt && `
-    py -m pip wheel -w c:\wheels\ --no-cache-dir -r c:/requirements/requirements.txt
-
-# ==============================================================================
-FROM BASE_BUILDER as WHEEL_BUilDER_PY39
-SHELL ["cmd", "/S", "/C" ]
-ARG PIP_INDEX_URL
-ARG PIP_EXTRA_INDEX_URL
-COPY requirements.txt ci/docker/python/shared/requirements-ci.txt c:/requirements/
-COPY requirements c:/requirements/requirements
-
-ENV PY_PYTHON=3.9
-RUN py -m pip install --upgrade pip wheel && `
-    py -m pip wheel -w c:\wheels\ --no-cache-dir -r c:/requirements/requirements-ci.txt && `
-    py -m pip wheel -w c:\wheels\ --no-cache-dir -r c:/requirements/requirements.txt
-
-# ==============================================================================
-FROM BASE_BUILDER as WHEEL_BUilDER_PY310
-SHELL ["cmd", "/S", "/C" ]
-ARG PIP_INDEX_URL
-ARG PIP_EXTRA_INDEX_URL
-COPY requirements.txt ci/docker/python/shared/requirements-ci.txt c:/requirements/
-COPY requirements c:/requirements/requirements
-
-ENV PY_PYTHON=3.10
-RUN py -m pip install --upgrade pip wheel && `
-    py -m pip wheel -w c:\wheels\ --no-cache-dir -r c:/requirements/requirements-ci.txt && `
-    py -m pip wheel -w c:\wheels\ --no-cache-dir -r c:/requirements/requirements.txt
-
-# ==============================================================================
-FROM BASE_BUILDER
 COPY --from=certsgen c:/roots.sst roots.sst
 RUN certutil -addstore -f root roots.sst ; `
     del roots.sst
 
-COPY --from=WHEEL_BUilDER_PY38 c:/wheels/ c:/wheels/
-COPY --from=WHEEL_BUilDER_PY39 c:/wheels/ c:/wheels/
-COPY --from=WHEEL_BUilDER_PY310 c:/wheels/ c:/wheels/
 
-ENV PIP_FIND_LINKS=c:\wheels
 COPY requirements requirements
 RUN python -m pip install pip --upgrade; pip install wheel; pip install -r requirements/requirements_tox.txt  -r requirements/requirements-devpi.txt
+ARG PIP_DOWNLOAD_CACHE
+RUN New-Item -type directory -path ${Env:PIP_DOWNLOAD_CACHE} -Force
+ENV PIP_DOWNLOAD_CACHE=${PIP_DOWNLOAD_CACHE}
 WORKDIR C:/src
 CMD tox --workdir ${Env:TEMP}\tox\ -vv  --recreate

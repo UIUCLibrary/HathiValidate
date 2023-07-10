@@ -5,6 +5,15 @@ def getNodeLabel(agent){
     }
     return label
 }
+def getDockerRuntimeArgs(agent){
+    def args
+    if (agent.containsKey("dockerfile")){
+        if (agent.dockerfile.containsKey("args")){
+            return agent.dockerfile.args
+        }
+    }
+    return ""
+}
 def getToxEnv(args){
     try{
         def pythonVersion = args.pythonVersion.replace(".", "")
@@ -28,6 +37,7 @@ def getAgent(args){
 
     if (args.agent.containsKey("dockerfile")){
         def nodeLabel = getNodeLabel(args.agent)
+        def dockerArgs = getDockerRuntimeArgs(args.agent)
         return { inner ->
             node(nodeLabel){
                 ws{
@@ -37,7 +47,7 @@ def getAgent(args){
                     lock("docker build-${env.NODE_NAME}"){
                         dockerImage = docker.build(dockerImageName, "-f ${args.agent.dockerfile.filename} ${args.agent.dockerfile.additionalBuildArgs} .")
                     }
-                    dockerImage.inside(){
+                    dockerImage.inside(dockerArgs){
                         inner()
                     }
                 }
@@ -54,25 +64,27 @@ def testPkg(args = [:]){
         unstash "${args.stash}"
     }
     def teardown =  args['testTeardown'] ? args['testTeardown']: {}
-
+    def retryTimes = args['retryTimes'] ? args['retryTimes']: 1
     def agentRunner = getAgent(args)
-    agentRunner {
-        setup()
-        try{
-            findFiles(glob: args.glob).each{
-                def toxCommand = "${tox} --installpkg ${it.path} -e ${getToxEnv(args)}"
-                if(isUnix()){
-                    sh(label: "Testing tox version", script: "${tox} --version")
-//                     toxCommand = toxCommand + " --workdir /tmp/tox"
-                    sh(label: "Running Tox", script: toxCommand)
-                } else{
-                    bat(label: "Testing tox version", script: "${tox} --version")
-                    toxCommand = toxCommand + " --workdir %TEMP%\\tox"
-                    bat(label: "Running Tox", script: toxCommand)
+    retry(retryTimes){
+        agentRunner {
+            setup()
+            try{
+                findFiles(glob: args.glob).each{
+                    def toxCommand = "${tox} --installpkg ${it.path} -e ${getToxEnv(args)}"
+                    if(isUnix()){
+                        sh(label: "Testing tox version", script: "${tox} --version")
+    //                     toxCommand = toxCommand + " --workdir /tmp/tox"
+                        sh(label: "Running Tox", script: toxCommand)
+                    } else{
+                        bat(label: "Testing tox version", script: "${tox} --version")
+                        toxCommand = toxCommand + " --workdir %TEMP%\\tox"
+                        bat(label: "Running Tox", script: toxCommand)
+                    }
                 }
+            } finally{
+                teardown()
             }
-        } finally{
-            teardown()
         }
     }
 }

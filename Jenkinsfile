@@ -1,11 +1,5 @@
-@Library("ds-utils")
-// Uses https://github.com/UIUCLibrary/Jenkins_utils
-import org.ds.*
-
-@Library(["devpi", "PythonHelpers"]) _
 
 def getDevPiStagingIndex(){
-
     if (env.TAG_NAME?.trim()){
         return 'tag_staging'
     } else{
@@ -19,9 +13,9 @@ def getDevPiStagingIndex(){
 // ============================================================================
 // Versions of python that are supported
 // ----------------------------------------------------------------------------
-SUPPORTED_MAC_VERSIONS = ['3.8', '3.9', '3.10']
-SUPPORTED_LINUX_VERSIONS = ['3.8', '3.9', '3.10']
-SUPPORTED_WINDOWS_VERSIONS = ['3.8', '3.9', '3.10']
+SUPPORTED_MAC_VERSIONS = ['3.8', '3.9', '3.10', '3.11']
+SUPPORTED_LINUX_VERSIONS = ['3.8', '3.9', '3.10', '3.11']
+SUPPORTED_WINDOWS_VERSIONS = ['3.8', '3.9', '3.10', '3.11']
 
 // ============================================================================
 SONARQUBE_CREDENTIAL_ID = 'sonartoken-hathivalidate'
@@ -43,16 +37,20 @@ def getDevpiConfig() {
 }
 def DEVPI_CONFIG = getDevpiConfig()
 
-DEVPI_STAGING_INDEX = "DS_Jenkins/${getDevPiStagingIndex()}"
 defaultParameterValues = [
     USE_SONARQUBE: false
 ]
 
-PYPI_SERVERS = [
-    'https://jenkins.library.illinois.edu/nexus/repository/uiuc_prescon_python_public/',
-    'https://jenkins.library.illinois.edu/nexus/repository/uiuc_prescon_python/',
-    'https://jenkins.library.illinois.edu/nexus/repository/uiuc_prescon_python_testing/'
-    ]
+
+def getPypiConfig() {
+    node(){
+        configFileProvider([configFile(fileId: 'pypi_config', variable: 'CONFIG_FILE')]) {
+            def config = readJSON( file: CONFIG_FILE)
+            return config['deployment']['indexes']
+        }
+    }
+}
+
 
 
 def startup(){
@@ -443,7 +441,8 @@ pipeline {
                                                 envNamePrefix: 'Tox Linux',
                                                 label: 'linux && docker && x86',
                                                 dockerfile: 'ci/docker/python/linux/tox/Dockerfile',
-                                                dockerArgs: '--build-arg PIP_EXTRA_INDEX_URL --build-arg PIP_INDEX_UR',
+                                                dockerArgs: '--build-arg PIP_EXTRA_INDEX_URL --build-arg PIP_INDEX_URL --build-arg PIP_DOWNLOAD_CACHE=/.cache/pip',
+                                                dockerRunArgs: '-v pipcache_hathivalidate:/.cache/pip',
                                                 retry: 2
                                             )
                                 },
@@ -452,7 +451,8 @@ pipeline {
                                                 envNamePrefix: 'Tox Windows',
                                                 label: 'windows && docker && x86',
                                                 dockerfile: 'ci/docker/python/windows/tox/Dockerfile',
-                                                dockerArgs: '--build-arg PIP_EXTRA_INDEX_URL --build-arg PIP_INDEX_URL --build-arg CHOCOLATEY_SOURCE',
+                                                dockerArgs: '--build-arg PIP_EXTRA_INDEX_URL --build-arg PIP_INDEX_URL --build-arg CHOCOLATEY_SOURCE --build-arg PIP_DOWNLOAD_CACHE=/.cache/pip',
+                                                dockerRunArgs: '-v pipcache_hathivalidate:c:/users/containeradministrator/appdata/local/pip',
                                                 retry: 2
                                             )
                                 },
@@ -533,7 +533,8 @@ pipeline {
                                                 dockerfile: [
                                                     label: 'windows && docker && x86',
                                                     filename: 'ci/docker/python/windows/tox/Dockerfile',
-                                                    additionalBuildArgs: '--build-arg PIP_EXTRA_INDEX_URL --build-arg PIP_INDEX_URL'
+                                                    additionalBuildArgs: '--build-arg PIP_EXTRA_INDEX_URL --build-arg PIP_INDEX_URL --build-arg CHOCOLATEY_SOURCE --build-arg PIP_DOWNLOAD_CACHE=c:/users/containeradministrator/appdata/local/pip',
+                                                    args: '-v pipcache_hathivalidate:c:/users/containeradministrator/appdata/local/pip'
                                                 ]
                                             ],
                                             glob: 'dist/*.tar.gz,dist/*.zip',
@@ -547,7 +548,8 @@ pipeline {
                                                 dockerfile: [
                                                     label: 'windows && docker && x86',
                                                     filename: 'ci/docker/python/windows/tox/Dockerfile',
-                                                    additionalBuildArgs: '--build-arg PIP_EXTRA_INDEX_URL --build-arg PIP_INDEX_URL'
+                                                    additionalBuildArgs: '--build-arg PIP_EXTRA_INDEX_URL --build-arg PIP_INDEX_URL --build-arg CHOCOLATEY_SOURCE --build-arg PIP_DOWNLOAD_CACHE=c:/users/containeradministrator/appdata/local/pip',
+                                                    args: '-v pipcache_hathivalidate:c:/users/containeradministrator/appdata/local/pip'
                                                 ]
                                             ],
                                             glob: 'dist/*.whl',
@@ -565,7 +567,8 @@ pipeline {
                                             dockerfile: [
                                                 label: 'linux && docker && x86',
                                                 filename: 'ci/docker/python/linux/tox/Dockerfile',
-                                                additionalBuildArgs: '--build-arg PIP_EXTRA_INDEX_URL --build-arg PIP_INDEX_URL'
+                                                additionalBuildArgs: '--build-arg PIP_EXTRA_INDEX_URL --build-arg PIP_INDEX_URL --build-arg PIP_DOWNLOAD_CACHE=/.cache/pip',
+                                                args: '-v pipcache_hathivalidate:/.cache/pip',
                                             ]
                                         ],
                                         glob: 'dist/*.tar.gz',
@@ -579,7 +582,8 @@ pipeline {
                                             dockerfile: [
                                                 label: 'linux && docker && x86',
                                                 filename: 'ci/docker/python/linux/tox/Dockerfile',
-                                                additionalBuildArgs: '--build-arg PIP_EXTRA_INDEX_URL --build-arg PIP_INDEX_URL'
+                                                additionalBuildArgs: '--build-arg PIP_EXTRA_INDEX_URL --build-arg PIP_INDEX_URL --build-arg PIP_DOWNLOAD_CACHE=/.cache/pip',
+                                                args: '-v pipcache_hathivalidate:/.cache/pip',
                                             ]
                                         ],
                                         glob: 'dist/*.whl',
@@ -676,7 +680,6 @@ pipeline {
                         dockerfile {
                             filename 'ci/docker/python/linux/jenkins/Dockerfile'
                             label 'linux && docker && devpi-access'
-                            additionalBuildArgs '--build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
                           }
                     }
                     steps {
@@ -784,8 +787,9 @@ pipeline {
                                         agent: [
                                             dockerfile: [
                                                 filename: 'ci/docker/python/windows/tox/Dockerfile',
-                                                additionalBuildArgs: '--build-arg PIP_EXTRA_INDEX_URL --build-arg PIP_INDEX_URL --build-arg CHOCOLATEY_SOURCE',
-                                                label: 'windows && docker && x86 && devpi-access'
+                                                additionalBuildArgs: '--build-arg PIP_EXTRA_INDEX_URL --build-arg PIP_INDEX_URL --build-arg CHOCOLATEY_SOURCE --build-arg PIP_DOWNLOAD_CACHE=/.cache/pip',
+                                                label: 'windows && docker && x86 && devpi-access',
+                                                args: '-v pipcache_hathivalidate:c:/users/containeradministrator/appdata/local/pip'
                                             ]
                                         ],
                                         devpi: [
@@ -809,8 +813,9 @@ pipeline {
                                         agent: [
                                             dockerfile: [
                                                 filename: 'ci/docker/python/windows/tox/Dockerfile',
-                                                additionalBuildArgs: '--build-arg PIP_EXTRA_INDEX_URL --build-arg PIP_INDEX_URL --build-arg CHOCOLATEY_SOURCE',
-                                                label: 'windows && docker && x86 && devpi-access'
+                                                additionalBuildArgs: '--build-arg PIP_EXTRA_INDEX_URL --build-arg PIP_INDEX_URL --build-arg CHOCOLATEY_SOURCE --build-arg PIP_DOWNLOAD_CACHE=/.cache/pip',
+                                                label: 'windows && docker && x86 && devpi-access',
+                                                args: '-v pipcache_hathivalidate:c:/users/containeradministrator/appdata/local/pip'
                                             ]
                                         ],
                                         devpi: [
@@ -837,8 +842,9 @@ pipeline {
                                         agent: [
                                             dockerfile: [
                                                 filename: 'ci/docker/python/linux/tox/Dockerfile',
-                                                additionalBuildArgs: '--build-arg PIP_EXTRA_INDEX_URL --build-arg PIP_INDEX_URL',
-                                                label: 'linux && docker && x86 && devpi-access'
+                                                additionalBuildArgs: '--build-arg PIP_EXTRA_INDEX_URL --build-arg PIP_INDEX_URL --build-arg PIP_DOWNLOAD_CACHE=/.cache/pip',
+                                                label: 'linux && docker && x86 && devpi-access',
+                                                args: '-v pipcache_hathivalidate:/.cache/pip',
                                             ]
                                         ],
                                         devpi: [
@@ -862,8 +868,9 @@ pipeline {
                                         agent: [
                                             dockerfile: [
                                                 filename: 'ci/docker/python/linux/tox/Dockerfile',
-                                                additionalBuildArgs: '--build-arg PIP_EXTRA_INDEX_URL --build-arg PIP_INDEX_URL',
-                                                label: 'linux && docker && x86 && devpi-access'
+                                                additionalBuildArgs: '--build-arg PIP_EXTRA_INDEX_URL --build-arg PIP_INDEX_URL --build-arg PIP_DOWNLOAD_CACHE=/.cache/pip',
+                                                label: 'linux && docker && x86 && devpi-access',
+                                                args: '-v pipcache_hathivalidate:/.cache/pip',
                                             ]
                                         ],
                                         devpi: [
@@ -903,7 +910,6 @@ pipeline {
                         dockerfile {
                             filename 'ci/docker/python/linux/jenkins/Dockerfile'
                             label 'linux && docker && devpi-access'
-                            additionalBuildArgs '--build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
                         }
                     }
                     input {
@@ -929,7 +935,7 @@ pipeline {
                         checkout scm
                         script{
                             if (!env.TAG_NAME?.trim()){
-                                docker.build("hathivalidate:devpi",'-f ./ci/docker/python/linux/jenkins/Dockerfile --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g) .').inside{
+                                docker.build("hathivalidate:devpi",'-f ./ci/docker/python/linux/jenkins/Dockerfile .').inside{
                                     devpi.pushPackageToIndex(
                                             pkgName: props.Name,
                                             pkgVersion: props.Version,
@@ -946,7 +952,7 @@ pipeline {
                 cleanup{
                     node('linux && docker && devpi-access') {
                        script{
-                            docker.build("hathivalidate:devpi",'-f ./ci/docker/python/linux/jenkins/Dockerfile --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g) .').inside{
+                            docker.build("hathivalidate:devpi",'-f ./ci/docker/python/linux/jenkins/Dockerfile .').inside{
                                 devpi.removePackage(
                                     pkgName: props.Name,
                                     pkgVersion: props.Version,
@@ -967,7 +973,6 @@ pipeline {
                         dockerfile {
                             filename 'ci/docker/python/linux/jenkins/Dockerfile'
                             label 'linux&&docker'
-                            additionalBuildArgs '--build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
                         }
                     }
                     when{
@@ -986,7 +991,7 @@ pipeline {
                         message 'Upload to pypi server?'
                         parameters {
                             choice(
-                                choices: PYPI_SERVERS,
+                                choices: getPypiConfig(),
                                 description: 'Url to the pypi index to upload python packages.',
                                 name: 'SERVER_URL'
                             )
@@ -1031,7 +1036,6 @@ pipeline {
                         dockerfile {
                             filename 'ci/docker/python/linux/jenkins/Dockerfile'
                             label 'linux && docker'
-                            additionalBuildArgs '--build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
                         }
                     }
                     options{
