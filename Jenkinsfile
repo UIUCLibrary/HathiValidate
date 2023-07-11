@@ -18,7 +18,6 @@ SUPPORTED_LINUX_VERSIONS = ['3.8', '3.9', '3.10', '3.11']
 SUPPORTED_WINDOWS_VERSIONS = ['3.8', '3.9', '3.10', '3.11']
 
 // ============================================================================
-SONARQUBE_CREDENTIAL_ID = 'sonartoken-hathivalidate'
 
 def getDevpiConfig() {
     node(){
@@ -54,23 +53,9 @@ def getPypiConfig() {
 
 
 def startup(){
-    def SONARQUBE_CREDENTIAL_ID = SONARQUBE_CREDENTIAL_ID
     parallel(
         [
             failFast: true,
-            'Checking sonarqube Settings': {
-                node(){
-                    try{
-                        withCredentials([string(credentialsId: SONARQUBE_CREDENTIAL_ID, variable: 'dddd')]) {
-                            echo 'Found credentials for sonarqube'
-                        }
-                        defaultParameterValues.USE_SONARQUBE = true
-                    } catch(e){
-                        echo "Setting defaultValue for USE_SONARQUBE to false. Reason: ${e}"
-                        defaultParameterValues.USE_SONARQUBE = false
-                    }
-                }
-            },
             'Getting Distribution Info': {
                 node('linux && docker') {
                     timeout(2){
@@ -134,7 +119,8 @@ pipeline {
         booleanParam(name: "BUILD_PACKAGES", defaultValue: false, description: "Build Python packages")
         booleanParam(name: "TEST_PACKAGES", defaultValue: true, description: "Build Python packages")
         booleanParam(name: 'TEST_PACKAGES_ON_MAC', defaultValue: false, description: 'Test Python packages on Mac')
-        booleanParam(name: 'USE_SONARQUBE', defaultValue: defaultParameterValues.USE_SONARQUBE, description: 'Send data test data to SonarQube')
+        booleanParam(name: 'USE_SONARQUBE', defaultValue: true, description: 'Send data test data to SonarQube')
+        credentials(name: 'SONARCLOUD_TOKEN', credentialType: 'org.jenkinsci.plugins.plaincredentials.impl.StringCredentialsImpl', defaultValue: 'sonarcloud_token', required: false)
         booleanParam(name: "DEPLOY_DEVPI", defaultValue: false, description: "Deploy to devpi on http://devpy.library.illinois.edu/DS_Jenkins/${env.BRANCH_NAME}")
         booleanParam(name: 'DEPLOY_PYPI', defaultValue: false, description: 'Deploy to pypi')
         booleanParam(name: "DEPLOY_DEVPI_PRODUCTION", defaultValue: false, description: "Deploy to https://devpi.library.illinois.edu/production/release")
@@ -364,7 +350,7 @@ pipeline {
                                             ]
                                             def sonarqubeConfig = [
                                                 installationName: 'sonarcloud',
-                                                credentialsId: SONARQUBE_CREDENTIAL_ID,
+                                                credentialsId: params.SONARCLOUD_TOKEN,
                                             ]
                                             if (env.CHANGE_ID){
                                                 sonarqube.submitToSonarcloud(
