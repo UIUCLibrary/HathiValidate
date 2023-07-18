@@ -1,20 +1,20 @@
 ARG PIP_DOWNLOAD_CACHE=/.cache/pip
 FROM ubuntu:20.04
 COPY ci/docker/python/linux/tox/apt-packages.txt /tmp/
-RUN apt update && \
+RUN apt-get update && \
     apt-get install -y software-properties-common && \
     add-apt-repository ppa:deadsnakes/ppa && \
-    apt update && \
-    cat /tmp/apt-packages.txt | xargs apt-get -y install
+    apt-get update && \
+    < /tmp/apt-packages.txt xargs apt-get install -y && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 ARG PIP_EXTRA_INDEX_URL
 ARG PIP_INDEX_URL
 
-COPY requirements/ /tmp/requirements
-RUN python3 -m pip install pip --upgrade && \
-    python3 -m pip install wheel && \
-    python3 -m pip install -r /tmp/requirements/requirements_tox.txt devpi-client && \
-    python3 -m pip wheel -w wheels wheel
-
+COPY requirements/ /tmp/python_requirements/requirements/
+COPY requirements-ci.txt /tmp/python_requirements
+RUN python3 -m pip install --upgrade pip && \
+    python3 -m pip install -r /tmp/python_requirements/requirements-ci.txt
 ARG PIP_DOWNLOAD_CACHE
 RUN mkdir -p ${PIP_DOWNLOAD_CACHE} && \
     chmod -R 777 ${PIP_DOWNLOAD_CACHE}
