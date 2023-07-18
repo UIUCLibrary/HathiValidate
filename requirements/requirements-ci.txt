@@ -11,7 +11,5 @@ pytest
 pytest-cov
 pytest-runner
 sphinx
--r requirements/requirements_tox.txt
--r requirements/requirements-devpi.txt
 types-PyYAML
 twine
