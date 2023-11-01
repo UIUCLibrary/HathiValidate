@@ -154,13 +154,16 @@ pipeline {
                         beforeAgent true
                     }
                     steps{
-                        sh(script: '''mkdir -p logs
-                                      python -m sphinx -b html docs/source build/docs/html -d build/docs/doctrees -w logs/build_sphinx.log
-                                   '''
-                        )
+                        catchError(buildResult: 'UNSTABLE', message: 'Building documentation produced an error or a warning', stageResult: 'UNSTABLE') {
+                            sh(script: '''mkdir -p logs
+                                          python -m sphinx -b html docs/source build/docs/html -d build/docs/doctrees -w logs/build_sphinx.log -W --keep-going
+                                       '''
+                            )
+                        }
                     }
                     post{
                         always {
+                            recordIssues(tools: [sphinxBuild(name: 'Sphinx Documentation Build', pattern: 'logs/build_sphinx.log')])
                             archiveArtifacts artifacts: 'logs/build_sphinx.log', allowEmptyArchive: true
                             script{
                                 zip archive: true, dir: 'build/docs/html', glob: '', zipFile: "dist/${props.Name}-${props.Version}.doc.zip"
