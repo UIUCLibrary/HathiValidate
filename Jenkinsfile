@@ -154,13 +154,16 @@ pipeline {
                         beforeAgent true
                     }
                     steps{
-                        sh(script: '''mkdir -p logs
-                                      python -m sphinx -b html docs/source build/docs/html -d build/docs/doctrees -w logs/build_sphinx.log
-                                   '''
-                        )
+                        catchError(buildResult: 'UNSTABLE', message: 'Building documentation produced an error or a warning', stageResult: 'UNSTABLE') {
+                            sh(script: '''mkdir -p logs
+                                          python -m sphinx -b html docs/source build/docs/html -d build/docs/doctrees -w logs/build_sphinx.log -W --keep-going
+                                       '''
+                            )
+                        }
                     }
                     post{
                         always {
+                            recordIssues(tools: [sphinxBuild(name: 'Sphinx Documentation Build', pattern: 'logs/build_sphinx.log')])
                             archiveArtifacts artifacts: 'logs/build_sphinx.log', allowEmptyArchive: true
                             script{
                                 zip archive: true, dir: 'build/docs/html', glob: '', zipFile: "dist/${props.Name}-${props.Version}.doc.zip"
@@ -676,8 +679,9 @@ pipeline {
                 stage("Deploy to Devpi Staging") {
                     agent {
                         dockerfile {
-                            filename 'ci/docker/python/linux/jenkins/Dockerfile'
+                            filename 'ci/docker/python/linux/tox/Dockerfile'
                             label 'linux && docker && devpi-access'
+                            additionalBuildArgs '--build-arg PIP_EXTRA_INDEX_URL --build-arg PIP_INDEX_URL --build-arg PIP_DOWNLOAD_CACHE=/.cache/pip'
                           }
                     }
                     steps {
@@ -726,7 +730,7 @@ pipeline {
                                                             label:'Installing Devpi client',
                                                             script: '''python3 -m venv venv
                                                                         venv/bin/python -m pip install pip --upgrade
-                                                                        venv/bin/python -m pip install devpi_client -r requirements/requirements_tox.txt
+                                                                        venv/bin/python -m pip install 'devpi-client<7.0'  -r requirements/requirements_tox.txt
                                                                         '''
                                                         )
                                                     },
@@ -764,7 +768,7 @@ pipeline {
                                                             label:'Installing Devpi client',
                                                             script: '''python3 -m venv venv
                                                                         venv/bin/python -m pip install pip --upgrade
-                                                                        venv/bin/python -m pip install devpi_client -r requirements/requirements_tox.txt
+                                                                        venv/bin/python -m pip install 'devpi-client<7.0'  -r requirements/requirements_tox.txt
                                                                         '''
                                                         )
                                                     },
@@ -906,8 +910,9 @@ pipeline {
                     }
                     agent {
                         dockerfile {
-                            filename 'ci/docker/python/linux/jenkins/Dockerfile'
+                            filename 'ci/docker/python/linux/tox/Dockerfile'
                             label 'linux && docker && devpi-access'
+                            additionalBuildArgs '--build-arg PIP_EXTRA_INDEX_URL --build-arg PIP_INDEX_URL --build-arg PIP_DOWNLOAD_CACHE=/.cache/pip'
                         }
                     }
                     input {
@@ -933,7 +938,7 @@ pipeline {
                         checkout scm
                         script{
                             if (!env.TAG_NAME?.trim()){
-                                docker.build("hathivalidate:devpi",'-f ./ci/docker/python/linux/jenkins/Dockerfile .').inside{
+                                docker.build("hathivalidate:devpi",'-f ./ci/docker/python/linux/tox/Dockerfile --build-arg PIP_EXTRA_INDEX_URL --build-arg PIP_INDEX_URL --build-arg PIP_DOWNLOAD_CACHE=/.cache/pip .').inside{
                                     devpi.pushPackageToIndex(
                                             pkgName: props.Name,
                                             pkgVersion: props.Version,
@@ -950,7 +955,7 @@ pipeline {
                 cleanup{
                     node('linux && docker && devpi-access') {
                        script{
-                            docker.build("hathivalidate:devpi",'-f ./ci/docker/python/linux/jenkins/Dockerfile .').inside{
+                            docker.build("hathivalidate:devpi",'-f ./ci/docker/python/linux/tox/Dockerfile --build-arg PIP_EXTRA_INDEX_URL --build-arg PIP_INDEX_URL --build-arg PIP_DOWNLOAD_CACHE=/.cache/pip .').inside{
                                 devpi.removePackage(
                                     pkgName: props.Name,
                                     pkgVersion: props.Version,
