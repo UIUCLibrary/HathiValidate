@@ -938,16 +938,18 @@ pipeline {
                         checkout scm
                         script{
                             if (!env.TAG_NAME?.trim()){
-                                docker.build("hathivalidate:devpi",'-f ./ci/docker/python/linux/tox/Dockerfile --build-arg PIP_EXTRA_INDEX_URL --build-arg PIP_INDEX_URL --build-arg PIP_DOWNLOAD_CACHE=/.cache/pip .').inside{
+                                def dockerImage = docker.build("hathivalidate:devpi",'-f ./ci/docker/python/linux/tox/Dockerfile --build-arg PIP_EXTRA_INDEX_URL --build-arg PIP_INDEX_URL --build-arg PIP_DOWNLOAD_CACHE=/.cache/pip .')
+                                dockerImage.inside{
                                     devpi.pushPackageToIndex(
-                                            pkgName: props.Name,
-                                            pkgVersion: props.Version,
-                                            server: DEVPI_CONFIG.server,
-                                            indexSource: DEVPI_CONFIG.stagingIndex,
-                                            indexDestination: "DS_Jenkins/${env.BRANCH_NAME}",
-                                            credentialsId: DEVPI_CONFIG.credentialsId
-                                        )
+                                        pkgName: props.Name,
+                                        pkgVersion: props.Version,
+                                        server: DEVPI_CONFIG.server,
+                                        indexSource: DEVPI_CONFIG.stagingIndex,
+                                        indexDestination: "DS_Jenkins/${env.BRANCH_NAME}",
+                                        credentialsId: DEVPI_CONFIG.credentialsId
+                                    )
                                 }
+                                sh script: "docker image rm --no-prune ${dockerImage.imageName()}"
                             }
                         }
                     }
@@ -955,7 +957,8 @@ pipeline {
                 cleanup{
                     node('linux && docker && devpi-access') {
                        script{
-                            docker.build("hathivalidate:devpi",'-f ./ci/docker/python/linux/tox/Dockerfile --build-arg PIP_EXTRA_INDEX_URL --build-arg PIP_INDEX_URL --build-arg PIP_DOWNLOAD_CACHE=/.cache/pip .').inside{
+                            def dockerImage = docker.build("hathivalidate:devpi",'-f ./ci/docker/python/linux/tox/Dockerfile --build-arg PIP_EXTRA_INDEX_URL --build-arg PIP_INDEX_URL --build-arg PIP_DOWNLOAD_CACHE=/.cache/pip .')
+                            dockerImage.inside{
                                 devpi.removePackage(
                                     pkgName: props.Name,
                                     pkgVersion: props.Version,
@@ -964,6 +967,7 @@ pipeline {
                                     credentialsId: DEVPI_CONFIG.credentialsId,
                                 )
                             }
+                            sh script: "docker image rm --no-prune ${dockerImage.imageName()}"
                        }
                     }
                 }
