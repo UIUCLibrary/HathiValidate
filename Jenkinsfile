@@ -704,7 +704,7 @@ pipeline {
                                     macArchitectures.add('x86_64')
                                 }
                                 if(params.INCLUDE_MACOS_ARM == true){
-                                    macArchitectures.add('m1')
+                                    macArchitectures.add('arm64')
                                 }
                                 macArchitectures.each{ processorArchitecture ->
                                     if (nodesByLabel("mac && ${processorArchitecture} && python${pythonVersion}").size() > 0){
@@ -834,79 +834,90 @@ pipeline {
                         script{
                             def macPackages = [:]
                             SUPPORTED_MAC_VERSIONS.each{pythonVersion ->
-                                macPackages["Test Python ${pythonVersion}: wheel Mac"] = {
-                                    retry(2){
-                                        withEnv(['PATH+EXTRA=./venv/bin']) {
-                                            devpi.testDevpiPackage(
-                                                agent: [
-                                                    label: "mac && python${pythonVersion} && x86 && devpi-access"
-                                                ],
-                                                devpi: [
-                                                    index: DEVPI_CONFIG.stagingIndex,
-                                                    server: DEVPI_CONFIG.server,
-                                                    credentialsId: DEVPI_CONFIG.credentialsId,
-                                                    devpiExec: 'venv/bin/devpi'
-                                                ],
-                                                package:[
-                                                    name: props.Name,
-                                                    version: props.Version,
-                                                    selector: 'whl'
-                                                ],
-                                                test:[
-                                                    setup: {
-                                                        checkout scm
-                                                        sh(
-                                                            label:'Installing Devpi client',
-                                                            script: '''python3 -m venv venv
-                                                                        venv/bin/python -m pip install pip --upgrade
-                                                                        venv/bin/python -m pip install 'devpi-client<7.0'  -r requirements/requirements_tox.txt
-                                                                        '''
-                                                        )
-                                                    },
-                                                    toxEnv: "py${pythonVersion}".replace('.',''),
-                                                    teardown: {
-                                                        sh( label: 'Remove Devpi client', script: 'rm -r venv')
-                                                    }
-                                                ]
-                                            )
-                                        }
-                                    }
+                                def macArchitectures = []
+                                if(params.INCLUDE_MACOS_X86_64 == true){
+                                    macArchitectures.add('x86_64')
                                 }
-                                macPackages["Test Python ${pythonVersion}: sdist Mac"]= {
-                                    retry(2){
-                                        withEnv(['PATH+EXTRA=./venv/bin']) {
-                                            devpi.testDevpiPackage(
-                                                agent: [
-                                                    label: "mac && python${pythonVersion} && x86 && devpi-access"
-                                                ],
-                                                devpi: [
-                                                    index: DEVPI_CONFIG.stagingIndex,
-                                                    server: DEVPI_CONFIG.server,
-                                                    credentialsId: DEVPI_CONFIG.credentialsId,
-                                                    devpiExec: 'venv/bin/devpi'
-                                                ],
-                                                package:[
-                                                    name: props.Name,
-                                                    version: props.Version,
-                                                    selector: 'tar.gz'
-                                                ],
-                                                test:[
-                                                    setup: {
-                                                        checkout scm
-                                                        sh(
-                                                            label:'Installing Devpi client',
-                                                            script: '''python3 -m venv venv
-                                                                        venv/bin/python -m pip install pip --upgrade
-                                                                        venv/bin/python -m pip install 'devpi-client<7.0'  -r requirements/requirements_tox.txt
-                                                                        '''
-                                                        )
-                                                    },
-                                                    toxEnv: "py${pythonVersion}".replace('.',''),
-                                                    teardown: {
-                                                        sh( label: 'Remove Devpi client', script: 'rm -r venv')
-                                                    }
-                                                ]
-                                            )
+                                if(params.INCLUDE_MACOS_ARM == true){
+                                    macArchitectures.add('arm64')
+                                }
+                                macArchitectures.each{ processorArchitecture ->
+                                    if (nodesByLabel("mac && ${processorArchitecture} && python${pythonVersion}").size() > 0){
+                                        macPackages["Test Python ${pythonVersion}: wheel Mac ${processorArchitecture}"] = {
+                                            retry(2){
+                                                withEnv(['PATH+EXTRA=./venv/bin']) {
+                                                    devpi.testDevpiPackage(
+                                                        agent: [
+                                                            label: "mac && python${pythonVersion} && ${processorArchitecture} && devpi-access"
+                                                        ],
+                                                        devpi: [
+                                                            index: DEVPI_CONFIG.stagingIndex,
+                                                            server: DEVPI_CONFIG.server,
+                                                            credentialsId: DEVPI_CONFIG.credentialsId,
+                                                            devpiExec: 'venv/bin/devpi'
+                                                        ],
+                                                        package:[
+                                                            name: props.Name,
+                                                            version: props.Version,
+                                                            selector: 'whl'
+                                                        ],
+                                                        test:[
+                                                            setup: {
+                                                                checkout scm
+                                                                sh(
+                                                                    label:'Installing Devpi client',
+                                                                    script: '''python3 -m venv venv
+                                                                                venv/bin/python -m pip install pip --upgrade
+                                                                                venv/bin/python -m pip install 'devpi-client<7.0'  -r requirements/requirements_tox.txt
+                                                                                '''
+                                                                )
+                                                            },
+                                                            toxEnv: "py${pythonVersion}".replace('.',''),
+                                                            teardown: {
+                                                                sh( label: 'Remove Devpi client', script: 'rm -r venv')
+                                                            }
+                                                        ]
+                                                    )
+                                                }
+                                            }
+                                        }
+                                        macPackages["Test Python ${pythonVersion}: sdist Mac ${processorArchitecture}"]= {
+                                            retry(2){
+                                                withEnv(['PATH+EXTRA=./venv/bin']) {
+                                                    devpi.testDevpiPackage(
+                                                        agent: [
+                                                            label: "mac && python${pythonVersion} && ${processorArchitecture} && devpi-access"
+                                                        ],
+                                                        devpi: [
+                                                            index: DEVPI_CONFIG.stagingIndex,
+                                                            server: DEVPI_CONFIG.server,
+                                                            credentialsId: DEVPI_CONFIG.credentialsId,
+                                                            devpiExec: 'venv/bin/devpi'
+                                                        ],
+                                                        package:[
+                                                            name: props.Name,
+                                                            version: props.Version,
+                                                            selector: 'tar.gz'
+                                                        ],
+                                                        test:[
+                                                            setup: {
+                                                                checkout scm
+                                                                sh(
+                                                                    label:'Installing Devpi client',
+                                                                    script: '''python3 -m venv venv
+                                                                                venv/bin/python -m pip install pip --upgrade
+                                                                                venv/bin/python -m pip install 'devpi-client<7.0'  -r requirements/requirements_tox.txt
+                                                                                '''
+                                                                )
+                                                            },
+                                                            toxEnv: "py${pythonVersion}".replace('.',''),
+                                                            teardown: {
+                                                                sh( label: 'Remove Devpi client', script: 'rm -r venv')
+                                                            }
+                                                        ]
+                                                    )
+                                                }
+                                            }
                                         }
                                     }
                                 }
