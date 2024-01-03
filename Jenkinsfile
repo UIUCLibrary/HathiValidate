@@ -1,3 +1,7 @@
+library identifier: 'JenkinsPythonHelperLibrary@2024.1.1', retriever: modernSCM(
+  [$class: 'GitSCMSource',
+   remote: 'https://github.com/UIUCLibrary/JenkinsPythonHelperLibrary.git',
+   ])
 
 def getDevPiStagingIndex(){
     if (env.TAG_NAME?.trim()){
@@ -680,19 +684,11 @@ pipeline {
                     }
                     steps {
                         script{
-                            def tox = fileLoader.fromGit(
-                                'tox',
-                                'https://github.com/UIUCLibrary/jenkins_helper_scripts.git',
-                                '8',
-                                null,
-                                ''
-                            )
-
                             def windowsJobs
                             def linuxJobs
                             parallel(
                                 'Scanning Tox Environments for Linux':{
-                                    linuxJobs = tox.getToxTestsParallel(
+                                    linuxJobs = getToxTestsParallel(
                                                 envNamePrefix: 'Tox Linux',
                                                 label: 'linux && docker && x86',
                                                 dockerfile: 'ci/docker/python/linux/tox/Dockerfile',
@@ -702,7 +698,7 @@ pipeline {
                                             )
                                 },
                                 'Scanning Tox Environments for Windows':{
-                                    windowsJobs = tox.getToxTestsParallel(
+                                    windowsJobs = getToxTestsParallel(
                                                 envNamePrefix: 'Tox Windows',
                                                 label: 'windows && docker && x86',
                                                 dockerfile: 'ci/docker/python/windows/tox/Dockerfile',
@@ -754,7 +750,7 @@ pipeline {
                         }
                         always{
                             stash includes: 'dist/*.whl', name: 'wheel'
-                                                        stash includes: 'dist/*.zip,dist/*.tar.gz', name: 'sdist'
+                            stash includes: 'dist/*.zip,dist/*.tar.gz', name: 'sdist'
                         }
                         cleanup{
                             cleanWs(
@@ -775,16 +771,11 @@ pipeline {
                     }
                     steps{
                         script{
-                            def packages
-                            node(){
-                                checkout scm
-                                packages = load 'ci/jenkins/scripts/packaging.groovy'
-                            }
                             def windowsTests = [:]
                             if(params.INCLUDE_WINDOWS_X86_64 == true){
                                 SUPPORTED_WINDOWS_VERSIONS.each{ pythonVersion ->
                                     windowsTests["Windows - Python ${pythonVersion}: sdist"] = {
-                                        packages.testPkg(
+                                        testPythonPkg(
                                             agent: [
                                                 dockerfile: [
                                                     label: 'windows && docker && x86',
@@ -818,7 +809,7 @@ pipeline {
                                         )
                                     }
                                     windowsTests["Windows - Python ${pythonVersion}: wheel"] = {
-                                        packages.testPkg(
+                                        testPythonPkg(
                                             agent: [
                                                 dockerfile: [
                                                     label: 'windows && docker && x86',
@@ -868,7 +859,7 @@ pipeline {
                             SUPPORTED_LINUX_VERSIONS.each{ pythonVersion ->
                                 linuxArchitectures.each{arch ->
                                     linuxTests["Linux ${arch} - Python ${pythonVersion}: sdist"] = {
-                                        packages.testPkg(
+                                        testPythonPkg(
                                             agent: [
                                                 dockerfile: [
                                                     label: "linux && docker && ${arch}",
@@ -905,7 +896,7 @@ pipeline {
                                         )
                                     }
                                     linuxTests["Linux ${arch} - Python ${pythonVersion}: wheel"] = {
-                                        packages.testPkg(
+                                        testPythonPkg(
                                             agent: [
                                                 dockerfile: [
                                                     label: "linux && docker && ${arch}",
@@ -959,7 +950,7 @@ pipeline {
                                 macArchitectures.each{ processorArchitecture ->
                                     if (nodesByLabel("mac && ${processorArchitecture} && python${pythonVersion}").size() > 0){
                                         macTests["Mac ${processorArchitecture} - Python ${pythonVersion}: sdist"] = {
-                                            packages.testPkg(
+                                            testPythonPkg(
                                                 agent: [
                                                     label: "mac && python${pythonVersion} && ${processorArchitecture}",
                                                 ],
@@ -993,7 +984,7 @@ pipeline {
                                             )
                                         }
                                         macTests["Mac ${processorArchitecture} - Python ${pythonVersion}: wheel"] = {
-                                            packages.testPkg(
+                                            testPythonPkg(
                                                 agent: [
                                                     label: "mac && python${pythonVersion} && ${processorArchitecture}",
                                                 ],
@@ -1195,20 +1186,11 @@ pipeline {
                     steps{
                         unstash 'sdist'
                         unstash 'wheel'
-                        script{
-                            def pypi = fileLoader.fromGit(
-                                    'pypi',
-                                    'https://github.com/UIUCLibrary/jenkins_helper_scripts.git',
-                                    '2',
-                                    null,
-                                    ''
-                                )
-                            pypi.pypiUpload(
-                                credentialsId: 'jenkins-nexus',
-                                repositoryUrl: SERVER_URL,
-                                glob: 'dist/*'
-                                )
-                        }
+                        pypiUpload(
+                            credentialsId: 'jenkins-nexus',
+                            repositoryUrl: SERVER_URL,
+                            glob: 'dist/*'
+                            )
                     }
                     post{
                         cleanup{
