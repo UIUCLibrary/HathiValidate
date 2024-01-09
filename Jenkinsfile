@@ -582,12 +582,7 @@ pipeline {
                                                           '''
                                             )
                                             stash(includes: 'reports/coverage*.xml', name: 'COVERAGE_REPORT_DATA')
-                                            publishCoverage(
-                                                adapters: [
-                                                        coberturaAdapter('reports/coverage.xml')
-                                                    ],
-                                                sourceFileResolver: sourceFiles('STORE_ALL_BUILD')
-                                            )
+                                            recordCoverage(tools: [[parser: 'COBERTURA', pattern: 'reports/coverage.xml']])
                                         }
                                     }
                                 }
