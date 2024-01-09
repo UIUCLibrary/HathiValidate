@@ -958,6 +958,7 @@ pipeline {
                                                     checkout scm
                                                     unstash 'sdist'
                                                 },
+                                                retries: 3,
                                                 testCommand: {
                                                     findFiles(glob: 'dist/*.tar.gz').each{
                                                         sh(label: 'Running Tox',
