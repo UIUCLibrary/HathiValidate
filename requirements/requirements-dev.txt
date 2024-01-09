@@ -9,8 +9,6 @@ pep517
 pydocstyle
 pylint
 pytest
-pytest-cov
-pytest-runner
 sphinx
 types-PyYAML
 twine
