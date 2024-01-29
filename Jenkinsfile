@@ -738,6 +738,9 @@ pipeline {
                             label 'linux && docker'
                           }
                     }
+                    options {
+                      retry(3)
+                    }
                     steps{
                         timeout(5){
                             withEnv(['PIP_NO_CACHE_DIR=off']) {
