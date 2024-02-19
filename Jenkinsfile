@@ -449,6 +449,9 @@ pipeline {
                                     args '--mount source=sonar-cache-hathi_validate,target=/opt/sonar/.sonar/cache'
                                 }
                             }
+                            options {
+                              retry(conditions: [agent()], count: 3)
+                            }
                             stages{
                                 stage('Set up Tests') {
                                     steps{
