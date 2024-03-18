@@ -403,6 +403,9 @@ pipeline {
                             label 'linux && docker && x86'
                         }
                     }
+                    options {
+                        retry(3)
+                    }
                     when{
                         anyOf{
                             equals expected: true, actual: params.RUN_CHECKS
