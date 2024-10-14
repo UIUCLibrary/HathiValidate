@@ -13,8 +13,7 @@ RUN apt-get update && \
 ARG PIP_EXTRA_INDEX_URL
 ARG PIP_INDEX_URL
 
-COPY requirements/ /tmp/python_requirements/requirements/
-COPY requirements-dev.txt /tmp/python_requirements
+COPY requirements-dev.txt /tmp/python_requirements/requirements-dev.txt
 RUN python3 -m pip install --upgrade pip && \
     python3 -m pip install -r /tmp/python_requirements/requirements-dev.txt
 ARG PIP_DOWNLOAD_CACHE
@@ -28,8 +27,6 @@ RUN pip3 install --no-cache-dir pipx && \
     pipx ensurepath && \
     mkdir -p $PIPX_HOME  && chmod -R 777 $PIPX_HOME
 RUN PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install pip-audit
-
-
 
 
 WORKDIR /src

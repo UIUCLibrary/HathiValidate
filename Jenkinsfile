@@ -691,7 +691,7 @@ pipeline {
                                                         sh(label: 'Running Tox',
                                                            script: """python${pythonVersion} -m venv venv
                                                            ./venv/bin/python -m pip install --upgrade pip
-                                                           ./venv/bin/pip install -r requirements/requirements_tox.txt
+                                                           ./venv/bin/pip install "\$(grep -oE '^tox==.\\S+' ./requirements-dev.txt)"
                                                            ./venv/bin/tox --installpkg ${it.path} -e py${pythonVersion.replace('.', '')}"""
                                                         )
                                                     }
@@ -724,7 +724,7 @@ pipeline {
                                                            script: """python${pythonVersion} -m venv venv
                                                                       . ./venv/bin/activate
                                                                       python -m pip install --upgrade pip
-                                                                      pip install -r requirements/requirements_tox.txt
+                                                                      ./venv/bin/pip install "\$(grep -oE '^tox==.\\S+' ./requirements-dev.txt)"
                                                                       tox --installpkg ${it.path} -e py${pythonVersion.replace('.', '')}
                                                                    """
                                                         )

@@ -23,7 +23,6 @@ RUN curl --create-dirs -sSLo /tmp/sonar-scanner.zip \
 FROM base AS wheel_builder
 
 COPY requirements-dev.txt /requirements/
-COPY requirements/ /requirements/requirements/
 
 ARG PIP_FIND_LINKS
 RUN mkdir -p ${PIP_FIND_LINKS} &&  \
