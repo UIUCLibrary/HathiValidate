@@ -62,22 +62,6 @@ def startup(){
         ]
     )
 }
-def get_props(){
-    stage('Reading Package Metadata'){
-        node(){
-            unstash 'DIST-INFO'
-            def metadataFile = findFiles( glob: '*.dist-info/METADATA')[0]
-            def metadata = readProperties(interpolate: true, file: metadataFile.path )
-            echo """Version = ${metadata.Version}
-Name = ${metadata.Name}
-"""
-            return metadata
-        }
-    }
-}
-
-startup()
-props = get_props()
 pipeline {
     agent none
 
@@ -141,7 +125,8 @@ pipeline {
                             recordIssues(tools: [sphinxBuild(name: 'Sphinx Documentation Build', pattern: 'logs/build_sphinx.log')])
                             archiveArtifacts artifacts: 'logs/build_sphinx.log', allowEmptyArchive: true
                             script{
-                                zip archive: true, dir: 'build/docs/html', glob: '', zipFile: "dist/${props.Name}-${props.Version}.doc.zip"
+                                def props = readTOML( file: 'pyproject.toml')['project']
+                                zip archive: true, dir: 'build/docs/html', glob: '', zipFile: "dist/${props.name}-${props.version}.doc.zip"
                                 stash includes: 'dist/*.doc.zip,build/docs/html/**', name: 'DOCUMENTATION'
                             }
                         }
@@ -330,6 +315,7 @@ pipeline {
                                     steps{
                                         script{
                                             def sonarqube = load('ci/jenkins/scripts/sonarqube.groovy')
+                                            def props = readTOML( file: 'pyproject.toml')['project']
                                             def stashes = [
                                                 'COVERAGE_REPORT_DATA',
                                                 'PYTEST_UNIT_TEST_RESULTS',
@@ -350,8 +336,8 @@ pipeline {
                                                         destination: env.BRANCH_NAME,
                                                     ],
                                                     package: [
-                                                        version: props.Version,
-                                                        name: props.Name
+                                                        version: props.version,
+                                                        name: props.name
                                                     ],
                                                 )
                                             } else {
@@ -360,8 +346,8 @@ pipeline {
                                                     artifactStash: 'sonarqube artifacts',
                                                     sonarqube: sonarqubeConfig,
                                                     package: [
-                                                        version: props.Version,
-                                                        name: props.Name
+                                                        version: props.version,
+                                                        name: props.name
                                                     ]
                                                 )
                                             }
