@@ -3,22 +3,20 @@ library identifier: 'JenkinsPythonHelperLibrary@2024.1.2', retriever: modernSCM(
    remote: 'https://github.com/UIUCLibrary/JenkinsPythonHelperLibrary.git',
    ])
 
-
-// ****************************************************************************
-//  Constants
-//
-// ============================================================================
-// Versions of python that are supported
-// ----------------------------------------------------------------------------
-SUPPORTED_MAC_VERSIONS = ['3.8', '3.9', '3.10', '3.11', '3.12']
-SUPPORTED_LINUX_VERSIONS = ['3.8', '3.9', '3.10', '3.11', '3.12']
-SUPPORTED_WINDOWS_VERSIONS = ['3.8', '3.9', '3.10', '3.11', '3.12']
-
-// ============================================================================
-
 defaultParameterValues = [
     USE_SONARQUBE: false
 ]
+
+
+def get_sonarqube_unresolved_issues(report_task_file){
+    script{
+
+        def props = readProperties  file: '.scannerwork/report-task.txt'
+        def response = httpRequest url : props['serverUrl'] + '/api/issues/search?componentKeys=' + props['projectKey'] + '&resolved=no'
+        def outstandingIssues = readJSON text: response.content
+        return outstandingIssues
+    }
+}
 
 
 def getPypiConfig() {
@@ -74,11 +72,11 @@ pipeline {
         booleanParam(name: 'USE_SONARQUBE', defaultValue: true, description: 'Send data test data to SonarQube')
         booleanParam(name: 'TEST_RUN_TOX', defaultValue: false, description: 'Run Tox Tests')
         booleanParam(name: 'BUILD_PACKAGES', defaultValue: false, description: 'Build Python packages')
-        booleanParam(name: 'INCLUDE_LINUX_ARM', defaultValue: false, description: 'Include ARM architecture for Linux')
-        booleanParam(name: 'INCLUDE_LINUX_X86_64', defaultValue: true, description: 'Include x86_64 architecture for Linux')
-        booleanParam(name: 'INCLUDE_MACOS_ARM', defaultValue: false, description: 'Include ARM(m1) architecture for Mac')
-        booleanParam(name: 'INCLUDE_MACOS_X86_64', defaultValue: false, description: 'Include x86_64 architecture for Mac')
-        booleanParam(name: 'INCLUDE_WINDOWS_X86_64', defaultValue: true, description: 'Include x86_64 architecture for Windows')
+        booleanParam(name: 'INCLUDE_LINUX-ARM64', defaultValue: false, description: 'Include ARM architecture for Linux')
+        booleanParam(name: 'INCLUDE_LINUX-X86_64', defaultValue: true, description: 'Include x86_64 architecture for Linux')
+        booleanParam(name: 'INCLUDE_MACOS-ARM64', defaultValue: false, description: 'Include ARM(m1) architecture for Mac')
+        booleanParam(name: 'INCLUDE_MACOS-X86_64', defaultValue: false, description: 'Include x86_64 architecture for Mac')
+        booleanParam(name: 'INCLUDE_WINDOWS-X86_64', defaultValue: true, description: 'Include x86_64 architecture for Windows')
         booleanParam(name: 'TEST_PACKAGES', defaultValue: true, description: 'Build Python packages')
         credentials(name: 'SONARCLOUD_TOKEN', credentialType: 'org.jenkinsci.plugins.plaincredentials.impl.StringCredentialsImpl', defaultValue: 'sonarcloud_token', required: false)
         booleanParam(name: 'DEPLOY_PYPI', defaultValue: false, description: 'Deploy to pypi')
@@ -97,10 +95,19 @@ pipeline {
             stages{
                 stage('Build Documentation'){
                     agent {
-                        dockerfile {
-                            filename 'ci/docker/python/linux/jenkins/Dockerfile'
-                            label 'linux && docker && x86'
+                        docker{
+                            image 'python'
+                            label 'docker && linux && x86_64' // needed for pysonar-scanner which is x86_64 only as of 0.2.0.520
+                            args '--mount source=python-tmp-hathivalidate,target=/tmp'
                         }
+                    }
+                    environment{
+                        PIP_CACHE_DIR='/tmp/pipcache'
+                        UV_INDEX_STRATEGY='unsafe-best-match'
+                        UV_TOOL_DIR='/tmp/uvtools'
+                        UV_PYTHON_INSTALL_DIR='/tmp/uvpython'
+                        UV_CACHE_DIR='/tmp/uvcache'
+                        UV_PYTHON='3.12'
                     }
                     options {
                         retry(3)
@@ -114,8 +121,11 @@ pipeline {
                     }
                     steps{
                         catchError(buildResult: 'UNSTABLE', message: 'Building documentation produced an error or a warning', stageResult: 'UNSTABLE') {
-                            sh(script: '''mkdir -p logs
-                                          python -m sphinx -b html docs/source build/docs/html -d build/docs/doctrees -w logs/build_sphinx.log -W --keep-going
+                            sh(script: '''python3 -m venv venv
+                                          venv/bin/pip install uv
+                                          . ./venv/bin/activate
+                                          mkdir -p logs
+                                          uvx --from sphinx --with-editable . --with-requirements requirements-dev.txt sphinx-build -b html docs/source build/docs/html -d build/docs/doctrees -w logs/build_sphinx.log -W --keep-going
                                        '''
                             )
                         }
@@ -142,21 +152,48 @@ pipeline {
                     when{
                         equals expected: true, actual: params.RUN_CHECKS
                     }
+                    environment{
+                        UV_PYTHON='3.12'
+                    }
                     stages{
                         stage('Code Quality'){
                             agent {
-                                dockerfile {
-                                    filename 'ci/docker/python/linux/jenkins/Dockerfile'
-                                    label 'linux && docker && x86'
-                                    args '--mount source=sonar-cache-hathi_validate,target=/opt/sonar/.sonar/cache'
+                                docker{
+                                    image 'python'
+                                    label 'docker && linux && x86_64' // needed for pysonar-scanner which is x86_64 only as of 0.2.0.520
+                                    args '--mount source=python-tmp-hathivalidate,target=/tmp'
                                 }
+                            }
+                            environment{
+                                PIP_CACHE_DIR='/tmp/pipcache'
+                                UV_INDEX_STRATEGY='unsafe-best-match'
+                                UV_TOOL_DIR='/tmp/uvtools'
+                                UV_PYTHON_INSTALL_DIR='/tmp/uvpython'
+                                UV_CACHE_DIR='/tmp/uvcache'
                             }
                             options {
                               retry(conditions: [agent()], count: 3)
                             }
                             stages{
-                                stage('Set up Tests') {
+                                stage('Setup Testing Environment'){
                                     steps{
+                                        sh(
+                                            label: 'Create virtual environment',
+                                            script: '''python3 -m venv bootstrap_uv
+                                                       bootstrap_uv/bin/pip install uv
+                                                       bootstrap_uv/bin/uv venv venv
+                                                       . ./venv/bin/activate
+                                                       bootstrap_uv/bin/uv pip install uv
+                                                       rm -rf bootstrap_uv
+                                                       uv pip install -r requirements-dev.txt
+                                                       '''
+                                                   )
+                                        sh(
+                                            label: 'Install package in development mode',
+                                            script: '''. ./venv/bin/activate
+                                                       uv pip install -e .
+                                                    '''
+                                            )
                                         sh(label: 'Adding logs and reports directories',
                                            script: '''
                                                 mkdir -p logs
@@ -171,7 +208,9 @@ pipeline {
                                             steps{
                                                 sh(
                                                     label: 'Running pytest',
-                                                    script: 'coverage run --parallel-mode --source=hathi_validate -m pytest --junitxml=./reports/pytest-junit.xml -p no:cacheprovider'
+                                                    script: '''. ./venv/bin/activate
+                                                               coverage run --parallel-mode --source=hathi_validate -m pytest --junitxml=./reports/pytest-junit.xml -p no:cacheprovider
+                                                            '''
                                                 )
 
                                             }
@@ -186,7 +225,9 @@ pipeline {
                                             steps{
                                                 catchError(buildResult: 'SUCCESS', message: 'MyPy found issues', stageResult: 'UNSTABLE') {
                                                     sh(label: 'Running MyPy',
-                                                       script: '''mypy -p hathi_validate --html-report reports/mypy_html --cache-dir=/dev/null > logs/mypy.log'''
+                                                       script: '''. ./venv/bin/activate
+                                                                  mypy -p hathi_validate --html-report reports/mypy_html --cache-dir=/dev/null > logs/mypy.log
+                                                               '''
                                                       )
                                                 }
                                             }
@@ -201,7 +242,9 @@ pipeline {
                                             steps{
                                                 catchError(buildResult: 'SUCCESS', message: 'flake8 found some warnings', stageResult: 'UNSTABLE') {
                                                     sh(label: 'Running flake8',
-                                                       script: 'flake8 hathi_validate --tee --output-file=logs/flake8.log'
+                                                       script: '''. ./venv/bin/activate
+                                                                  flake8 hathi_validate --tee --output-file=logs/flake8.log
+                                                               '''
                                                     )
                                                 }
                                             }
@@ -221,7 +264,9 @@ pipeline {
                                             steps {
                                                 catchError(buildResult: 'UNSTABLE', message: 'Did not pass all Behave BDD tests', stageResult: 'UNSTABLE') {
                                                     sh(
-                                                        script: 'coverage run --parallel-mode --source=hathi_validate -m behave --junit --junit-directory reports/tests/behave'
+                                                        script: '''. ./venv/bin/activate
+                                                                   coverage run --parallel-mode --source=hathi_validate -m behave --junit --junit-directory reports/tests/behave
+                                                                '''
                                                     )
                                                 }
                                             }
@@ -237,9 +282,10 @@ pipeline {
                                                     tee("reports/pydocstyle-report.txt"){
                                                         sh(
                                                             label: 'Run pydocstyle',
-                                                            script: '''mkdir -p reports
+                                                            script: '''. ./venv/bin/activate
+                                                                       mkdir -p reports
                                                                        pydocstyle hathi_validate
-                                                                       '''
+                                                                    '''
                                                         )
                                                     }
                                                 }
@@ -255,12 +301,16 @@ pipeline {
                                                 catchError(buildResult: 'SUCCESS', message: 'Pylint found issues', stageResult: 'UNSTABLE') {
                                                     tee('reports/pylint.txt'){
                                                         sh(label: 'Running pylint',
-                                                            script: 'pylint hathi_validate -r n --msg-template="{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}" --persistent=no'
+                                                            script: '''. ./venv/bin/activate
+                                                                       pylint hathi_validate -r n --msg-template="{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}" --persistent=no
+                                                                    '''
                                                         )
                                                     }
                                                 }
                                                 sh(
-                                                    script: 'pylint hathi_validate -r n --msg-template="{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}" --persistent=no > reports/pylint_issues.txt',
+                                                    script: '''. ./venv/bin/activate
+                                                               pylint hathi_validate -r n --msg-template="{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}" --persistent=no > reports/pylint_issues.txt
+                                                            ''',
                                                     label: 'Running pylint for sonarqube',
                                                     returnStatus: true
                                                 )
@@ -274,7 +324,9 @@ pipeline {
                                         }
                                         stage('Doctest'){
                                             steps{
-                                                sh "python -m sphinx -b doctest docs/source build/docs -d build/docs/doctrees -v"
+                                                sh '''. ./venv/bin/activate
+                                                      python -m sphinx -b doctest docs/source build/docs -d build/docs/doctrees -v
+                                                   '''
                                             }
 
                                         }
@@ -282,7 +334,8 @@ pipeline {
                                     post{
                                         always{
                                             sh(label: 'Combining Coverage Data',
-                                               script: '''coverage combine
+                                               script: '''. ./venv/bin/activate
+                                                          coverage combine
                                                           coverage xml -o ./reports/coverage.xml
                                                           '''
                                             )
@@ -294,6 +347,10 @@ pipeline {
                                 stage('Run Sonarqube Analysis'){
                                     options{
                                         lock('hathivalidate-sonarscanner')
+                                    }
+                                    environment{
+                                        VERSION="${readTOML( file: 'pyproject.toml')['project'].version}"
+                                        SONAR_USER_HOME='/tmp/sonar'
                                     }
                                     when{
                                         allOf{
@@ -314,51 +371,34 @@ pipeline {
                                     }
                                     steps{
                                         script{
-                                            def sonarqube = load('ci/jenkins/scripts/sonarqube.groovy')
-                                            def props = readTOML( file: 'pyproject.toml')['project']
-                                            def stashes = [
-                                                'COVERAGE_REPORT_DATA',
-                                                'PYTEST_UNIT_TEST_RESULTS',
-                                                'PYLINT_REPORT',
-                                                'FLAKE8_REPORT'
-                                            ]
-                                            def sonarqubeConfig = [
-                                                installationName: 'sonarcloud',
-                                                credentialsId: params.SONARCLOUD_TOKEN,
-                                            ]
-                                            if (env.CHANGE_ID){
-                                                sonarqube.submitToSonarcloud(
-                                                    reportStashes: stashes,
-                                                    artifactStash: 'sonarqube artifacts',
-                                                    sonarqube: sonarqubeConfig,
-                                                    pullRequest: [
-                                                        source: env.CHANGE_ID,
-                                                        destination: env.BRANCH_NAME,
-                                                    ],
-                                                    package: [
-                                                        version: props.version,
-                                                        name: props.name
-                                                    ],
-                                                )
-                                            } else {
-                                                sonarqube.submitToSonarcloud(
-                                                    reportStashes: stashes,
-                                                    artifactStash: 'sonarqube artifacts',
-                                                    sonarqube: sonarqubeConfig,
-                                                    package: [
-                                                        version: props.version,
-                                                        name: props.name
-                                                    ]
+                                            withSonarQubeEnv(installationName:'sonarcloud', credentialsId: params.SONARCLOUD_TOKEN) {
+                                                def sourceInstruction
+                                                if (env.CHANGE_ID){
+                                                    sourceInstruction = '-Dsonar.pullrequest.key=$CHANGE_ID -Dsonar.pullrequest.base=$BRANCH_NAME'
+                                                } else{
+                                                    sourceInstruction = '-Dsonar.branch.name=$BRANCH_NAME'
+                                                }
+                                                sh(
+                                                    label: 'Running Sonar Scanner',
+                                                    script: """. ./venv/bin/activate
+                                                                uv tool run pysonar-scanner -Dsonar.projectVersion=$VERSION -Dsonar.buildString=\"$BUILD_TAG\" ${sourceInstruction}
+                                                            """
                                                 )
                                             }
+                                            timeout(time: 1, unit: 'HOURS') {
+                                                def sonarqube_result = waitForQualityGate(abortPipeline: false)
+                                                if (sonarqube_result.status != 'OK') {
+                                                    unstable "SonarQube quality gate: ${sonarqube_result.status}"
+                                                }
+                                                def outstandingIssues = get_sonarqube_unresolved_issues('.scannerwork/report-task.txt')
+                                                writeJSON file: 'reports/sonar-report.json', json: outstandingIssues
+                                            }
+                                            milestone label: 'sonarcloud'
                                         }
                                     }
                                     post {
                                         always{
-                                            node(''){
-                                                unstash 'sonarqube artifacts'
-                                                recordIssues(tools: [sonarQube(pattern: 'reports/sonar-report.json')])
-                                            }
+                                            recordIssues(tools: [sonarQube(pattern: 'reports/sonar-report.json')])
                                         }
                                     }
                                 }
@@ -383,25 +423,79 @@ pipeline {
                     when{
                         equals expected: true, actual: params.TEST_RUN_TOX
                     }
-                    options{
-                        lock("hathivalidate-${env.BRANCH_NAME}-tox")
-                    }
                     parallel{
                         stage('Linux'){
                             when{
                                 expression {return nodesByLabel('linux && docker && x86').size() > 0}
                             }
+                            environment{
+                                 PIP_CACHE_DIR='/tmp/pipcache'
+                                 UV_INDEX_STRATEGY='unsafe-best-match'
+                                 UV_TOOL_DIR='/tmp/uvtools'
+                                 UV_PYTHON_INSTALL_DIR='/tmp/uvpython'
+                                 UV_CACHE_DIR='/tmp/uvcache'
+                            }
                             steps{
                                 script{
+                                    def envs = []
+                                    node('docker && linux'){
+                                        docker.image('python').inside('--mount source=python-tmp-hathivalidate,target=/tmp'){
+                                            try{
+                                                checkout scm
+                                                sh(script: 'python3 -m venv venv && venv/bin/pip install uv')
+                                                envs = sh(
+                                                    label: 'Get tox environments',
+                                                    script: './venv/bin/uvx --quiet --with tox-uv tox list -d --no-desc',
+                                                    returnStdout: true,
+                                                ).trim().split('\n')
+                                            } finally{
+                                                cleanWs(
+                                                    patterns: [
+                                                        [pattern: 'venv/', type: 'INCLUDE'],
+                                                        [pattern: '.tox', type: 'INCLUDE'],
+                                                        [pattern: '**/__pycache__/', type: 'INCLUDE'],
+                                                    ]
+                                                )
+                                            }
+                                        }
+                                    }
                                     parallel(
-                                        getToxTestsParallel(
-                                            envNamePrefix: 'Tox Linux',
-                                            label: 'linux && docker && x86',
-                                            dockerfile: 'ci/docker/python/linux/tox/Dockerfile',
-                                            dockerArgs: '--build-arg PIP_EXTRA_INDEX_URL --build-arg PIP_INDEX_URL --build-arg PIP_DOWNLOAD_CACHE=/.cache/pip',
-                                            dockerRunArgs: '-v pipcache_hathivalidate:/.cache/pip',
-                                            retry: 2
-                                        )
+                                        envs.collectEntries{toxEnv ->
+                                            def version = toxEnv.replaceAll(/py(\d)(\d+)/, '$1.$2')
+                                            [
+                                                "Tox Environment: ${toxEnv}",
+                                                {
+                                                    node('docker && linux'){
+                                                        docker.image('python').inside('--mount source=python-tmp-hathivalidate,target=/tmp'){
+                                                            checkout scm
+                                                            try{
+                                                                sh( label: 'Running Tox',
+                                                                    script: """python3 -m venv venv && venv/bin/pip install uv
+                                                                               . ./venv/bin/activate
+                                                                               uv python install cpython-${version}
+                                                                               uvx -p ${version} --with tox-uv tox run -e ${toxEnv}
+                                                                            """
+                                                                    )
+                                                            } catch(e) {
+                                                                sh(script: '''. ./venv/bin/activate
+                                                                      uv python list
+                                                                      '''
+                                                                        )
+                                                                throw e
+                                                            } finally{
+                                                                cleanWs(
+                                                                    patterns: [
+                                                                        [pattern: 'venv/', type: 'INCLUDE'],
+                                                                        [pattern: '.tox', type: 'INCLUDE'],
+                                                                        [pattern: '**/__pycache__/', type: 'INCLUDE'],
+                                                                    ]
+                                                                )
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ]
+                                        }
                                     )
                                 }
                             }
@@ -410,17 +504,72 @@ pipeline {
                             when{
                                 expression {return nodesByLabel('windows && docker && x86').size() > 0}
                             }
+                            environment{
+                                 UV_INDEX_STRATEGY='unsafe-best-match'
+                                 PIP_CACHE_DIR='C:\\Users\\ContainerUser\\Documents\\pipcache'
+                                 UV_TOOL_DIR='C:\\Users\\ContainerUser\\Documents\\uvtools'
+                                 UV_PYTHON_INSTALL_DIR='C:\\Users\\ContainerUser\\Documents\\uvpython'
+                                 UV_CACHE_DIR='C:\\Users\\ContainerUser\\Documents\\uvcache'
+                            }
                             steps{
                                 script{
+                                    def envs = []
+                                    node('docker && windows'){
+                                        docker.image('python').inside('--mount source=python-tmp-hathivalidate,target=C:\\Users\\ContainerUser\\Documents'){
+                                            try{
+                                                checkout scm
+                                                bat(script: 'python -m venv venv && venv\\Scripts\\pip install uv')
+                                                envs = bat(
+                                                    label: 'Get tox environments',
+                                                    script: '@.\\venv\\Scripts\\uvx --quiet --with tox-uv tox list -d --no-desc',
+                                                    returnStdout: true,
+                                                ).trim().split('\r\n')
+                                            } finally{
+                                                cleanWs(
+                                                    patterns: [
+                                                        [pattern: 'venv/', type: 'INCLUDE'],
+                                                        [pattern: '.tox', type: 'INCLUDE'],
+                                                        [pattern: '**/__pycache__/', type: 'INCLUDE'],
+                                                    ]
+                                                )
+                                            }
+                                        }
+                                    }
                                     parallel(
-                                         getToxTestsParallel(
-                                            envNamePrefix: 'Tox Windows',
-                                            label: 'windows && docker && x86',
-                                            dockerfile: 'ci/docker/python/windows/tox/Dockerfile',
-                                            dockerArgs: '--build-arg PIP_EXTRA_INDEX_URL --build-arg PIP_INDEX_URL --build-arg CHOCOLATEY_SOURCE --build-arg PIP_DOWNLOAD_CACHE=c:/users/containeradministrator/appdata/local/pip',
-                                            dockerRunArgs: '-v pipcache_hathivalidate:c:/users/containeradministrator/appdata/local/pip',
-                                            retry: 2
-                                        )
+                                        envs.collectEntries{toxEnv ->
+                                            def version = toxEnv.replaceAll(/py(\d)(\d+)/, '$1.$2')
+                                            [
+                                                "Tox Environment: ${toxEnv}",
+                                                {
+                                                    node('docker && windows'){
+                                                        docker.image('python').inside('--mount source=python-tmp-hathivalidate,target=C:\\Users\\ContainerUser\\Documents'){
+                                                            checkout scm
+                                                            try{
+                                                                bat(label: 'Install uv',
+                                                                    script: 'python -m venv venv && venv\\Scripts\\pip install uv'
+                                                                )
+                                                                retry(3){
+                                                                    bat(label: 'Running Tox',
+                                                                        script: """call venv\\Scripts\\activate.bat
+                                                                               uv python install cpython-${version}
+                                                                               uvx -p ${version} --with tox-uv tox run -e ${toxEnv}
+                                                                            """
+                                                                    )
+                                                                }
+                                                            } finally{
+                                                                cleanWs(
+                                                                    patterns: [
+                                                                        [pattern: 'venv/', type: 'INCLUDE'],
+                                                                        [pattern: '.tox', type: 'INCLUDE'],
+                                                                        [pattern: '**/__pycache__/', type: 'INCLUDE'],
+                                                                    ]
+                                                                )
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ]
+                                        }
                                     )
                                 }
                             }
@@ -442,21 +591,27 @@ pipeline {
                         docker{
                             image 'python'
                             label 'linux && docker'
+                            args '--mount source=python-tmp-hathivalidate,target=/tmp'
                           }
                     }
+                    environment{
+                        PIP_CACHE_DIR='/tmp/pipcache'
+                        UV_INDEX_STRATEGY='unsafe-best-match'
+                        UV_CACHE_DIR='/tmp/uvcache'
+                    }
                     options {
-                      retry(3)
+                        retry(2)
                     }
                     steps{
                         timeout(5){
-                            withEnv(['PIP_NO_CACHE_DIR=off']) {
-                                sh(label: 'Build Python Package',
-                                   script: '''python -m venv venv --upgrade-deps
-                                              venv/bin/pip install build
-                                              venv/bin/python -m build .
-                                              '''
-                                    )
-                            }
+                            sh(
+                                label: 'Package',
+                                script: '''python3 -m venv venv && venv/bin/pip install uv
+                                           trap "rm -rf venv" EXIT
+                                           . ./venv/bin/activate
+                                           uv build
+                                        '''
+                            )
                         }
                     }
                     post{
@@ -464,8 +619,7 @@ pipeline {
                             archiveArtifacts artifacts: 'dist/*.whl,dist/*.tar.gz,dist/*.zip', fingerprint: true
                         }
                         always{
-                            stash includes: 'dist/*.whl', name: 'wheel'
-                            stash includes: 'dist/*.zip,dist/*.tar.gz', name: 'sdist'
+                            stash includes: 'dist/*.whl,dist/*.tar.gz,dist/*.zip', name: 'PYTHON_PACKAGES'
                         }
                         cleanup{
                             cleanWs(
@@ -484,262 +638,152 @@ pipeline {
                         equals expected: true, actual: params.TEST_PACKAGES
                         beforeAgent true
                     }
-                    steps{
-                        script{
-                            def windowsTests = [:]
-                            if(params.INCLUDE_WINDOWS_X86_64 == true){
-                                SUPPORTED_WINDOWS_VERSIONS.each{ pythonVersion ->
-                                    windowsTests["Windows - Python ${pythonVersion}: sdist"] = {
-                                        testPythonPkg(
-                                            agent: [
-                                                dockerfile: [
-                                                    label: 'windows && docker && x86',
-                                                    filename: 'ci/docker/python/windows/tox/Dockerfile',
-                                                    additionalBuildArgs: '--build-arg PIP_EXTRA_INDEX_URL --build-arg PIP_INDEX_URL --build-arg CHOCOLATEY_SOURCE --build-arg PIP_DOWNLOAD_CACHE=c:/users/containeradministrator/appdata/local/pip',
-                                                    args: '-v pipcache_hathivalidate:c:/users/containeradministrator/appdata/local/pip'
-                                                ]
-                                            ],
-                                            retries: 3,
-                                            testSetup: {
-                                                checkout scm
-                                                unstash 'sdist'
-                                            },
-                                            testCommand: {
-                                                findFiles(glob: 'dist/*.tar.gz').each{
-                                                    bat(label: 'Running Tox', script: "tox --workdir %TEMP%\\tox --installpkg ${it.path} -e py${pythonVersion.replace('.', '')} -v")
-                                                }
-                                            },
-                                            post:[
-                                                cleanup: {
-                                                    cleanWs(
-                                                        patterns: [
-                                                            [pattern: 'dist/', type: 'INCLUDE'],
-                                                            [pattern: '**/__pycache__/', type: 'INCLUDE'],
-                                                        ],
-                                                        notFailBuild: true,
-                                                        deleteDirs: true
-                                                    )
-                                                },
-                                            ]
-                                        )
-                                    }
-                                    windowsTests["Windows - Python ${pythonVersion}: wheel"] = {
-                                        testPythonPkg(
-                                            agent: [
-                                                dockerfile: [
-                                                    label: 'windows && docker && x86',
-                                                    filename: 'ci/docker/python/windows/tox/Dockerfile',
-                                                    additionalBuildArgs: '--build-arg PIP_EXTRA_INDEX_URL --build-arg PIP_INDEX_URL --build-arg CHOCOLATEY_SOURCE --build-arg PIP_DOWNLOAD_CACHE=c:/users/containeradministrator/appdata/local/pip',
-                                                    args: '-v pipcache_hathivalidate:c:/users/containeradministrator/appdata/local/pip'
-                                                ]
-                                            ],
-                                            retries: 3,
-                                            testSetup: {
-                                                 checkout scm
-                                                 unstash 'wheel'
-                                            },
-                                            testCommand: {
-                                                 findFiles(glob: 'dist/*.whl').each{
-                                                     powershell(label: 'Running Tox', script: "tox --installpkg ${it.path} --workdir \$env:TEMP\\tox  -e py${pythonVersion.replace('.', '')}")
-                                                 }
-
-                                            },
-                                            post:[
-                                                cleanup: {
-                                                    cleanWs(
-                                                        patterns: [
-                                                                [pattern: 'dist/', type: 'INCLUDE'],
-                                                                [pattern: '**/__pycache__/', type: 'INCLUDE'],
-                                                            ],
-                                                        notFailBuild: true,
-                                                        deleteDirs: true
-                                                    )
-                                                },
-                                                success: {
-                                                    archiveArtifacts artifacts: 'dist/*.whl'
-                                                }
-                                            ]
-                                        )
-                                    }
+                    matrix {
+                        axes {
+                            axis {
+                                name 'PYTHON_VERSION'
+                                values '3.8', '3.9', '3.10', '3.11', '3.12'
+                            }
+                            axis {
+                                name 'OS'
+                                values 'linux', 'macos', 'windows'
+                            }
+                            axis {
+                                name 'ARCHITECTURE'
+                                values 'arm64', 'x86_64'
+                            }
+                            axis {
+                                name 'PACKAGE_TYPE'
+                                values 'wheel', 'sdist'
+                            }
+                        }
+                        excludes {
+                            exclude {
+                                axis {
+                                    name 'ARCHITECTURE'
+                                    values 'arm64'
+                                }
+                                axis {
+                                    name 'OS'
+                                    values 'windows'
                                 }
                             }
-                            def linuxTests = [:]
-                            def linuxArchitectures = []
-                            if(params.INCLUDE_LINUX_X86_64 == true){
-                                linuxArchitectures.add('x86_64')
+                        }
+                        when{
+                            expression{
+                                params.containsKey("INCLUDE_${OS}-${ARCHITECTURE}".toUpperCase()) && params["INCLUDE_${OS}-${ARCHITECTURE}".toUpperCase()]
                             }
-                            if(params.INCLUDE_LINUX_ARM == true){
-                                linuxArchitectures.add('arm64')
-                            }
-                            SUPPORTED_LINUX_VERSIONS.each{ pythonVersion ->
-                                linuxArchitectures.each{arch ->
-                                    linuxTests["Linux ${arch} - Python ${pythonVersion}: sdist"] = {
-                                        testPythonPkg(
-                                            agent: [
-                                                dockerfile: [
-                                                    label: "linux && docker && ${arch}",
-                                                    filename: 'ci/docker/python/linux/tox/Dockerfile',
-                                                    additionalBuildArgs: '--build-arg PIP_EXTRA_INDEX_URL --build-arg PIP_INDEX_URL --build-arg PIP_DOWNLOAD_CACHE=/.cache/pip',
-                                                    args: '-v pipcache_hathivalidate:/.cache/pip',
-                                                ]
-                                            ],
-                                            retries: 3,
-                                            testSetup: {
-                                                checkout scm
-                                                unstash 'sdist'
-                                            },
-                                            testCommand: {
-                                                findFiles(glob: 'dist/*.tar.gz').each{
-                                                    sh(
-                                                        label: 'Running Tox',
-                                                        script: "tox --installpkg ${it.path} --workdir /tmp/tox -e py${pythonVersion.replace('.', '')}"
-                                                        )
-                                                }
-                                            },
-                                            post:[
-                                                cleanup: {
-                                                    cleanWs(
-                                                        patterns: [
-                                                                [pattern: 'dist/', type: 'INCLUDE'],
-                                                                [pattern: '**/__pycache__/', type: 'INCLUDE'],
-                                                            ],
-                                                        notFailBuild: true,
-                                                        deleteDirs: true
-                                                    )
-                                                },
-                                            ]
-                                        )
-                                    }
-                                    linuxTests["Linux ${arch} - Python ${pythonVersion}: wheel"] = {
-                                        testPythonPkg(
-                                            agent: [
-                                                dockerfile: [
-                                                    label: "linux && docker && ${arch}",
-                                                    filename: 'ci/docker/python/linux/tox/Dockerfile',
-                                                    additionalBuildArgs: '--build-arg PIP_EXTRA_INDEX_URL --build-arg PIP_INDEX_URL --build-arg PIP_DOWNLOAD_CACHE=/.cache/pip',
-                                                    args: '-v pipcache_hathivalidate:/.cache/pip',
-                                                ]
-                                            ],
-                                            testSetup: {
-                                                checkout scm
-                                                unstash 'wheel'
-                                            },
-                                            testCommand: {
-                                                findFiles(glob: 'dist/*.whl').each{
-                                                    timeout(5){
-                                                        sh(
-                                                            label: 'Running Tox',
-                                                            script: "tox --installpkg ${it.path} --workdir /tmp/tox -e py${pythonVersion.replace('.', '')}"
-                                                            )
-                                                    }
-                                                }
-                                            },
-                                            post:[
-                                                cleanup: {
-                                                    cleanWs(
-                                                        patterns: [
-                                                                [pattern: 'dist/', type: 'INCLUDE'],
-                                                                [pattern: '**/__pycache__/', type: 'INCLUDE'],
-                                                            ],
-                                                        notFailBuild: true,
-                                                        deleteDirs: true
-                                                    )
-                                                },
-                                                success: {
-                                                    archiveArtifacts artifacts: 'dist/*.whl'
-                                                },
-                                            ]
-                                        )
+                        }
+                        environment{
+                            UV_PYTHON="${PYTHON_VERSION}"
+                            TOX_ENV="py${PYTHON_VERSION.replace('.', '')}"
+                            UV_INDEX_STRATEGY='unsafe-best-match'
+                        }
+                        stages {
+                            stage('Test Package in container') {
+                                when{
+                                    expression{['linux', 'windows'].contains(OS)}
+                                    beforeAgent true
+                                }
+                                agent {
+                                    docker {
+                                        image 'python'
+                                        label "${OS} && ${ARCHITECTURE} && docker"
+                                        args "--mount source=python-tmp-hathivalidate,target=${['windows'].contains(OS) ? 'C:\\Users\\ContainerUser\\Documents': '/tmp'}"
                                     }
                                 }
-                            }
-                            def macTests = [:]
-                            SUPPORTED_MAC_VERSIONS.each{ pythonVersion ->
-                                def macArchitectures = []
-                                if(params.INCLUDE_MACOS_X86_64 == true){
-                                    macArchitectures.add('x86_64')
+                                environment{
+                                    PIP_CACHE_DIR="${isUnix() ? '/tmp/pipcache': 'C:\\Users\\ContainerUser\\Documents\\pipcache'}"
+                                    UV_TOOL_DIR="${isUnix() ? '/tmp/uvtools': 'C:\\Users\\ContainerUser\\Documents\\uvtools'}"
+                                    UV_PYTHON_INSTALL_DIR="${isUnix() ? '/tmp/uvpython': 'C:\\Users\\ContainerUser\\Documents\\uvpython'}"
+                                    UV_CACHE_DIR="${isUnix() ? '/tmp/uvcache': 'C:\\Users\\ContainerUser\\Documents\\uvcache'}"
                                 }
-                                if(params.INCLUDE_MACOS_ARM == true){
-                                    macArchitectures.add('arm64')
-                                }
-                                macArchitectures.each{ processorArchitecture ->
-                                    if (nodesByLabel("mac && ${processorArchitecture} && python${pythonVersion}").size() > 0){
-                                        macTests["Mac ${processorArchitecture} - Python ${pythonVersion}: sdist"] = {
-                                            testPythonPkg(
-                                                agent: [
-                                                    label: "mac && python${pythonVersion} && ${processorArchitecture}",
-                                                ],
-                                                testSetup: {
-                                                    checkout scm
-                                                    unstash 'sdist'
-                                                },
-                                                retries: 3,
-                                                testCommand: {
-                                                    findFiles(glob: 'dist/*.tar.gz').each{
-                                                        sh(label: 'Running Tox',
-                                                           script: """python${pythonVersion} -m venv venv
-                                                           ./venv/bin/python -m pip install --upgrade pip
-                                                           ./venv/bin/pip install "\$(grep -oE '^tox==.\\S+' ./requirements-dev.txt)"
-                                                           ./venv/bin/tox --installpkg ${it.path} -e py${pythonVersion.replace('.', '')}"""
+                                steps {
+                                    unstash 'PYTHON_PACKAGES'
+                                    script{
+                                        withEnv(
+                                            ["TOX_INSTALL_PKG=${findFiles(glob: PACKAGE_TYPE == 'wheel' ? 'dist/*.whl' : 'dist/*.tar.gz')[0].path}"]
+                                            ) {
+                                            if(isUnix()){
+                                                sh(
+                                                    label: 'Testing with tox',
+                                                    script: '''python3 -m venv venv
+                                                               . ./venv/bin/activate
+                                                               trap "rm -rf venv" EXIT
+                                                               pip install uv
+                                                               uvx --with tox-uv tox
+                                                            '''
+                                                )
+                                            } else {
+                                                bat(
+                                                    label: 'Install uv',
+                                                    script: '''python -m venv venv
+                                                               call venv\\Scripts\\activate.bat
+                                                               pip install uv
+                                                            '''
+                                                )
+                                                script{
+                                                    retry(3){
+                                                        bat(
+                                                            label: 'Testing with tox',
+                                                            script: '''call venv\\Scripts\\activate.bat
+                                                                       uvx --with tox-uv tox
+                                                                    '''
                                                         )
                                                     }
-                                                },
-                                                post:[
-                                                    cleanup: {
-                                                        cleanWs(
-                                                            patterns: [
-                                                                    [pattern: 'dist/', type: 'INCLUDE'],
-                                                                    [pattern: 'venv/', type: 'INCLUDE'],
-                                                                    [pattern: '.tox/', type: 'INCLUDE'],
-                                                                ],
-                                                            notFailBuild: true,
-                                                            deleteDirs: true
-                                                        )
-                                                    },
-                                                ]
-                                            )
-                                        }
-                                        macTests["Mac ${processorArchitecture} - Python ${pythonVersion}: wheel"] = {
-                                            testPythonPkg(
-                                                agent: [
-                                                    label: "mac && python${pythonVersion} && ${processorArchitecture}",
-                                                ],
-                                                retries: 3,
-                                                testCommand: {
-                                                    unstash 'wheel'
-                                                    findFiles(glob: 'dist/*.whl').each{
-                                                        sh(label: 'Running Tox',
-                                                           script: """python${pythonVersion} -m venv venv
-                                                                      . ./venv/bin/activate
-                                                                      python -m pip install --upgrade pip
-                                                                      ./venv/bin/pip install "\$(grep -oE '^tox==.\\S+' ./requirements-dev.txt)"
-                                                                      tox --installpkg ${it.path} -e py${pythonVersion.replace('.', '')}
-                                                                   """
-                                                        )
-                                                    }
-                                                },
-                                                post:[
-                                                    cleanup: {
-                                                        cleanWs(
-                                                            patterns: [
-                                                                    [pattern: 'dist/', type: 'INCLUDE'],
-                                                                    [pattern: 'venv/', type: 'INCLUDE'],
-                                                                    [pattern: '.tox/', type: 'INCLUDE'],
-                                                                ],
-                                                            notFailBuild: true,
-                                                            deleteDirs: true
-                                                        )
-                                                    },
-                                                    success: {
-                                                         archiveArtifacts artifacts: 'dist/*.whl'
-                                                    }
-                                                ]
-                                            )
+                                                }
+                                            }
                                         }
                                     }
                                 }
+                                post{
+                                    cleanup{
+                                        cleanWs(
+                                            patterns: [
+                                                [pattern: 'dist/', type: 'INCLUDE'],
+                                                [pattern: 'venv/', type: 'INCLUDE'],
+                                                [pattern: '**/__pycache__/', type: 'INCLUDE'],
+                                                ]
+                                        )
+                                    }
+                                }
                             }
-                            parallel(linuxTests + windowsTests + macTests)
+                            stage('Test Package directly on agent') {
+                                when{
+                                    expression{['macos'].contains(OS)}
+                                    beforeAgent true
+                                }
+                                agent {
+                                    label "${OS} && ${ARCHITECTURE}"
+                                }
+                                steps {
+                                    unstash 'PYTHON_PACKAGES'
+                                    withEnv(
+                                        ["TOX_INSTALL_PKG=${findFiles(glob: PACKAGE_TYPE == 'wheel' ? 'dist/*.whl' : 'dist/*.tar.gz')[0].path}"]
+                                        ) {
+                                        sh(
+                                            label: 'Testing with tox',
+                                            script: '''python3 -m venv venv
+                                                       trap "rm -rf venv" EXIT
+                                                       . ./venv/bin/activate
+                                                       pip install uv
+                                                       uvx --with tox-uv tox
+                                                    '''
+                                        )
+                                    }
+                                }
+                                post{
+                                    cleanup{
+                                        cleanWs(
+                                            patterns: [
+                                                [pattern: 'dist/', type: 'INCLUDE'],
+                                                [pattern: 'venv/', type: 'INCLUDE'],
+                                                [pattern: '**/__pycache__/', type: 'INCLUDE'],
+                                                ]
+                                        )
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -748,10 +792,18 @@ pipeline {
         stage('Deploy'){
             parallel {
                 stage('Deploy to pypi') {
+                    environment{
+                        PIP_CACHE_DIR='/tmp/pipcache'
+                        UV_INDEX_STRATEGY='unsafe-best-match'
+                        UV_TOOL_DIR='/tmp/uvtools'
+                        UV_PYTHON_INSTALL_DIR='/tmp/uvpython'
+                        UV_CACHE_DIR='/tmp/uvcache'
+                    }
                     agent {
-                        dockerfile {
-                            filename 'ci/docker/python/linux/jenkins/Dockerfile'
-                            label 'linux&&docker'
+                        docker{
+                            image 'python'
+                            label 'docker && linux'
+                            args '--mount source=python-tmp-hathivalidate,target=/tmp'
                         }
                     }
                     when{
@@ -777,13 +829,32 @@ pipeline {
                         }
                     }
                     steps{
-                        unstash 'sdist'
-                        unstash 'wheel'
-                        pypiUpload(
-                            credentialsId: 'jenkins-nexus',
-                            repositoryUrl: SERVER_URL,
-                            glob: 'dist/*'
-                            )
+                        unstash 'PYTHON_PACKAGES'
+                        withEnv(
+                            [
+                                "TWINE_REPOSITORY_URL=${SERVER_URL}",
+                                'UV_INDEX_STRATEGY=unsafe-best-match'
+                            ]
+                        ){
+                            withCredentials(
+                                [
+                                    usernamePassword(
+                                        credentialsId: 'jenkins-nexus',
+                                        passwordVariable: 'TWINE_PASSWORD',
+                                        usernameVariable: 'TWINE_USERNAME'
+                                    )
+                                ]){
+                                    sh(
+                                        label: 'Uploading to pypi',
+                                        script: '''python3 -m venv venv
+                                                   trap "rm -rf venv" EXIT
+                                                   . ./venv/bin/activate
+                                                   pip install uv
+                                                   uvx --with-requirements=requirements-dev.txt twine --installpkg upload --disable-progress-bar --non-interactive dist/*
+                                                '''
+                                    )
+                            }
+                        }
                     }
                     post{
                         cleanup{
@@ -802,10 +873,18 @@ pipeline {
                         beforeAgent true
                         beforeInput true
                     }
+                    environment{
+                        PIP_CACHE_DIR='/tmp/pipcache'
+                        UV_INDEX_STRATEGY='unsafe-best-match'
+                        UV_TOOL_DIR='/tmp/uvtools'
+                        UV_PYTHON_INSTALL_DIR='/tmp/uvpython'
+                        UV_CACHE_DIR='/tmp/uvcache'
+                    }
                     agent {
-                        dockerfile {
-                            filename 'ci/docker/python/linux/jenkins/Dockerfile'
-                            label 'linux && docker'
+                        docker{
+                            image 'python'
+                            label 'docker && linux'
+                            args '--mount source=python-tmp-hathivalidate,target=/tmp'
                         }
                     }
                     options{
