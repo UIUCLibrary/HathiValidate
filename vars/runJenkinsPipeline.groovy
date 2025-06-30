@@ -25,24 +25,22 @@ def startup(){
             'Getting Distribution Info': {
                 node('linux && docker') {
                     timeout(2){
-                        ws{
-                            checkout scm
-                            try{
-                                docker.image('python').inside {
-                                    withEnv(['PIP_NO_CACHE_DIR=off']) {
-                                        sh(
-                                           label: 'Running setup.py with dist_info',
-                                           script: '''python --version
-                                                      python setup.py dist_info
-                                                   '''
-                                        )
-                                    }
-                                    stash includes: '*.dist-info/**', name: 'DIST-INFO'
-                                    archiveArtifacts artifacts: '*.dist-info/**'
+                        checkout scm
+                        try{
+                            docker.image('python').inside {
+                                withEnv(['PIP_NO_CACHE_DIR=off']) {
+                                    sh(
+                                       label: 'Running setup.py with dist_info',
+                                       script: '''python --version
+                                                  python setup.py dist_info
+                                               '''
+                                    )
                                 }
-                            } finally{
-                                deleteDir()
+                                stash includes: '*.dist-info/**', name: 'DIST-INFO'
+                                archiveArtifacts artifacts: '*.dist-info/**'
                             }
+                        } finally{
+                            deleteDir()
                         }
                     }
                 }
@@ -439,9 +437,9 @@ def call(){
                                     script{
                                         def envs = []
                                         node('docker && linux'){
+                                            checkout scm
                                             docker.image('python').inside('--mount source=python-tmp-hathivalidate,target=/tmp'){
                                                 try{
-                                                    checkout scm
                                                     sh(script: 'python3 -m venv venv && venv/bin/pip install --disable-pip-version-check uv')
                                                     envs = sh(
                                                         label: 'Get tox environments',
@@ -466,8 +464,8 @@ def call(){
                                                     "Tox Environment: ${toxEnv}",
                                                     {
                                                         node('docker && linux'){
+                                                            checkout scm
                                                             docker.image('python').inside('--mount source=python-tmp-hathivalidate,target=/tmp'){
-                                                                checkout scm
                                                                 try{
                                                                     sh( label: 'Running Tox',
                                                                         script: """python3 -m venv venv && venv/bin/pip install --disable-pip-version-check uv
@@ -515,10 +513,10 @@ def call(){
                                     script{
                                         def envs = []
                                         node('docker && windows'){
+                                            checkout scm
                                             docker.image(env.DEFAULT_PYTHON_DOCKER_IMAGE ? env.DEFAULT_PYTHON_DOCKER_IMAGE: 'python').inside("--mount type=volume,source=uv_python_install_dir,target=${env.UV_PYTHON_INSTALL_DIR}"){
 
                                                 try{
-                                                    checkout scm
                                                     bat(script: 'python -m venv venv && venv\\Scripts\\pip install --disable-pip-version-check uv')
                                                     envs = bat(
                                                         label: 'Get tox environments',
@@ -543,8 +541,8 @@ def call(){
                                                     "Tox Environment: ${toxEnv}",
                                                     {
                                                         node('docker && windows'){
+                                                            checkout scm
                                                             docker.image(env.DEFAULT_PYTHON_DOCKER_IMAGE ? env.DEFAULT_PYTHON_DOCKER_IMAGE: 'python').inside("--mount type=volume,source=uv_python_install_dir,target=${env.UV_PYTHON_INSTALL_DIR}"){
-                                                                checkout scm
                                                                 try{
                                                                     bat(label: 'Install uv',
                                                                         script: 'python -m venv venv && venv\\Scripts\\pip install --disable-pip-version-check uv'
