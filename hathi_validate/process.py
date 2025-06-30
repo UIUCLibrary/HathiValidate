@@ -11,13 +11,11 @@ import re
 from typing import Tuple, Iterator, List, Dict, Any, Generator, Optional
 import yaml
 from lxml import etree
-try:
-    from importlib.resources import read_text  # type: ignore
-except ImportError:
-    from importlib_resources import read_text   # type: ignore
 
+from importlib.resources import files
 
 from hathi_validate import result
+from hathi_validate import xsd as hathi_xsd
 from . import validator
 
 DIRECTORY_REGEX = \
@@ -189,10 +187,11 @@ def find_errors_marc(filename: str) -> result.ResultSummary:
 
     """
     summary_builder = result.SummaryDirector(source=filename)
-
     scheme = etree.XMLSchema(
         etree.XML(
-            read_text("hathi_validate.xsd", "MARC21slim.xsd").encode("utf-8")
+            files(hathi_xsd)
+            .joinpath("MARC21slim.xsd")
+            .read_bytes()
         )
     )
 
@@ -443,20 +442,17 @@ def find_errors_ocr(path: str) -> result.ResultSummary:
         return True
 
     logger = logging.getLogger(__name__)
-
     alto_scheme = etree.XMLSchema(
         etree.XML(
-            read_text("hathi_validate.xsd", "alto.xsd").encode("utf-8")
+            files(hathi_xsd).joinpath("alto.xsd").read_bytes()
         )
     )
 
     summary_builder = result.SummaryDirector(source=path)
     for xml_file in filter(ocr_filter, os.scandir(path)):
         try:
-            with open(xml_file.path, "r", encoding="utf8") as file_handle:
-                raw_data = file_handle.read()
-
-            doc = etree.fromstring(raw_data.encode("utf8"))
+            with open(xml_file.path, "r") as file_handle:
+                doc = etree.fromstring(file_handle.read().encode("utf-8"))
 
             if not alto_scheme.validate(doc):
                 summary_builder.add_error(
