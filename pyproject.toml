@@ -37,6 +37,7 @@ packages = [
     "hathi_validate.xsd",
 ]
 zip-safe = false
+package-dir = {"" = "src"}
 
 [tool.setuptools.package-data]
 hathi_validate = ["xsd/*.xsd", "py.typed"]
@@ -46,11 +47,11 @@ hathivalidate = "hathi_validate.cli:main"
 
 [tool.coverage.run]
 branch = true
-source = ["hathi_validate"]
+source = ["src"]
 relative_files = true
 
 [tool.coverage.paths]
-source = ["hathi_validate"]
+source = ["src"]
 
 [tool.coverage.report]
 exclude_lines =[

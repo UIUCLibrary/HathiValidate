@@ -22,7 +22,7 @@ import re
 import sys
 import tomllib
 
-sys.path.insert(0, os.path.abspath('../..'))
+sys.path.insert(0, os.path.abspath('../../src'))
 
 def get_project_metadata():
     path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../pyproject.toml"))

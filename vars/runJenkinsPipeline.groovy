@@ -177,7 +177,7 @@ def call(){
                                                     sh(
                                                         label: 'Running pytest',
                                                         script: '''. ./venv/bin/activate
-                                                                   coverage run --parallel-mode --source=hathi_validate -m pytest --junitxml=./reports/pytest-junit.xml -p no:cacheprovider
+                                                                   coverage run --parallel-mode --source=src -m pytest --junitxml=./reports/pytest-junit.xml -p no:cacheprovider
                                                                 '''
                                                     )
 
@@ -211,7 +211,7 @@ def call(){
                                                     catchError(buildResult: 'SUCCESS', message: 'flake8 found some warnings', stageResult: 'UNSTABLE') {
                                                         sh(label: 'Running flake8',
                                                            script: '''. ./venv/bin/activate
-                                                                      flake8 hathi_validate --tee --output-file=logs/flake8.log
+                                                                      flake8 src --tee --output-file=logs/flake8.log
                                                                    '''
                                                         )
                                                     }
@@ -225,7 +225,7 @@ def call(){
                                             }
                                             stage('Task Scanner'){
                                                 steps{
-                                                    recordIssues(tools: [taskScanner(highTags: 'FIXME', includePattern: 'hathi_validate/**/*.py', normalTags: 'TODO')])
+                                                    recordIssues(tools: [taskScanner(highTags: 'FIXME', includePattern: 'src/hathi_validate/**/*.py', normalTags: 'TODO')])
                                                 }
                                             }
                                             stage('Behave') {
@@ -233,7 +233,7 @@ def call(){
                                                     catchError(buildResult: 'UNSTABLE', message: 'Did not pass all Behave BDD tests', stageResult: 'UNSTABLE') {
                                                         sh(
                                                             script: '''. ./venv/bin/activate
-                                                                       coverage run --parallel-mode --source=hathi_validate -m behave --junit --junit-directory reports/tests/behave
+                                                                       coverage run --parallel-mode --source=src -m behave --junit --junit-directory reports/tests/behave
                                                                     '''
                                                         )
                                                     }
@@ -252,7 +252,7 @@ def call(){
                                                                 label: 'Run pydocstyle',
                                                                 script: '''. ./venv/bin/activate
                                                                            mkdir -p reports
-                                                                           pydocstyle hathi_validate
+                                                                           pydocstyle src/hathi_validate
                                                                         '''
                                                             )
                                                         }
