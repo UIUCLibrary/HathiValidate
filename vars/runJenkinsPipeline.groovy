@@ -564,14 +564,10 @@ def call(){
                                             '''
                                 )
                             }
+                            stash includes: 'dist/*.whl,dist/*.tar.gz,dist/*.zip', name: 'PYTHON_PACKAGES'
+                            archiveArtifacts artifacts: 'dist/*.whl,dist/*.tar.gz,dist/*.zip', fingerprint: true
                         }
                         post{
-                            success{
-                                archiveArtifacts artifacts: 'dist/*.whl,dist/*.tar.gz,dist/*.zip', fingerprint: true
-                            }
-                            always{
-                                stash includes: 'dist/*.whl,dist/*.tar.gz,dist/*.zip', name: 'PYTHON_PACKAGES'
-                            }
                             cleanup{
                                 cleanWs(
                                     deleteDirs: true,
