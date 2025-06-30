@@ -1,6 +1,5 @@
 behave
 coverage
-importlib_resources;python_version<"3.9"
 flake8
 lxml<6.0; sys_platform != 'darwin' or python_version != '3.8' or platform_machine != 'arm64'
 mypy
