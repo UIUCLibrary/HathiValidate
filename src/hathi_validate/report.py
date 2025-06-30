@@ -5,7 +5,6 @@ from typing import Iterator, IO, List, Generator
 import itertools
 import sys
 import logging
-import warnings
 
 from hathi_validate import result
 
@@ -188,22 +187,6 @@ class AbsReport(metaclass=abc.ABCMeta):
             results:
 
         """
-
-
-class Report:
-    """Report.
-
-    This was deprecated. Use reporter class instead
-    """
-
-    def __init__(self, report_strategy: AbsReport) -> None:
-        """Use reporter class instead."""
-        warnings.warn("Use reporter class instead", DeprecationWarning)
-        self._strategy = report_strategy
-
-    def generate(self, results: List[result.Result]) -> None:
-        """Generate the report."""
-        self._strategy.generate(results)
 
 
 class ConsoleReport(AbsReport):
