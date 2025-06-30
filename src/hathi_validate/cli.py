@@ -4,17 +4,13 @@ import logging
 import argparse
 
 import abc
+from importlib import metadata
 import sys
 import os
 from typing import List, Optional
 
 from hathi_validate import package, process, configure_logging, report, \
     validator, manifest, result
-
-try:
-    from importlib import metadata
-except ImportError:
-    import importlib_metadata as metadata  # type: ignore  # noqa
 
 
 def get_parser() -> argparse.ArgumentParser:

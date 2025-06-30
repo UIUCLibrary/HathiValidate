@@ -39,3 +39,14 @@ def multiple_summary():
 
 def test_multiple_summary_size(multiple_summary):
     assert len(multiple_summary) == 2
+
+class TestResult:
+    def test_str_with_no_source(self):
+        my_result = result.Result("dummy")
+        my_result.source = None
+        assert str(my_result) =='Result[dummy]""'
+
+    def test_str_with_source(self):
+        my_result = result.Result("dummy")
+        my_result.source = "spam"
+        assert str(my_result) =='Result[dummy]spam: ""'
