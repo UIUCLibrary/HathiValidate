@@ -358,15 +358,21 @@ def call(){
                                                     if (sonarqube_result.status != 'OK') {
                                                         unstable "SonarQube quality gate: ${sonarqube_result.status}"
                                                     }
-                                                    def outstandingIssues = get_sonarqube_unresolved_issues('.scannerwork/report-task.txt')
-                                                    writeJSON file: 'reports/sonar-report.json', json: outstandingIssues
+                                                    if(env.BRANCH_IS_PRIMARY){
+                                                        def outstandingIssues = get_sonarqube_unresolved_issues('.scannerwork/report-task.txt')
+                                                        writeJSON file: 'reports/sonar-report.json', json: outstandingIssues
+                                                    }
                                                 }
                                                 milestone label: 'sonarcloud'
                                             }
                                         }
                                         post {
                                             always{
-                                                recordIssues(tools: [sonarQube(pattern: 'reports/sonar-report.json')])
+                                                script{
+                                                    if(env.BRANCH_IS_PRIMARY){
+                                                        recordIssues(tools: [sonarQube(pattern: 'reports/sonar-report.json')])
+                                                    }
+                                                }
                                             }
                                         }
                                     }
