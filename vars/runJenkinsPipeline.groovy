@@ -139,11 +139,11 @@ def call(){
                                     UV_PYTHON_INSTALL_DIR='/tmp/uvpython'
                                     UV_CACHE_DIR='/tmp/uvcache'
                                 }
-                                options {
-                                  retry(conditions: [agent()], count: 3)
-                                }
                                 stages{
                                     stage('Setup Testing Environment'){
+                                        options {
+                                            retry(3)
+                                        }
                                         steps{
                                             sh(
                                                 label: 'Create virtual environment',
@@ -168,6 +168,16 @@ def call(){
                                                     mkdir -p reports
                                                     '''
                                                )
+                                        }
+                                        post{
+                                            failure{
+                                                cleanWs(
+                                                    patterns: [
+                                                        [pattern: 'venv', type: 'INCLUDE'],
+                                                        [pattern: 'bootstrap_uv', type: 'INCLUDE'],
+                                                    ]
+                                                )
+                                            }
                                         }
                                     }
                                     stage('Running Tests') {
