@@ -99,7 +99,6 @@ def call(){
                         }
                         environment{
                             PIP_CACHE_DIR='/tmp/pipcache'
-                            UV_INDEX_STRATEGY='unsafe-best-match'
                             UV_TOOL_DIR='/tmp/uvtools'
                             UV_PYTHON_INSTALL_DIR='/tmp/uvpython'
                             UV_CACHE_DIR='/tmp/uvcache'
@@ -170,7 +169,6 @@ def call(){
                                 }
                                 environment{
                                     PIP_CACHE_DIR='/tmp/pipcache'
-                                    UV_INDEX_STRATEGY='unsafe-best-match'
                                     UV_TOOL_DIR='/tmp/uvtools'
                                     UV_PYTHON_INSTALL_DIR='/tmp/uvpython'
                                     UV_CACHE_DIR='/tmp/uvcache'
@@ -413,7 +411,6 @@ def call(){
                                 }
                                 environment{
                                      PIP_CACHE_DIR='/tmp/pipcache'
-                                     UV_INDEX_STRATEGY='unsafe-best-match'
                                      UV_TOOL_DIR='/tmp/uvtools'
                                      UV_PYTHON_INSTALL_DIR='/tmp/uvpython'
                                      UV_CACHE_DIR='/tmp/uvcache'
@@ -484,7 +481,6 @@ def call(){
                                     expression {return nodesByLabel('windows && docker && x86').size() > 0}
                                 }
                                 environment{
-                                     UV_INDEX_STRATEGY='unsafe-best-match'
                                      PIP_CACHE_DIR='C:\\Users\\ContainerUser\\Documents\\cache\\pipcache'
                                      UV_TOOL_DIR='C:\\Users\\ContainerUser\\Documents\\uvtools'
                                      UV_PYTHON_INSTALL_DIR='C:\\Users\\ContainerUser\\Documents\\cache\\uvpython'
@@ -585,7 +581,6 @@ def call(){
                         }
                         environment{
                             PIP_CACHE_DIR='/tmp/pipcache'
-                            UV_INDEX_STRATEGY='unsafe-best-match'
                             UV_CACHE_DIR='/tmp/uvcache'
                             UV_FROZEN='1'
                             UV_CONFIG_FILE=createUnixUvConfig()
@@ -625,9 +620,6 @@ def call(){
                     stage('Testing Packages'){
                         when{
                             equals expected: true, actual: params.TEST_PACKAGES
-                        }
-                        environment{
-                            UV_INDEX_STRATEGY='unsafe-best-match'
                         }
                         steps{
                             customMatrix(
@@ -761,7 +753,6 @@ def call(){
                     stage('Deploy to pypi') {
                         environment{
                             PIP_CACHE_DIR='/tmp/pipcache'
-                            UV_INDEX_STRATEGY='unsafe-best-match'
                             UV_TOOL_DIR='/tmp/uvtools'
                             UV_PYTHON_INSTALL_DIR='/tmp/uvpython'
                             UV_CACHE_DIR='/tmp/uvcache'
@@ -797,28 +788,22 @@ def call(){
                         }
                         steps{
                             unstash 'PYTHON_PACKAGES'
-                            withEnv(
-                                [
-                                    "TWINE_REPOSITORY_URL=${SERVER_URL}",
-                                    'UV_INDEX_STRATEGY=unsafe-best-match'
-                                ]
-                            ){
-                                withCredentials(
-                                    [
-                                        usernamePassword(
-                                            credentialsId: 'jenkins-nexus',
-                                            passwordVariable: 'TWINE_PASSWORD',
-                                            usernameVariable: 'TWINE_USERNAME'
-                                        )
-                                    ]){
-                                        sh(
-                                            label: 'Uploading to pypi',
-                                            script: '''python3 -m venv venv
-                                                       trap "rm -rf venv" EXIT
-                                                       ./venv/bin/pip install --disable-pip-version-check uv
-                                                       ./venv/bin/uv run --no-dev --only-group publish twine --installpkg upload --disable-progress-bar --non-interactive dist/*
-                                                    '''
-                                        )
+                            withEnv(["TWINE_REPOSITORY_URL=${SERVER_URL}"]){
+                                withCredentials([
+                                    usernamePassword(
+                                        credentialsId: 'jenkins-nexus',
+                                        passwordVariable: 'TWINE_PASSWORD',
+                                        usernameVariable: 'TWINE_USERNAME'
+                                    )
+                                ]){
+                                    sh(
+                                        label: 'Uploading to pypi',
+                                        script: '''python3 -m venv venv
+                                                   trap "rm -rf venv" EXIT
+                                                   ./venv/bin/pip install --disable-pip-version-check uv
+                                                   ./venv/bin/uv run --no-dev --only-group publish twine --installpkg upload --disable-progress-bar --non-interactive dist/*
+                                                '''
+                                    )
                                 }
                             }
                         }
@@ -841,7 +826,6 @@ def call(){
                         }
                         environment{
                             PIP_CACHE_DIR='/tmp/pipcache'
-                            UV_INDEX_STRATEGY='unsafe-best-match'
                             UV_TOOL_DIR='/tmp/uvtools'
                             UV_PYTHON_INSTALL_DIR='/tmp/uvpython'
                             UV_CACHE_DIR='/tmp/uvcache'
