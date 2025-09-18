@@ -25,10 +25,33 @@ classifiers = [
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
 ]
-
 [project.urls]
 Documentation = "https://www.library.illinois.edu/dccdocs/hathi_validate"
 Download = "https://github.com/UIUCLibrary/HathiValidate"
+
+[dependency-groups]
+publish = ["twine"]
+tox = ["tox"]
+docs = ["sphinx"]
+test =["pytest", "behave"]
+dev = [
+    "coverage",
+    "flake8",
+    "lxml<6.0; sys_platform != 'darwin' or python_version != '3.8' or platform_machine != 'arm64'",
+    "mypy",
+    "paramiko",
+    "pep517",
+    "pydocstyle",
+    "pylint",
+    "PyYAML",
+    "setuptools>=30.3.0",
+    {include-group = "test"},
+    {include-group = "docs"},
+    {include-group = "tox"},
+    {include-group = "publish"},
+    "types-PyYAML"
+]
+ci = ["pysonar", {include-group = "dev"}]
 
 [tool.setuptools]
 packages = [
