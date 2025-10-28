@@ -9,7 +9,7 @@ dependencies = [
     "lxml<6.0; sys_platform != 'darwin' or python_version != '3.8' or platform_machine != 'arm64'",
     "PyYAML",
     ]
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 readme = "README.rst"
 license = "NCSA"
 license-files = ["LICENSE"]
@@ -22,8 +22,7 @@ maintainers = [
 description = "Replacement for older scripts for validating Hathi Trust Packages"
 classifiers = [
     "Development Status :: 4 - Beta",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
 ]
 [project.urls]
 Documentation = "https://www.library.illinois.edu/dccdocs/hathi_validate"
@@ -37,7 +36,7 @@ test =["pytest", "behave"]
 dev = [
     "coverage",
     "flake8",
-    "lxml<6.0; sys_platform != 'darwin' or python_version != '3.8' or platform_machine != 'arm64'",
+    "lxml",
     "mypy",
     "paramiko",
     "pep517",
