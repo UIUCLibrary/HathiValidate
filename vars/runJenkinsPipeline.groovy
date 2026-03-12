@@ -94,13 +94,13 @@ def call(){
                             docker{
                                 image 'python'
                                 label 'docker && linux && x86_64' // needed for pysonar-scanner which is x86_64 only as of 0.2.0.520
-                                args '--mount source=python-tmp-hathivalidate,target=/tmp'
+                                args '--mount source=python-tmp-hathivalidate,target=/tmp --tmpfs /.local/share:exec'
                             }
                         }
                         environment{
                             PIP_CACHE_DIR='/tmp/pipcache'
                             UV_TOOL_DIR='/tmp/uvtools'
-                            UV_PYTHON_INSTALL_DIR='/tmp/uvpython'
+                            UV_PYTHON_CACHE_DIR='/tmp/uvpython'
                             UV_CACHE_DIR='/tmp/uvcache'
                             UV_PYTHON='3.12'
                             UV_CONFIG_FILE=createUnixUvConfig()
@@ -164,13 +164,13 @@ def call(){
                                     docker{
                                         image 'python'
                                         label 'docker && linux && x86_64' // needed for pysonar-scanner which is x86_64 only as of 0.2.0.520
-                                        args '--mount source=python-tmp-hathivalidate,target=/tmp'
+                                        args '--mount source=python-tmp-hathivalidate,target=/tmp --tmpfs /.local/share:exec'
                                     }
                                 }
                                 environment{
                                     PIP_CACHE_DIR='/tmp/pipcache'
                                     UV_TOOL_DIR='/tmp/uvtools'
-                                    UV_PYTHON_INSTALL_DIR='/tmp/uvpython'
+                                    UV_PYTHON_CACHE_DIR='/tmp/uvpython'
                                     UV_CACHE_DIR='/tmp/uvcache'
                                     UV_PROJECT_ENVIRONMENT='./venv'
                                     UV_CONFIG_FILE=createUnixUvConfig()
@@ -412,7 +412,7 @@ def call(){
                                 environment{
                                      PIP_CACHE_DIR='/tmp/pipcache'
                                      UV_TOOL_DIR='/tmp/uvtools'
-                                     UV_PYTHON_INSTALL_DIR='/tmp/uvpython'
+                                     UV_PYTHON_CACHE_DIR='/tmp/uvpython'
                                      UV_CACHE_DIR='/tmp/uvcache'
                                 }
                                 steps{
@@ -445,7 +445,7 @@ def call(){
                                                             checkout scm
                                                             withEnv(["UV_CONFIG_FILE=${createUnixUvConfig()}"]){
                                                                 try{
-                                                                    docker.image('python').inside('--mount source=python-tmp-hathivalidate,target=/tmp'){
+                                                                    docker.image('python').inside('--mount source=python-tmp-hathivalidate,target=/tmp --tmpfs /.local/share:exec'){
                                                                         retry(3){
                                                                             try{
                                                                                 sh( label: 'Running Tox',
@@ -483,7 +483,7 @@ def call(){
                                 environment{
                                      PIP_CACHE_DIR='C:\\Users\\ContainerUser\\Documents\\cache\\pipcache'
                                      UV_TOOL_DIR='C:\\Users\\ContainerUser\\Documents\\uvtools'
-                                     UV_PYTHON_INSTALL_DIR='C:\\Users\\ContainerUser\\Documents\\cache\\uvpython'
+                                     UV_PYTHON_CACHE_DIR='C:\\Users\\ContainerUser\\Documents\\cache\\uvpython'
                                      UV_CACHE_DIR='C:\\Users\\ContainerUser\\Documents\\cache\\uvcache'
                                 }
                                 steps{
@@ -495,7 +495,7 @@ def call(){
                                                 try{
                                                     docker.image(env.DEFAULT_PYTHON_DOCKER_IMAGE ? env.DEFAULT_PYTHON_DOCKER_IMAGE: 'python')
                                                         .inside(
-                                                            "--mount type=volume,source=uv_python_install_dir,target=${env.UV_PYTHON_INSTALL_DIR}"
+                                                            "--mount type=volume,source=uv_python_cache_dir,target=${env.UV_PYTHON_CACHE_DIR}"
                                                          + " --mount type=volume,source=pipcache,target=${env.PIP_CACHE_DIR}"
                                                          + " --mount type=volume,source=uv_cache_dir,target=${env.UV_CACHE_DIR}"
                                                         ){
@@ -523,7 +523,7 @@ def call(){
                                                                 try{
                                                                     docker.image(env.DEFAULT_PYTHON_DOCKER_IMAGE ? env.DEFAULT_PYTHON_DOCKER_IMAGE: 'python')
                                                                         .inside(
-                                                                            "--mount type=volume,source=uv_python_install_dir,target=${env.UV_PYTHON_INSTALL_DIR}"
+                                                                            "--mount type=volume,source=uv_python_cache_dir,target=${env.UV_PYTHON_CACHE_DIR}"
                                                                          + " --mount type=volume,source=pipcache,target=${env.PIP_CACHE_DIR}"
                                                                          + " --mount type=volume,source=uv_cache_dir,target=${env.UV_CACHE_DIR}"
                                                                         ){
@@ -666,8 +666,8 @@ def call(){
                                                             docker.image(env.DEFAULT_PYTHON_DOCKER_IMAGE ? env.DEFAULT_PYTHON_DOCKER_IMAGE: 'python')
                                                                 .inside(
                                                                     isUnix() ?
-                                                                        '--mount source=python-tmp-hathivalidate,target=/tmp' :
-                                                                        '--mount type=volume,source=uv_python_install_dir,target=C:\\Users\\ContainerUser\\Documents\\cache\\uvpython'
+                                                                        '--mount source=python-tmp-hathivalidate,target=/tmp --tmpfs /.local/share:exec' :
+                                                                        '--mount type=volume,source=uv_python_cache_dir,target=C:\\Users\\ContainerUser\\Documents\\cache\\uvpython'
                                                                         + ' --mount type=volume,source=pipcache,target=C:\\Users\\ContainerUser\\Documents\\cache\\pipcache'
                                                                         + ' --mount type=volume,source=uv_cache_dir,target=C:\\Users\\ContainerUser\\Documents\\cache\\uvcache'
                                                                 ){
@@ -675,7 +675,7 @@ def call(){
                                                                     withEnv([
                                                                         'PIP_CACHE_DIR=/tmp/pipcache',
                                                                         'UV_TOOL_DIR=/tmp/uvtools',
-                                                                        'UV_PYTHON_INSTALL_DIR=/tmp/uvpython',
+                                                                        'UV_PYTHON_CACHE_DIR=/tmp/uvpython',
                                                                         'UV_CACHE_DIR=/tmp/uvcache',
                                                                         "UV_CONFIG_FILE=${createUnixUvConfig()}"
                                                                     ]){
@@ -692,7 +692,7 @@ def call(){
                                                                     withEnv([
                                                                         'PIP_CACHE_DIR=C:\\Users\\ContainerUser\\Documents\\cache\\pipcache',
                                                                         'UV_TOOL_DIR=C:\\Users\\ContainerUser\\Documents\\uvtools',
-                                                                        'UV_PYTHON_INSTALL_DIR=C:\\Users\\ContainerUser\\Documents\\cache\\uvpython',
+                                                                        'UV_PYTHON_CACHE_DIR=C:\\Users\\ContainerUser\\Documents\\cache\\uvpython',
                                                                         'UV_CACHE_DIR=C:\\Users\\ContainerUser\\Documents\\cache\\uvcache',
                                                                         "UV_CONFIG_FILE=${createWindowUVConfig()}",
                                                                     ]){
@@ -754,7 +754,7 @@ def call(){
                         environment{
                             PIP_CACHE_DIR='/tmp/pipcache'
                             UV_TOOL_DIR='/tmp/uvtools'
-                            UV_PYTHON_INSTALL_DIR='/tmp/uvpython'
+                            UV_PYTHON_CACHE_DIR='/tmp/uvpython'
                             UV_CACHE_DIR='/tmp/uvcache'
                         }
                         agent {
@@ -827,7 +827,7 @@ def call(){
                         environment{
                             PIP_CACHE_DIR='/tmp/pipcache'
                             UV_TOOL_DIR='/tmp/uvtools'
-                            UV_PYTHON_INSTALL_DIR='/tmp/uvpython'
+                            UV_PYTHON_CACHE_DIR='/tmp/uvpython'
                             UV_CACHE_DIR='/tmp/uvcache'
                         }
                         agent {
