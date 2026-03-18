@@ -85,9 +85,6 @@ def call(){
                         equals expected: true, actual: params.DEPLOY_DOCS
                     }
                 }
-                environment{
-                    UV_FROZEN='1'
-                }
                 stages{
                     stage('Build Documentation'){
                         agent {
@@ -104,6 +101,7 @@ def call(){
                             UV_CACHE_DIR='/tmp/uvcache'
                             UV_PYTHON='3.12'
                             UV_CONFIG_FILE=createUnixUvConfig()
+                            UV_FROZEN='1'
                         }
                         options {
                             retry(3)
@@ -145,6 +143,7 @@ def call(){
                         }
                         environment{
                             UV_PYTHON='3.12'
+                            UV_FROZEN='1'
                         }
                         stages{
                             stage('Code Quality'){
@@ -390,9 +389,6 @@ def call(){
                         when{
                             equals expected: true, actual: params.TEST_RUN_TOX
                         }
-                        environment{
-                            UV_FROZEN='1'
-                        }
                         parallel{
                             stage('Linux'){
                                 when{
@@ -414,7 +410,7 @@ def call(){
                                                     docker.image('ghcr.io/astral-sh/uv:debian').inside('--mount source=python-tmp-hathivalidate,target=/tmp --tmpfs /ci_tmp:exec -e TOX_WORK_DIR=/ci_tmp/tox -e UV_PROJECT_ENVIRONMENT=/ci_tmp/venv'){
                                                         envs = sh(
                                                             label: 'Get tox environments',
-                                                            script: 'uv run --isolated --only-group=tox --no-dev --quiet tox list -d --no-desc',
+                                                            script: 'uv run --isolated --only-group=tox --frozen --quiet tox list -d --no-desc',
                                                             returnStdout: true,
                                                         ).trim().split('\n')
                                                     }
@@ -438,7 +434,7 @@ def call(){
                                                                             try{
                                                                                 sh( label: 'Running Tox',
                                                                                     script: """uv python install cpython-${version}
-                                                                                               uv run -p ${version} --no-dev --only-group=tox-uv tox run --runner uv-venv-lock-runner -e ${toxEnv}
+                                                                                               uv run -p ${version} --frozen --only-group=tox-uv tox run --runner uv-venv-lock-runner -e ${toxEnv}
                                                                                             """
                                                                                     )
                                                                             } catch(e) {
@@ -489,7 +485,7 @@ def call(){
                                                         bat(script: 'python -m venv venv && venv\\Scripts\\pip install --disable-pip-version-check uv')
                                                         envs = bat(
                                                             label: 'Get tox environments',
-                                                            script: '@.\\venv\\Scripts\\uv run --isolated --only-group tox --no-dev --quiet tox list -d --no-desc',
+                                                            script: '@.\\venv\\Scripts\\uv run --isolated --only-group tox --frozen --quiet tox list -d --no-desc',
                                                             returnStdout: true,
                                                         ).trim().split('\r\n')
                                                     }
@@ -521,7 +517,7 @@ def call(){
                                                                             try{
                                                                                 bat(label: 'Running Tox',
                                                                                     script: """venv\\Scripts\\uv python install cpython-${version}
-                                                                                               venv\\Scripts\\uv run -p ${version} --no-dev --only-group=tox-uv tox run --runner uv-venv-lock-runner -e ${toxEnv}
+                                                                                               venv\\Scripts\\uv run -p ${version} --frozen --only-group=tox-uv tox run --runner uv-venv-lock-runner -e ${toxEnv}
                                                                                             """
                                                                                 )
                                                                             } catch(e){
@@ -610,7 +606,7 @@ def call(){
                                 axes: [
                                     [
                                         name: 'PYTHON_VERSION',
-                                        values: ['3.10', '3.11', '3.12', '3.13', '3.14']
+                                        values: ['3.10', '3.11', '3.12', '3.13', '3.14', '3.14t']
                                     ],
                                     [
                                         name: 'OS',
