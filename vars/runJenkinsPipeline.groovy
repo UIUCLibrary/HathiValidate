@@ -744,7 +744,7 @@ def call(){
                         }
                         agent {
                             docker{
-                                image 'python'
+                                image 'ghcr.io/astral-sh/uv:debian'
                                 label 'docker && linux'
                                 args '--mount source=python-tmp-hathivalidate,target=/tmp'
                             }
@@ -773,21 +773,17 @@ def call(){
                         }
                         steps{
                             unstash 'PYTHON_PACKAGES'
-                            withEnv(["TWINE_REPOSITORY_URL=${SERVER_URL}"]){
+                            withEnv(["UV_PUBLISH_URL=${SERVER_URL}"]){
                                 withCredentials([
                                     usernamePassword(
                                         credentialsId: 'jenkins-nexus',
-                                        passwordVariable: 'TWINE_PASSWORD',
-                                        usernameVariable: 'TWINE_USERNAME'
+                                        passwordVariable: 'UV_PUBLISH_PASSWORD',
+                                        usernameVariable: 'UV_PUBLISH_USERNAME'
                                     )
                                 ]){
                                     sh(
                                         label: 'Uploading to pypi',
-                                        script: '''python3 -m venv venv
-                                                   trap "rm -rf venv" EXIT
-                                                   ./venv/bin/pip install --disable-pip-version-check uv
-                                                   ./venv/bin/uv run --no-dev --only-group=publish twine upload --disable-progress-bar --non-interactive dist/*
-                                                '''
+                                        script: 'uv publish dist/*'
                                     )
                                 }
                             }
