@@ -438,7 +438,7 @@ def call(){
                                                                             try{
                                                                                 sh( label: 'Running Tox',
                                                                                     script: """uv python install cpython-${version}
-                                                                                               uv run -p ${version} --no-dev --only-group=tox-uv tox run -e ${toxEnv}
+                                                                                               uv run -p ${version} --no-dev --only-group=tox-uv tox run --runner uv-venv-lock-runner -e ${toxEnv}
                                                                                             """
                                                                                     )
                                                                             } catch(e) {
@@ -521,7 +521,7 @@ def call(){
                                                                             try{
                                                                                 bat(label: 'Running Tox',
                                                                                     script: """venv\\Scripts\\uv python install cpython-${version}
-                                                                                               venv\\Scripts\\uv run -p ${version} --no-dev --only-group=tox-uv tox run -e ${toxEnv}
+                                                                                               venv\\Scripts\\uv run -p ${version} --no-dev --only-group=tox-uv tox run --runner uv-venv-lock-runner -e ${toxEnv}
                                                                                             """
                                                                                 )
                                                                             } catch(e){
