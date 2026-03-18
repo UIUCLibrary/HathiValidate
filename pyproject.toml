@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "HathiValidate"
 version = "0.3.9.dev0"
 dependencies = [
-    "lxml<6.0; sys_platform != 'darwin' or python_version != '3.8' or platform_machine != 'arm64'",
+    "lxml<6.0",
     "PyYAML",
     ]
 requires-python = ">=3.10"
