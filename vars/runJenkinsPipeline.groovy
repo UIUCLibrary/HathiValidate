@@ -786,7 +786,7 @@ def call(){
                                         script: '''python3 -m venv venv
                                                    trap "rm -rf venv" EXIT
                                                    ./venv/bin/pip install --disable-pip-version-check uv
-                                                   ./venv/bin/uv run --no-dev --only-group publish twine --installpkg upload --disable-progress-bar --non-interactive dist/*
+                                                   ./venv/bin/uv run --no-dev --only-group=publish twine upload --disable-progress-bar --non-interactive dist/*
                                                 '''
                                     )
                                 }
