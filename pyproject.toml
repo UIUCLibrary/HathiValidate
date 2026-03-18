@@ -29,6 +29,7 @@ Documentation = "https://www.library.illinois.edu/dccdocs/hathi_validate"
 Download = "https://github.com/UIUCLibrary/HathiValidate"
 
 [dependency-groups]
+audit-dependencies = ["uv-secure"]
 publish = ["twine"]
 tox = ["tox"]
 tox-uv = [

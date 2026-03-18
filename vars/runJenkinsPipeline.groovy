@@ -243,6 +243,13 @@ def call(){
                                                     recordIssues(tools: [taskScanner(highTags: 'FIXME', includePattern: 'src/hathi_validate/**/*.py', normalTags: 'TODO')])
                                                 }
                                             }
+                                            stage('Audit Lockfile Dependencies'){
+                                                steps{
+                                                    catchError(buildResult: 'UNSTABLE', message: 'uv-secure found issues', stageResult: 'UNSTABLE') {
+                                                        sh 'uv run --only-group=audit-dependencies --frozen --isolated uv-secure --disable-cache uv.lock'
+                                                    }
+                                                }
+                                            }
                                             stage('Behave') {
                                                 steps {
                                                     catchError(buildResult: 'UNSTABLE', message: 'Did not pass all Behave BDD tests', stageResult: 'UNSTABLE') {
