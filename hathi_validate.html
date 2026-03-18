@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>hathi_validate package &#8212; HathiValidate 0.3.9.dev0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=27fed22d" />
+    <script src="_static/documentation_options.js?v=d1b6dce2"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="author" title="About these documents" href="about.html" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Dependencies" href="dependencies.html" />
+    <link rel="prev" title="hathi_validate" href="modules.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="hathi-validate-package">
+<h1>hathi_validate package<a class="headerlink" href="#hathi-validate-package" title="Link to this heading">¶</a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading">¶</a></h2>
+</section>
+<section id="module-hathi_validate.cli">
+<span id="hathi-validate-cli-module"></span><h2>hathi_validate.cli module<a class="headerlink" href="#module-hathi_validate.cli" title="Link to this heading">¶</a></h2>
+<p>Command line interface.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="hathi_validate.cli.AbsValidation">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">hathi_validate.cli.</span></span><span class="sig-name descname"><span class="pre">AbsValidation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Namespace</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logger</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Logger</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hathi_validate.cli.AbsValidation" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></p>
+<p>Base class for performing validations.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="hathi_validate.cli.AbsValidation.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Namespace</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logger</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Logger</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#hathi_validate.cli.AbsValidation.__init__" title="Link to this definition">¶</a></dt>
+<dd><p>Create a new validation object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>args</strong></p></li>
+<li><p><strong>logger</strong> – Python logger.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hathi_validate.cli.AbsValidation.get_errors">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_errors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pkg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Result</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#hathi_validate.cli.AbsValidation.get_errors" title="Link to this definition">¶</a></dt>
+<dd><p>Get the results of the validations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>pkg</strong> – Path to the directory containing the files.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Any errors found in the validation.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="hathi_validate.cli.ReportGenerator">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">hathi_validate.cli.</span></span><span class="sig-name descname"><span class="pre">ReportGenerator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Namespace</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logger</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Logger</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">checks</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#hathi_validate.cli.AbsValidation" title="hathi_validate.cli.AbsValidation"><span class="pre">AbsValidation</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hathi_validate.cli.ReportGenerator" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Create a report for cli.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="hathi_validate.cli.ReportGenerator.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Namespace</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logger</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Logger</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">checks</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#hathi_validate.cli.AbsValidation" title="hathi_validate.cli.AbsValidation"><span class="pre">AbsValidation</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#hathi_validate.cli.ReportGenerator.__init__" title="Link to this definition">¶</a></dt>
+<dd><p>Create a new report generator object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>args</strong></p></li>
+<li><p><strong>logger</strong></p></li>
+<li><p><strong>checks</strong></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hathi_validate.cli.ReportGenerator.generate_report">
+<span class="sig-name descname"><span class="pre">generate_report</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#hathi_validate.cli.ReportGenerator.generate_report" title="Link to this definition">¶</a></dt>
+<dd><p>Output the report to stdout.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="hathi_validate.cli.ValidateChecksums">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">hathi_validate.cli.</span></span><span class="sig-name descname"><span class="pre">ValidateChecksums</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Namespace</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logger</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Logger</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hathi_validate.cli.ValidateChecksums" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#hathi_validate.cli.AbsValidation" title="hathi_validate.cli.AbsValidation"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbsValidation</span></code></a></p>
+<p>Validate Checksums.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="hathi_validate.cli.ValidateChecksums.get_errors">
+<span class="sig-name descname"><span class="pre">get_errors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pkg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Result</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#hathi_validate.cli.ValidateChecksums.get_errors" title="Link to this definition">¶</a></dt>
+<dd><p>Get the results of the validations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>pkg</strong> – Path to the directory containing the files.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Any errors found in the validation.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="hathi_validate.cli.ValidateExtraSubdirectories">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">hathi_validate.cli.</span></span><span class="sig-name descname"><span class="pre">ValidateExtraSubdirectories</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Namespace</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logger</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Logger</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hathi_validate.cli.ValidateExtraSubdirectories" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#hathi_validate.cli.AbsValidation" title="hathi_validate.cli.AbsValidation"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbsValidation</span></code></a></p>
+<p>Validate extra subdirectories.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="hathi_validate.cli.ValidateExtraSubdirectories.get_errors">
+<span class="sig-name descname"><span class="pre">get_errors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pkg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Result</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#hathi_validate.cli.ValidateExtraSubdirectories.get_errors" title="Link to this definition">¶</a></dt>
+<dd><p>Get the results of the validations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>pkg</strong> – Path to the directory containing the files.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Any errors found in the validation.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="hathi_validate.cli.ValidateMarc">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">hathi_validate.cli.</span></span><span class="sig-name descname"><span class="pre">ValidateMarc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Namespace</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logger</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Logger</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hathi_validate.cli.ValidateMarc" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#hathi_validate.cli.AbsValidation" title="hathi_validate.cli.AbsValidation"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbsValidation</span></code></a></p>
+<p>Validate Marc.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="hathi_validate.cli.ValidateMarc.get_errors">
+<span class="sig-name descname"><span class="pre">get_errors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pkg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Result</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#hathi_validate.cli.ValidateMarc.get_errors" title="Link to this definition">¶</a></dt>
+<dd><p>Get the results of the validations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>pkg</strong> – Path to the directory containing the files.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Any errors found in the validation.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="hathi_validate.cli.ValidateMissingComponents">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">hathi_validate.cli.</span></span><span class="sig-name descname"><span class="pre">ValidateMissingComponents</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Namespace</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logger</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Logger</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hathi_validate.cli.ValidateMissingComponents" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#hathi_validate.cli.AbsValidation" title="hathi_validate.cli.AbsValidation"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbsValidation</span></code></a></p>
+<p>Look for missing components.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="hathi_validate.cli.ValidateMissingComponents.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Namespace</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logger</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Logger</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#hathi_validate.cli.ValidateMissingComponents.__init__" title="Link to this definition">¶</a></dt>
+<dd><p>Create a new validation object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>args</strong></p></li>
+<li><p><strong>logger</strong> – Python logger.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hathi_validate.cli.ValidateMissingComponents.get_errors">
+<span class="sig-name descname"><span class="pre">get_errors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pkg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Result</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#hathi_validate.cli.ValidateMissingComponents.get_errors" title="Link to this definition">¶</a></dt>
+<dd><p>Get the results of the validations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>pkg</strong> – Path to the directory containing the files.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Any errors found in the validation.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="hathi_validate.cli.ValidateMissingFiles">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">hathi_validate.cli.</span></span><span class="sig-name descname"><span class="pre">ValidateMissingFiles</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Namespace</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logger</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Logger</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hathi_validate.cli.ValidateMissingFiles" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#hathi_validate.cli.AbsValidation" title="hathi_validate.cli.AbsValidation"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbsValidation</span></code></a></p>
+<p>Validate missing files.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="hathi_validate.cli.ValidateMissingFiles.get_errors">
+<span class="sig-name descname"><span class="pre">get_errors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pkg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Result</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#hathi_validate.cli.ValidateMissingFiles.get_errors" title="Link to this definition">¶</a></dt>
+<dd><p>Get the results of the validations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>pkg</strong> – Path to the directory containing the files.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Any errors found in the validation.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="hathi_validate.cli.ValidateOcrFiles">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">hathi_validate.cli.</span></span><span class="sig-name descname"><span class="pre">ValidateOcrFiles</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Namespace</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logger</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Logger</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hathi_validate.cli.ValidateOcrFiles" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#hathi_validate.cli.AbsValidation" title="hathi_validate.cli.AbsValidation"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbsValidation</span></code></a></p>
+<p>Validate ocr files.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="hathi_validate.cli.ValidateOcrFiles.get_errors">
+<span class="sig-name descname"><span class="pre">get_errors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pkg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Result</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#hathi_validate.cli.ValidateOcrFiles.get_errors" title="Link to this definition">¶</a></dt>
+<dd><p>Get the results of the validations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>pkg</strong> – Path to the directory containing the files.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Any errors found in the validation.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="hathi_validate.cli.ValidateYAML">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">hathi_validate.cli.</span></span><span class="sig-name descname"><span class="pre">ValidateYAML</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Namespace</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logger</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Logger</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hathi_validate.cli.ValidateYAML" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#hathi_validate.cli.AbsValidation" title="hathi_validate.cli.AbsValidation"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbsValidation</span></code></a></p>
+<p>Validate YML.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="hathi_validate.cli.ValidateYAML.get_errors">
+<span class="sig-name descname"><span class="pre">get_errors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pkg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Result</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#hathi_validate.cli.ValidateYAML.get_errors" title="Link to this definition">¶</a></dt>
+<dd><p>Get the results of the validations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>pkg</strong> – Path to the directory containing the files.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Any errors found in the validation.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="hathi_validate.cli.get_parser">
+<span class="sig-prename descclassname"><span class="pre">hathi_validate.cli.</span></span><span class="sig-name descname"><span class="pre">get_parser</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ArgumentParser</span></span></span><a class="headerlink" href="#hathi_validate.cli.get_parser" title="Link to this definition">¶</a></dt>
+<dd><p>Get argument parser.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="hathi_validate.cli.main">
+<span class="sig-prename descclassname"><span class="pre">hathi_validate.cli.</span></span><span class="sig-name descname"><span class="pre">main</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cli_args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#hathi_validate.cli.main" title="Link to this definition">¶</a></dt>
+<dd><p>Start main entry point for command line interface.</p>
+</dd></dl>
+
+</section>
+<section id="module-hathi_validate.configure_logging">
+<span id="hathi-validate-configure-logging-module"></span><h2>hathi_validate.configure_logging module<a class="headerlink" href="#module-hathi_validate.configure_logging" title="Link to this heading">¶</a></h2>
+<p>Logging configurations.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="hathi_validate.configure_logging.configure_logger">
+<span class="sig-prename descclassname"><span class="pre">hathi_validate.configure_logging.</span></span><span class="sig-name descname"><span class="pre">configure_logger</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">debug_mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Logger</span></span></span><a class="headerlink" href="#hathi_validate.configure_logging.configure_logger" title="Link to this definition">¶</a></dt>
+<dd><p>Configure the logger.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>debug_mode</strong></p></li>
+<li><p><strong>log_file</strong></p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Python logger</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-hathi_validate.package">
+<span id="hathi-validate-package-module"></span><h2>hathi_validate.package module<a class="headerlink" href="#module-hathi_validate.package" title="Link to this heading">¶</a></h2>
+<p>Package related stuff.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="hathi_validate.package.get_dirs">
+<span class="sig-prename descclassname"><span class="pre">hathi_validate.package.</span></span><span class="sig-name descname"><span class="pre">get_dirs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">root</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#hathi_validate.package.get_dirs" title="Link to this definition">¶</a></dt>
+<dd><p>Iterate over subdirectories.</p>
+</dd></dl>
+
+</section>
+<section id="module-hathi_validate.process">
+<span id="hathi-validate-process-module"></span><h2>hathi_validate.process module<a class="headerlink" href="#module-hathi_validate.process" title="Link to this heading">¶</a></h2>
+<p>Process that validations.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="hathi_validate.process.AbsErrorLocator">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">hathi_validate.process.</span></span><span class="sig-name descname"><span class="pre">AbsErrorLocator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">metadata</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hathi_validate.process.AbsErrorLocator" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></p>
+<p>Abstract base class for error locators.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="hathi_validate.process.AbsErrorLocator.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">metadata</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#hathi_validate.process.AbsErrorLocator.__init__" title="Link to this definition">¶</a></dt>
+<dd><p>Create new AbsErrorLocator object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>metadata</strong></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hathi_validate.process.AbsErrorLocator.find_errors">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">find_errors</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Generator</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#hathi_validate.process.AbsErrorLocator.find_errors" title="Link to this definition">¶</a></dt>
+<dd><p>Find errors as strings.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Yields<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Yields errors as strings if found any, else returns None.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="hathi_validate.process.CaptureAgentErrors">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">hathi_validate.process.</span></span><span class="sig-name descname"><span class="pre">CaptureAgentErrors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">metadata</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hathi_validate.process.CaptureAgentErrors" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#hathi_validate.process.AbsErrorLocator" title="hathi_validate.process.AbsErrorLocator"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbsErrorLocator</span></code></a></p>
+<p>Find errors in capture_agent field.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="hathi_validate.process.CaptureAgentErrors.check_capture_agent_format">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">check_capture_agent_format</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">capture_agent_field</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#hathi_validate.process.CaptureAgentErrors.check_capture_agent_format" title="Link to this definition">¶</a></dt>
+<dd><p>Check the given fields matches what is expected of capture agent.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>capture_agent_field</strong></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>Returns a human-readable string of any issues. Otherwise, returns</dt><dd><p>None if no problems discovered.</p>
+</dd>
+</dl>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hathi_validate.process.CaptureAgentErrors.find_errors">
+<span class="sig-name descname"><span class="pre">find_errors</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Generator</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#hathi_validate.process.CaptureAgentErrors.find_errors" title="Link to this definition">¶</a></dt>
+<dd><p>Locate any errors with the capture_agent field in the metadata.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Yields<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>Yields human-readable string of any issues. Otherwise, returns</dt><dd><p>None if no problems discovered.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="hathi_validate.process.CaptureDateErrors">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">hathi_validate.process.</span></span><span class="sig-name descname"><span class="pre">CaptureDateErrors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">metadata</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hathi_validate.process.CaptureDateErrors" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#hathi_validate.process.AbsErrorLocator" title="hathi_validate.process.AbsErrorLocator"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbsErrorLocator</span></code></a></p>
+<p>Find errors in capture_date field.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="hathi_validate.process.CaptureDateErrors.find_errors">
+<span class="sig-name descname"><span class="pre">find_errors</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Generator</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#hathi_validate.process.CaptureDateErrors.find_errors" title="Link to this definition">¶</a></dt>
+<dd><p>Find errors as strings.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Yields<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Yields errors as strings if found any, else returns None.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="hathi_validate.process.FindErrorsMetadata">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">hathi_validate.process.</span></span><span class="sig-name descname"><span class="pre">FindErrorsMetadata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">require_page_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hathi_validate.process.FindErrorsMetadata" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Find errors metadata.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="hathi_validate.process.FindErrorsMetadata.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">require_page_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#hathi_validate.process.FindErrorsMetadata.__init__" title="Link to this definition">¶</a></dt>
+<dd><p>Create new FindErrorsMetadata object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>filename</strong></p></li>
+<li><p><strong>path</strong></p></li>
+<li><p><strong>require_page_data</strong></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hathi_validate.process.FindErrorsMetadata.find_errors">
+<span class="sig-name descname"><span class="pre">find_errors</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ResultSummary</span></span></span><a class="headerlink" href="#hathi_validate.process.FindErrorsMetadata.find_errors" title="Link to this definition">¶</a></dt>
+<dd><p>Find all metadata errors.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="hathi_validate.process.InvalidChecksum">
+<em class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">hathi_validate.process.</span></span><span class="sig-name descname"><span class="pre">InvalidChecksum</span></span><a class="headerlink" href="#hathi_validate.process.InvalidChecksum" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#hathi_validate.process.ValidationError" title="hathi_validate.process.ValidationError"><code class="xref py py-class docutils literal notranslate"><span class="pre">ValidationError</span></code></a></p>
+<p>Checksum is invalid.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="hathi_validate.process.PageDataErrors">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">hathi_validate.process.</span></span><span class="sig-name descname"><span class="pre">PageDataErrors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadata</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#hathi_validate.process.PageDataErrors" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#hathi_validate.process.AbsErrorLocator" title="hathi_validate.process.AbsErrorLocator"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbsErrorLocator</span></code></a></p>
+<p>Find errors in pagedata field.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="hathi_validate.process.PageDataErrors.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadata</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#hathi_validate.process.PageDataErrors.__init__" title="Link to this definition">¶</a></dt>
+<dd><p>Create new PageDataErrors object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>filename</strong></p></li>
+<li><p><strong>path</strong></p></li>
+<li><p><strong>metadata</strong></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hathi_validate.process.PageDataErrors.find_errors">
+<span class="sig-name descname"><span class="pre">find_errors</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Generator</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#hathi_validate.process.PageDataErrors.find_errors" title="Link to this definition">¶</a></dt>
+<dd><p>Find errors as strings.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Yields<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Yields errors as strings if found any, else returns None.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hathi_validate.process.PageDataErrors.find_pagedata_file">
+<span class="sig-name descname"><span class="pre">find_pagedata_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#hathi_validate.process.PageDataErrors.find_pagedata_file" title="Link to this definition">¶</a></dt>
+<dd><p>Locate pagedata file and check if exists.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>image_name</strong></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>If found any errors, returns message as human readable string. If</dt><dd><p>no errors found, returns None.</p>
+</dd>
+</dl>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="hathi_validate.process.ValidationError">
+<em class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">hathi_validate.process.</span></span><span class="sig-name descname"><span class="pre">ValidationError</span></span><a class="headerlink" href="#hathi_validate.process.ValidationError" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<p>Validation failed.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="hathi_validate.process.calculate_md5">
+<span class="sig-prename descclassname"><span class="pre">hathi_validate.process.</span></span><span class="sig-name descname"><span class="pre">calculate_md5</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chunk_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">8192</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#hathi_validate.process.calculate_md5" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate the md5 hash value of a file.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="hathi_validate.process.extracts_checksums">
+<span class="sig-prename descclassname"><span class="pre">hathi_validate.process.</span></span><span class="sig-name descname"><span class="pre">extracts_checksums</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">report</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#hathi_validate.process.extracts_checksums" title="Link to this definition">¶</a></dt>
+<dd><p>Iterate over checksum hash values from a checksum report.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="hathi_validate.process.find_errors_marc">
+<span class="sig-prename descclassname"><span class="pre">hathi_validate.process.</span></span><span class="sig-name descname"><span class="pre">find_errors_marc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ResultSummary</span></span></span><a class="headerlink" href="#hathi_validate.process.find_errors_marc" title="Link to this definition">¶</a></dt>
+<dd><p>Validate the MARC file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>filename</strong></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Returns a ResultSummary</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="hathi_validate.process.find_errors_meta">
+<span class="sig-prename descclassname"><span class="pre">hathi_validate.process.</span></span><span class="sig-name descname"><span class="pre">find_errors_meta</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">require_page_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ResultSummary</span></span></span><a class="headerlink" href="#hathi_validate.process.find_errors_meta" title="Link to this definition">¶</a></dt>
+<dd><p>Validate meta.yml file.</p>
+<p>Could also validate that the values are correct by comparing with the
+images</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>filename</strong></p></li>
+<li><p><strong>path</strong></p></li>
+<li><p><strong>require_page_data</strong></p></li>
+</ul>
+</dd>
+</dl>
+<p>Yields: Error messages</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="hathi_validate.process.find_errors_ocr">
+<span class="sig-prename descclassname"><span class="pre">hathi_validate.process.</span></span><span class="sig-name descname"><span class="pre">find_errors_ocr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ResultSummary</span></span></span><a class="headerlink" href="#hathi_validate.process.find_errors_ocr" title="Link to this definition">¶</a></dt>
+<dd><p>Validate all xml files located in the given path.</p>
+<blockquote>
+<div><p>Make sure they are valid to the alto scheme</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>path</strong> – Path to find the alto xml files</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>returns a ResultSummary of all the errors found in the alto ocr file.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="hathi_validate.process.find_extra_subdirectory">
+<span class="sig-prename descclassname"><span class="pre">hathi_validate.process.</span></span><span class="sig-name descname"><span class="pre">find_extra_subdirectory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ResultSummary</span></span></span><a class="headerlink" href="#hathi_validate.process.find_extra_subdirectory" title="Link to this definition">¶</a></dt>
+<dd><p>Check path for any subdirectories.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>path</strong></p>
+</dd>
+</dl>
+<p>Yields: Any subdirectory</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="hathi_validate.process.find_failing_checksums">
+<span class="sig-prename descclassname"><span class="pre">hathi_validate.process.</span></span><span class="sig-name descname"><span class="pre">find_failing_checksums</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">report</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ResultSummary</span></span></span><a class="headerlink" href="#hathi_validate.process.find_failing_checksums" title="Link to this definition">¶</a></dt>
+<dd><p>Validate that the checksums in the .fil file match.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path</strong></p></li>
+<li><p><strong>report</strong></p></li>
+</ul>
+</dd>
+</dl>
+<p>Returns: Error report</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="hathi_validate.process.find_missing_files">
+<span class="sig-prename descclassname"><span class="pre">hathi_validate.process.</span></span><span class="sig-name descname"><span class="pre">find_missing_files</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ResultSummary</span></span></span><a class="headerlink" href="#hathi_validate.process.find_missing_files" title="Link to this definition">¶</a></dt>
+<dd><p>Check for expected files exist on the path.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>path</strong></p>
+</dd>
+</dl>
+<p>Yields: Any files missing</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="hathi_validate.process.find_non_utf8_characters">
+<span class="sig-prename descclassname"><span class="pre">hathi_validate.process.</span></span><span class="sig-name descname"><span class="pre">find_non_utf8_characters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ResultSummary</span></span></span><a class="headerlink" href="#hathi_validate.process.find_non_utf8_characters" title="Link to this definition">¶</a></dt>
+<dd><p>Locate any non utf-8 characters in a file.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="hathi_validate.process.is_same_hash">
+<span class="sig-prename descclassname"><span class="pre">hathi_validate.process.</span></span><span class="sig-name descname"><span class="pre">is_same_hash</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">hashes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#hathi_validate.process.is_same_hash" title="Link to this definition">¶</a></dt>
+<dd><p>Compare hash values to see if they are the same.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="hathi_validate.process.parse_checksum">
+<span class="sig-prename descclassname"><span class="pre">hathi_validate.process.</span></span><span class="sig-name descname"><span class="pre">parse_checksum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">line</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#hathi_validate.process.parse_checksum" title="Link to this definition">¶</a></dt>
+<dd><p>Parse a line for checksum data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>line</strong></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Returns a tuple, (hash value, file name)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="hathi_validate.process.parse_yaml">
+<span class="sig-prename descclassname"><span class="pre">hathi_validate.process.</span></span><span class="sig-name descname"><span class="pre">parse_yaml</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#hathi_validate.process.parse_yaml" title="Link to this definition">¶</a></dt>
+<dd><p>Parse a YAML file.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="hathi_validate.process.run_validation">
+<span class="sig-prename descclassname"><span class="pre">hathi_validate.process.</span></span><span class="sig-name descname"><span class="pre">run_validation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">validation_test</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">AbsValidator</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Result</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#hathi_validate.process.run_validation" title="Link to this definition">¶</a></dt>
+<dd><p>Run validation.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="hathi_validate.process.run_validations">
+<span class="sig-prename descclassname"><span class="pre">hathi_validate.process.</span></span><span class="sig-name descname"><span class="pre">run_validations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">validators</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">AbsValidator</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Result</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#hathi_validate.process.run_validations" title="Link to this definition">¶</a></dt>
+<dd><p>Run validations.</p>
+</dd></dl>
+
+</section>
+<section id="module-hathi_validate">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-hathi_validate" title="Link to this heading">¶</a></h2>
+<p>DS Hathi Trust Validate.</p>
+<div class="deprecated">
+<p><span class="versionmodified deprecated">Deprecated since version 0.3.6: </span>No longer supporting cx_freeze standalone builds</p>
+</div>
+<div class="versionchanged">
+<p><span class="versionmodified changed">Changed in version 0.3.6: </span>Package metadata no longer evaluated at import time</p>
+</div>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/full_mark_horz_bw.gif" alt="Logo of HathiValidate"/>
+            </a></p>
+<h1 class="logo"><a href="index.html">HathiValidate</a></h1>
+
+
+
+<p class="blurb">Replacement for older scripts for validating Hathi Trust Packages</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=uiuclibrary&repo=HathiValidate&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="about.html">About</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">hathi_validate</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="dependencies.html">Dependencies</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">hathi_validate</a><ul>
+      <li>Previous: <a href="modules.html" title="previous chapter">hathi_validate</a></li>
+      <li>Next: <a href="dependencies.html" title="next chapter">Dependencies</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2017, University Library at The University of Illinois at Urbana Champaign: Preservation Services.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 8.2.3</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+      |
+      <a href="_sources/hathi_validate.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

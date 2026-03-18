@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>hathi_validate &#8212; HathiValidate 0.3.9.dev0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=27fed22d" />
+    <script src="_static/documentation_options.js?v=d1b6dce2"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="author" title="About these documents" href="about.html" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="hathi_validate package" href="hathi_validate.html" />
+    <link rel="prev" title="Usage" href="usage.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="hathi-validate">
+<h1>hathi_validate<a class="headerlink" href="#hathi-validate" title="Link to this heading">¶</a></h1>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="hathi_validate.html">hathi_validate package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="hathi_validate.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hathi_validate.html#module-hathi_validate.cli">hathi_validate.cli module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="hathi_validate.html#hathi_validate.cli.AbsValidation"><code class="docutils literal notranslate"><span class="pre">AbsValidation</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="hathi_validate.html#hathi_validate.cli.AbsValidation.__init__"><code class="docutils literal notranslate"><span class="pre">AbsValidation.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hathi_validate.html#hathi_validate.cli.AbsValidation.get_errors"><code class="docutils literal notranslate"><span class="pre">AbsValidation.get_errors()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="hathi_validate.html#hathi_validate.cli.ReportGenerator"><code class="docutils literal notranslate"><span class="pre">ReportGenerator</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="hathi_validate.html#hathi_validate.cli.ReportGenerator.__init__"><code class="docutils literal notranslate"><span class="pre">ReportGenerator.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hathi_validate.html#hathi_validate.cli.ReportGenerator.generate_report"><code class="docutils literal notranslate"><span class="pre">ReportGenerator.generate_report()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="hathi_validate.html#hathi_validate.cli.ValidateChecksums"><code class="docutils literal notranslate"><span class="pre">ValidateChecksums</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="hathi_validate.html#hathi_validate.cli.ValidateChecksums.get_errors"><code class="docutils literal notranslate"><span class="pre">ValidateChecksums.get_errors()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="hathi_validate.html#hathi_validate.cli.ValidateExtraSubdirectories"><code class="docutils literal notranslate"><span class="pre">ValidateExtraSubdirectories</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="hathi_validate.html#hathi_validate.cli.ValidateExtraSubdirectories.get_errors"><code class="docutils literal notranslate"><span class="pre">ValidateExtraSubdirectories.get_errors()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="hathi_validate.html#hathi_validate.cli.ValidateMarc"><code class="docutils literal notranslate"><span class="pre">ValidateMarc</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="hathi_validate.html#hathi_validate.cli.ValidateMarc.get_errors"><code class="docutils literal notranslate"><span class="pre">ValidateMarc.get_errors()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="hathi_validate.html#hathi_validate.cli.ValidateMissingComponents"><code class="docutils literal notranslate"><span class="pre">ValidateMissingComponents</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="hathi_validate.html#hathi_validate.cli.ValidateMissingComponents.__init__"><code class="docutils literal notranslate"><span class="pre">ValidateMissingComponents.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hathi_validate.html#hathi_validate.cli.ValidateMissingComponents.get_errors"><code class="docutils literal notranslate"><span class="pre">ValidateMissingComponents.get_errors()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="hathi_validate.html#hathi_validate.cli.ValidateMissingFiles"><code class="docutils literal notranslate"><span class="pre">ValidateMissingFiles</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="hathi_validate.html#hathi_validate.cli.ValidateMissingFiles.get_errors"><code class="docutils literal notranslate"><span class="pre">ValidateMissingFiles.get_errors()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="hathi_validate.html#hathi_validate.cli.ValidateOcrFiles"><code class="docutils literal notranslate"><span class="pre">ValidateOcrFiles</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="hathi_validate.html#hathi_validate.cli.ValidateOcrFiles.get_errors"><code class="docutils literal notranslate"><span class="pre">ValidateOcrFiles.get_errors()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="hathi_validate.html#hathi_validate.cli.ValidateYAML"><code class="docutils literal notranslate"><span class="pre">ValidateYAML</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="hathi_validate.html#hathi_validate.cli.ValidateYAML.get_errors"><code class="docutils literal notranslate"><span class="pre">ValidateYAML.get_errors()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="hathi_validate.html#hathi_validate.cli.get_parser"><code class="docutils literal notranslate"><span class="pre">get_parser()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="hathi_validate.html#hathi_validate.cli.main"><code class="docutils literal notranslate"><span class="pre">main()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="hathi_validate.html#module-hathi_validate.configure_logging">hathi_validate.configure_logging module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="hathi_validate.html#hathi_validate.configure_logging.configure_logger"><code class="docutils literal notranslate"><span class="pre">configure_logger()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="hathi_validate.html#module-hathi_validate.package">hathi_validate.package module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="hathi_validate.html#hathi_validate.package.get_dirs"><code class="docutils literal notranslate"><span class="pre">get_dirs()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="hathi_validate.html#module-hathi_validate.process">hathi_validate.process module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="hathi_validate.html#hathi_validate.process.AbsErrorLocator"><code class="docutils literal notranslate"><span class="pre">AbsErrorLocator</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="hathi_validate.html#hathi_validate.process.AbsErrorLocator.__init__"><code class="docutils literal notranslate"><span class="pre">AbsErrorLocator.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hathi_validate.html#hathi_validate.process.AbsErrorLocator.find_errors"><code class="docutils literal notranslate"><span class="pre">AbsErrorLocator.find_errors()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="hathi_validate.html#hathi_validate.process.CaptureAgentErrors"><code class="docutils literal notranslate"><span class="pre">CaptureAgentErrors</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="hathi_validate.html#hathi_validate.process.CaptureAgentErrors.check_capture_agent_format"><code class="docutils literal notranslate"><span class="pre">CaptureAgentErrors.check_capture_agent_format()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hathi_validate.html#hathi_validate.process.CaptureAgentErrors.find_errors"><code class="docutils literal notranslate"><span class="pre">CaptureAgentErrors.find_errors()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="hathi_validate.html#hathi_validate.process.CaptureDateErrors"><code class="docutils literal notranslate"><span class="pre">CaptureDateErrors</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="hathi_validate.html#hathi_validate.process.CaptureDateErrors.find_errors"><code class="docutils literal notranslate"><span class="pre">CaptureDateErrors.find_errors()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="hathi_validate.html#hathi_validate.process.FindErrorsMetadata"><code class="docutils literal notranslate"><span class="pre">FindErrorsMetadata</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="hathi_validate.html#hathi_validate.process.FindErrorsMetadata.__init__"><code class="docutils literal notranslate"><span class="pre">FindErrorsMetadata.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hathi_validate.html#hathi_validate.process.FindErrorsMetadata.find_errors"><code class="docutils literal notranslate"><span class="pre">FindErrorsMetadata.find_errors()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="hathi_validate.html#hathi_validate.process.InvalidChecksum"><code class="docutils literal notranslate"><span class="pre">InvalidChecksum</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="hathi_validate.html#hathi_validate.process.PageDataErrors"><code class="docutils literal notranslate"><span class="pre">PageDataErrors</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="hathi_validate.html#hathi_validate.process.PageDataErrors.__init__"><code class="docutils literal notranslate"><span class="pre">PageDataErrors.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hathi_validate.html#hathi_validate.process.PageDataErrors.find_errors"><code class="docutils literal notranslate"><span class="pre">PageDataErrors.find_errors()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hathi_validate.html#hathi_validate.process.PageDataErrors.find_pagedata_file"><code class="docutils literal notranslate"><span class="pre">PageDataErrors.find_pagedata_file()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="hathi_validate.html#hathi_validate.process.ValidationError"><code class="docutils literal notranslate"><span class="pre">ValidationError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="hathi_validate.html#hathi_validate.process.calculate_md5"><code class="docutils literal notranslate"><span class="pre">calculate_md5()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="hathi_validate.html#hathi_validate.process.extracts_checksums"><code class="docutils literal notranslate"><span class="pre">extracts_checksums()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="hathi_validate.html#hathi_validate.process.find_errors_marc"><code class="docutils literal notranslate"><span class="pre">find_errors_marc()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="hathi_validate.html#hathi_validate.process.find_errors_meta"><code class="docutils literal notranslate"><span class="pre">find_errors_meta()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="hathi_validate.html#hathi_validate.process.find_errors_ocr"><code class="docutils literal notranslate"><span class="pre">find_errors_ocr()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="hathi_validate.html#hathi_validate.process.find_extra_subdirectory"><code class="docutils literal notranslate"><span class="pre">find_extra_subdirectory()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="hathi_validate.html#hathi_validate.process.find_failing_checksums"><code class="docutils literal notranslate"><span class="pre">find_failing_checksums()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="hathi_validate.html#hathi_validate.process.find_missing_files"><code class="docutils literal notranslate"><span class="pre">find_missing_files()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="hathi_validate.html#hathi_validate.process.find_non_utf8_characters"><code class="docutils literal notranslate"><span class="pre">find_non_utf8_characters()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="hathi_validate.html#hathi_validate.process.is_same_hash"><code class="docutils literal notranslate"><span class="pre">is_same_hash()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="hathi_validate.html#hathi_validate.process.parse_checksum"><code class="docutils literal notranslate"><span class="pre">parse_checksum()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="hathi_validate.html#hathi_validate.process.parse_yaml"><code class="docutils literal notranslate"><span class="pre">parse_yaml()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="hathi_validate.html#hathi_validate.process.run_validation"><code class="docutils literal notranslate"><span class="pre">run_validation()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="hathi_validate.html#hathi_validate.process.run_validations"><code class="docutils literal notranslate"><span class="pre">run_validations()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="hathi_validate.html#module-hathi_validate">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/full_mark_horz_bw.gif" alt="Logo of HathiValidate"/>
+            </a></p>
+<h1 class="logo"><a href="index.html">HathiValidate</a></h1>
+
+
+
+<p class="blurb">Replacement for older scripts for validating Hathi Trust Packages</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=uiuclibrary&repo=HathiValidate&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="about.html">About</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">hathi_validate</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="dependencies.html">Dependencies</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="usage.html" title="previous chapter">Usage</a></li>
+      <li>Next: <a href="hathi_validate.html" title="next chapter">hathi_validate package</a></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2017, University Library at The University of Illinois at Urbana Champaign: Preservation Services.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 8.2.3</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+      |
+      <a href="_sources/modules.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
