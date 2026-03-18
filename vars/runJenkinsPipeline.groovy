@@ -203,7 +203,6 @@ def call(){
                                                 post {
                                                     always{
                                                         junit 'reports/pytest-junit.xml'
-                                                        stash includes: 'reports/pytest-junit.xml', name: 'PYTEST_UNIT_TEST_RESULTS'
                                                     }
                                                 }
                                             }
@@ -232,7 +231,6 @@ def call(){
                                                 }
                                                 post {
                                                     always {
-                                                        stash includes: 'logs/flake8.log', name: 'FLAKE8_REPORT'
                                                         recordIssues(tools: [flake8(name: 'Flake8', pattern: 'logs/flake8.log')])
                                                     }
                                                 }
@@ -298,7 +296,6 @@ def call(){
                                                 post{
                                                     always{
                                                         recordIssues(tools: [pyLint(pattern: 'reports/pylint.txt')])
-                                                        stash includes: 'reports/pylint_issues.txt,reports/pylint.txt', name: 'PYLINT_REPORT'
                                                     }
                                                 }
                                             }
@@ -316,7 +313,6 @@ def call(){
                                                               uv run coverage xml -o ./reports/coverage.xml
                                                            '''
                                                 )
-                                                stash(includes: 'reports/coverage*.xml', name: 'COVERAGE_REPORT_DATA')
                                                 recordCoverage(tools: [[parser: 'COBERTURA', pattern: 'reports/coverage.xml']])
                                             }
                                         }
