@@ -31,6 +31,10 @@ Download = "https://github.com/UIUCLibrary/HathiValidate"
 [dependency-groups]
 publish = ["twine"]
 tox = ["tox"]
+tox-uv = [
+    {include-group = "tox"},
+    "tox-uv-bare"
+]
 docs = ["sphinx"]
 test =["pytest", "behave"]
 dev = [
