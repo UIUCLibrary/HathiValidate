@@ -455,9 +455,12 @@ def find_errors_ocr(path: str) -> result.ResultSummary:
                 doc = etree.fromstring(file_handle.read().encode("utf-8"))
 
             if not alto_scheme.validate(doc):
-                summary_builder.add_error(
-                    "{} does not validate to ALTO scheme".format(xml_file.name)
-                )
+                for error in alto_scheme.error_log:
+                    summary_builder.add_error(
+                        f"{xml_file.name} does not validate to ALTO scheme. "
+                        f"Line: {error.line}, Column: {error.column}, "
+                        f"Reason: {error.message}"
+                    )
             else:
                 logger.info(
                     "%s validates to the ALTO XML scheme", xml_file.name
