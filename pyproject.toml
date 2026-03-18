@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "HathiValidate"
 version = "0.3.9.dev0"
 dependencies = [
-    "lxml<6.0",
+    "lxml",
     "PyYAML",
     ]
 requires-python = ">=3.10"
@@ -66,7 +66,7 @@ zip-safe = false
 package-dir = {"" = "src"}
 
 [tool.setuptools.package-data]
-hathi_validate = ["xsd/*.xsd", "py.typed"]
+hathi_validate = ["xsd/*.xsd", "py.typed", "catalog.xml"]
 
 [project.scripts]
 hathivalidate = "hathi_validate.cli:main"
