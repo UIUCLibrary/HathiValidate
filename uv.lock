@@ -623,7 +623,7 @@ wheels = [
 
 [[package]]
 name = "hathivalidate"
-version = "0.3.10"
+version = "0.3.11.dev0"
 source = { editable = "." }
 dependencies = [
     { name = "lxml" },
