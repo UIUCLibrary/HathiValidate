@@ -103,7 +103,7 @@ def parse_checksum(line: str) -> Tuple[str, str]:
 
 def calculate_md5(filename: str, chunk_size: int = 8192) -> str:
     """Calculate the md5 hash value of a file."""
-    md5 = hashlib.md5()
+    md5 = hashlib.md5(usedforsecurity=False)
 
     with open(filename, "rb") as file_handle:
         while True:
