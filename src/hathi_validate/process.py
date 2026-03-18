@@ -12,8 +12,9 @@ from typing import Tuple, Iterator, List, Dict, Any, Generator, Optional
 import yaml
 from lxml import etree
 
-from importlib.resources import files
+from importlib.resources import files, as_file
 
+import hathi_validate
 from hathi_validate import result
 from hathi_validate import xsd as hathi_xsd
 from . import validator
@@ -102,7 +103,7 @@ def parse_checksum(line: str) -> Tuple[str, str]:
 
 def calculate_md5(filename: str, chunk_size: int = 8192) -> str:
     """Calculate the md5 hash value of a file."""
-    md5 = hashlib.md5()
+    md5 = hashlib.md5(usedforsecurity=False)
 
     with open(filename, "rb") as file_handle:
         while True:
@@ -442,11 +443,25 @@ def find_errors_ocr(path: str) -> result.ResultSummary:
         return True
 
     logger = logging.getLogger(__name__)
-    alto_scheme = etree.XMLSchema(
-        etree.XML(
-            files(hathi_xsd).joinpath("alto.xsd").read_bytes()
-        )
-    )
+    existing_xml_catalog_file: Optional[str] = None
+
+    try:
+        # This is because libxml2 no longer downloads xsd files automatically.
+        # This redirects it to use the xlink document included
+        with as_file(
+            files(hathi_validate).joinpath('catalog.xml')
+        ) as catalog_file:
+            os.environ['XML_CATALOG_FILES'] = str(catalog_file)
+            alto_scheme = etree.XMLSchema(
+                etree.XML(
+                    files(hathi_xsd).joinpath("alto.xsd").read_bytes()
+                )
+            )
+    finally:
+        if existing_xml_catalog_file is None:
+            os.environ.pop('XML_CATALOG_FILES', None)
+        else:
+            os.environ['XML_CATALOG_FILES'] = existing_xml_catalog_file
 
     summary_builder = result.SummaryDirector(source=path)
     for xml_file in filter(ocr_filter, os.scandir(path)):
@@ -455,9 +470,12 @@ def find_errors_ocr(path: str) -> result.ResultSummary:
                 doc = etree.fromstring(file_handle.read().encode("utf-8"))
 
             if not alto_scheme.validate(doc):
-                summary_builder.add_error(
-                    "{} does not validate to ALTO scheme".format(xml_file.name)
-                )
+                for error in alto_scheme.error_log:
+                    summary_builder.add_error(
+                        f"{xml_file.name} does not validate to ALTO scheme. "
+                        f"Line: {error.line}, Column: {error.column}, "
+                        f"Reason: {error.message}"
+                    )
             else:
                 logger.info(
                     "%s validates to the ALTO XML scheme", xml_file.name

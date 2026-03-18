@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "HathiValidate"
 version = "0.3.9.dev0"
 dependencies = [
-    "lxml<6.0; sys_platform != 'darwin' or python_version != '3.8' or platform_machine != 'arm64'",
+    "lxml",
     "PyYAML",
     ]
 requires-python = ">=3.10"
@@ -29,24 +29,35 @@ Documentation = "https://www.library.illinois.edu/dccdocs/hathi_validate"
 Download = "https://github.com/UIUCLibrary/HathiValidate"
 
 [dependency-groups]
+audit-dependencies = ["uv-secure"]
 publish = ["twine"]
 tox = ["tox"]
+tox-uv = [
+    {include-group = "tox"},
+    "tox-uv-bare"
+]
 docs = ["sphinx"]
 test =["pytest", "behave"]
+type-checking = ["mypy", "types-PyYAML"]
+code-style = ["pydocstyle", "flake8"]
+lint = [
+    {include-group = "code-style"},
+    "pylint"
+]
+security = ["bandit"]
 dev = [
     "coverage",
-    "flake8",
     "lxml",
-    "mypy",
     "paramiko",
     "pep517",
-    "pydocstyle",
-    "pylint",
     "PyYAML",
     "setuptools>=30.3.0",
-    {include-group = "test"},
+    {include-group = "code-style"},
     {include-group = "docs"},
+    {include-group = "lint"},
+    {include-group = "test"},
     {include-group = "tox"},
+    {include-group = "type-checking"},
     {include-group = "publish"},
     "types-PyYAML"
 ]
@@ -61,7 +72,7 @@ zip-safe = false
 package-dir = {"" = "src"}
 
 [tool.setuptools.package-data]
-hathi_validate = ["xsd/*.xsd", "py.typed"]
+hathi_validate = ["xsd/*.xsd", "py.typed", "catalog.xml"]
 
 [project.scripts]
 hathivalidate = "hathi_validate.cli:main"
