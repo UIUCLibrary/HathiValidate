@@ -674,14 +674,16 @@ def call(){
                                                                         "UV_CONFIG_FILE=${createWindowUVConfig()}",
                                                                         "TOX_UV_PATH=${WORKSPACE}\\venv\\Scripts\\uv.exe"
                                                                     ]){
-                                                                        bat(
-                                                                            label: 'Testing with tox',
-                                                                            script: """python -m venv venv
-                                                                                       .\\venv\\Scripts\\pip install --disable-pip-version-check uv
-                                                                                       .\\venv\\Scripts\\uv python install cpython-${entry.PYTHON_VERSION}
-                                                                                       .\\venv\\Scripts\\uv run -p ${entry.PYTHON_VERSION} --frozen --only-group=tox-uv tox --installpkg ${findFiles(glob: entry.PACKAGE_TYPE == 'wheel' ? 'dist/*.whl' : 'dist/*.tar.gz')[0].path} -e py${entry.PYTHON_VERSION.replace('.', '')}
-                                                                                    """
-                                                                        )
+                                                                        timeout(10){
+                                                                            bat(
+                                                                                label: 'Testing with tox',
+                                                                                script: """python -m venv venv
+                                                                                           .\\venv\\Scripts\\pip install --disable-pip-version-check uv
+                                                                                           .\\venv\\Scripts\\uv python install cpython-${entry.PYTHON_VERSION}
+                                                                                           .\\venv\\Scripts\\uv run -p ${entry.PYTHON_VERSION} --frozen --only-group=tox-uv tox --installpkg ${findFiles(glob: entry.PACKAGE_TYPE == 'wheel' ? 'dist/*.whl' : 'dist/*.tar.gz')[0].path} -e py${entry.PYTHON_VERSION.replace('.', '')}
+                                                                                        """
+                                                                            )
+                                                                        }
                                                                     }
                                                                  }
                                                             }
