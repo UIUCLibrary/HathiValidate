@@ -151,7 +151,7 @@ def call(){
                                     docker{
                                         image 'ghcr.io/astral-sh/uv:debian'
                                         label 'docker && linux && x86_64'
-                                        args '--mount source=python-tmp-hathivalidate,target=/tmp --tmpfs /.local/share:exec --tmpfs /.config:exec --tmpfs /venv:exec -e UV_PROJECT_ENVIRONMENT=/venv --tmpfs /.tree-sitter:exec'
+                                        args "--label=purpose=ci --label \"JOB_NAME=\$JOB_NAME\" --label \"absoluteUrl=${currentBuild.absoluteUrl}\" --label \"BUILD_NUMBER=${currentBuild.number}\" --mount source=python-tmp-hathivalidate,target=/tmp --tmpfs /.local/share:exec --tmpfs /.config:exec --tmpfs /venv:exec -e UV_PROJECT_ENVIRONMENT=/venv --tmpfs /.tree-sitter:exec"
                                     }
                                 }
                                 environment{
@@ -242,8 +242,8 @@ def call(){
                                             }
                                             stage('Audit Lockfile Dependencies'){
                                                 steps{
-                                                    catchError(buildResult: 'UNSTABLE', message: 'uv-secure found issues', stageResult: 'UNSTABLE') {
-                                                        sh 'uv run uv-secure --disable-cache uv.lock'
+                                                    catchError(buildResult: 'UNSTABLE', message: 'uv audit found issues', stageResult: 'UNSTABLE') {
+                                                        sh 'uv audit'
                                                     }
                                                 }
                                             }
@@ -403,7 +403,9 @@ def call(){
                                             checkout scm
                                             withEnv(["UV_CONFIG_FILE=${createUnixUvConfig()}"]){
                                                 try{
-                                                    docker.image('ghcr.io/astral-sh/uv:debian').inside('--mount source=python-tmp-hathivalidate,target=/tmp --tmpfs /ci_tmp:exec -e TOX_WORK_DIR=/ci_tmp/tox -e UV_PROJECT_ENVIRONMENT=/ci_tmp/venv'){
+                                                    docker.image('ghcr.io/astral-sh/uv:debian').inside(
+                                                        "--label=purpose=ci --label \"JOB_NAME=\$JOB_NAME\" --label \"absoluteUrl=${currentBuild.absoluteUrl}\" --label \"BUILD_NUMBER=${currentBuild.number}\" --mount source=python-tmp-hathivalidate,target=/tmp --tmpfs /ci_tmp:exec -e TOX_WORK_DIR=/ci_tmp/tox -e UV_PROJECT_ENVIRONMENT=/ci_tmp/venv"
+                                                    ){
                                                         envs = sh(
                                                             label: 'Get tox environments',
                                                             script: 'uv run --isolated --only-group=tox --frozen --quiet tox list -d --no-desc',
@@ -425,7 +427,9 @@ def call(){
                                                             checkout scm
                                                             withEnv(["UV_CONFIG_FILE=${createUnixUvConfig()}"]){
                                                                 try{
-                                                                    docker.image('ghcr.io/astral-sh/uv:debian').inside('--mount source=python-tmp-hathivalidate,target=/tmp --tmpfs /.local/share:exec --tmpfs /.local/bin:exec --tmpfs /ci_tmp:exec -e TOX_WORK_DIR=/ci_tmp/tox -e UV_PROJECT_ENVIRONMENT=/ci_tmp/venv'){
+                                                                    docker.image('ghcr.io/astral-sh/uv:debian').inside(
+                                                                        "--label=purpose=ci --label \"JOB_NAME=\$JOB_NAME\" --label \"absoluteUrl=${currentBuild.absoluteUrl}\" --label \"BUILD_NUMBER=${currentBuild.number}\" --mount source=python-tmp-hathivalidate,target=/tmp --tmpfs /.local/share:exec --tmpfs /.local/bin:exec --tmpfs /ci_tmp:exec -e TOX_WORK_DIR=/ci_tmp/tox -e UV_PROJECT_ENVIRONMENT=/ci_tmp/venv"
+                                                                    ){
                                                                         retry(3){
                                                                             try{
                                                                                 sh( label: 'Running Tox',
@@ -474,9 +478,10 @@ def call(){
                                                 try{
                                                     docker.image(env.DEFAULT_PYTHON_DOCKER_IMAGE ? env.DEFAULT_PYTHON_DOCKER_IMAGE: 'python')
                                                         .inside(
-                                                            "--mount type=volume,source=uv_python_cache_dir,target=${env.UV_PYTHON_CACHE_DIR}"
-                                                         + " --mount type=volume,source=pipcache,target=${env.PIP_CACHE_DIR}"
-                                                         + " --mount type=volume,source=uv_cache_dir,target=${env.UV_CACHE_DIR}"
+                                                           "--label=purpose=ci --label \"JOB_NAME=\$JOB_NAME\" --label \"absoluteUrl=${currentBuild.absoluteUrl}\" --label \"BUILD_NUMBER=${currentBuild.number}\" " +
+                                                           "--mount type=volume,source=uv_python_cache_dir,target=${env.UV_PYTHON_CACHE_DIR} " +
+                                                           "--mount type=volume,source=pipcache,target=${env.PIP_CACHE_DIR} " +
+                                                           "--mount type=volume,source=uv_cache_dir,target=${env.UV_CACHE_DIR}"
                                                         ){
                                                         bat(script: 'python -m venv venv && venv\\Scripts\\pip install --disable-pip-version-check uv')
                                                         envs = bat(
@@ -502,9 +507,10 @@ def call(){
                                                                 try{
                                                                     docker.image(env.DEFAULT_PYTHON_DOCKER_IMAGE ? env.DEFAULT_PYTHON_DOCKER_IMAGE: 'python')
                                                                         .inside(
-                                                                            "--mount type=volume,source=uv_python_cache_dir,target=${env.UV_PYTHON_CACHE_DIR}"
-                                                                         + " --mount type=volume,source=pipcache,target=${env.PIP_CACHE_DIR}"
-                                                                         + " --mount type=volume,source=uv_cache_dir,target=${env.UV_CACHE_DIR}"
+                                                                            "--label=purpose=ci --label \"JOB_NAME=\$JOB_NAME\" --label \"absoluteUrl=${currentBuild.absoluteUrl}\" --label \"BUILD_NUMBER=${currentBuild.number}\" " +
+                                                                            "--mount type=volume,source=uv_python_cache_dir,target=${env.UV_PYTHON_CACHE_DIR} " +
+                                                                            "--mount type=volume,source=pipcache,target=${env.PIP_CACHE_DIR} " +
+                                                                            "--mount type=volume,source=uv_cache_dir,target=${env.UV_CACHE_DIR}"
                                                                         ){
                                                                         bat(label: 'Install uv',
                                                                             script: 'python -m venv venv && venv\\Scripts\\pip install --disable-pip-version-check uv'
@@ -555,7 +561,7 @@ def call(){
                             docker{
                                 image 'ghcr.io/astral-sh/uv:debian'
                                 label 'linux && docker'
-                                args '--mount source=python-tmp-hathivalidate,target=/tmp'
+                                args "--label=purpose=ci --label \"JOB_NAME=\$JOB_NAME\" --label \"absoluteUrl=${currentBuild.absoluteUrl}\" --label \"BUILD_NUMBER=${currentBuild.number}\" --mount source=python-tmp-hathivalidate,target=/tmp"
                               }
                         }
                         environment{
@@ -640,15 +646,17 @@ def call(){
                                                         unstash 'PYTHON_PACKAGES'
                                                         if(['linux', 'windows'].contains(entry.OS) && params.containsKey("INCLUDE_${entry.OS}-${entry.ARCHITECTURE}".toUpperCase()) && params["INCLUDE_${entry.OS}-${entry.ARCHITECTURE}".toUpperCase()]){
                                                             docker.image(isUnix() ? 'ghcr.io/astral-sh/uv:debian': 'python')
-                                                                .inside(
-                                                                    isUnix() ?
-                                                                        '--mount source=python-tmp-hathivalidate,target=/tmp '
-                                                                        + '--tmpfs /.local/share:exec --tmpfs /.local/bin:exec '
-                                                                        + '--tmpfs /ci_tmp:exec -e TOX_WORK_DIR=/ci_tmp/tox -e UV_PROJECT_ENVIRONMENT=/ci_tmp/venv'
-                                                                    :
-                                                                        '--mount type=volume,source=uv_python_cache_dir,target=C:\\Users\\ContainerUser\\Documents\\cache\\uvpython'
-                                                                        + ' --mount type=volume,source=pipcache,target=C:\\Users\\ContainerUser\\Documents\\cache\\pipcache'
-                                                                        + ' --mount type=volume,source=uv_cache_dir,target=C:\\Users\\ContainerUser\\Documents\\cache\\uvcache'
+                                                                .inside("--label=purpose=ci --label \"JOB_NAME=\$JOB_NAME\" --label \"absoluteUrl=${currentBuild.absoluteUrl}\" --label \"BUILD_NUMBER=${currentBuild.number}\" " +
+                                                                    (
+                                                                        isUnix() ?
+                                                                            '--mount source=python-tmp-hathivalidate,target=/tmp '
+                                                                            + '--tmpfs /.local/share:exec --tmpfs /.local/bin:exec '
+                                                                            + '--tmpfs /ci_tmp:exec -e TOX_WORK_DIR=/ci_tmp/tox -e UV_PROJECT_ENVIRONMENT=/ci_tmp/venv'
+                                                                        :
+                                                                            '--mount type=volume,source=uv_python_cache_dir,target=C:\\Users\\ContainerUser\\Documents\\cache\\uvpython'
+                                                                            + ' --mount type=volume,source=pipcache,target=C:\\Users\\ContainerUser\\Documents\\cache\\pipcache'
+                                                                            + ' --mount type=volume,source=uv_cache_dir,target=C:\\Users\\ContainerUser\\Documents\\cache\\uvcache'
+                                                                    )
                                                                 ){
                                                                  if(isUnix()){
                                                                     withEnv([

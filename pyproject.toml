@@ -29,7 +29,6 @@ Documentation = "https://www.library.illinois.edu/dccdocs/hathi_validate"
 Download = "https://github.com/UIUCLibrary/HathiValidate"
 
 [dependency-groups]
-audit-dependencies = ["uv-secure"]
 publish = ["twine"]
 tox = ["tox"]
 tox-uv = [
@@ -52,7 +51,6 @@ dev = [
     "pep517",
     "PyYAML",
     "setuptools>=30.3.0",
-    {include-group = "audit-dependencies"},
     {include-group = "code-style"},
     {include-group = "docs"},
     {include-group = "lint"},
