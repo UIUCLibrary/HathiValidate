@@ -484,8 +484,8 @@ def call(){
                                 steps{
                                     script{
                                         def envs = []
-                                        timeout(60){
-                                            node('docker && windows'){
+                                        node('docker && windows'){
+                                            timeout(60){
                                                 checkout scm
                                                 withEnv(["UV_CONFIG_FILE=${createWindowUVConfig()}",]){
                                                     try{
