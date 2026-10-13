@@ -9,7 +9,7 @@ dependencies = [
     "lxml",
     "PyYAML",
     ]
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 readme = "README.rst"
 license = "NCSA"
 license-files = ["LICENSE"]
