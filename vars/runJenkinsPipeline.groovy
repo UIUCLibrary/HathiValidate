@@ -43,6 +43,18 @@ def createUnixUvConfig(){
     return sh(label: 'Setting up uv.toml config file', script: "sh ${scriptFile} " + '$UV_INDEX_URL $UV_EXTRA_INDEX_URL', returnStdout: true).trim()
 }
 
+def getConfig(){
+    node(){
+        checkout scm
+        def configCode = load('vars/config.groovy')
+        def config = configCode.getConfig(
+            configId: 'hathivalidate_pipeline_config',
+            defaultConfigFile: 'ci/jenkins/jenkins_config.json'
+        )
+        return config
+    }
+}
+
 def call(){
     library(
         identifier: 'JenkinsPythonHelperLibrary@2024.12.0',
@@ -53,6 +65,8 @@ def call(){
             ]
         )
     )
+    def config = getConfig()
+
     pipeline {
         agent none
 
@@ -99,7 +113,7 @@ def call(){
                             UV_TOOL_DIR='/tmp/uvtools'
                             UV_PYTHON_CACHE_DIR='/tmp/uvpython'
                             UV_CACHE_DIR='/tmp/uvcache'
-                            UV_PYTHON='3.12'
+                            UV_PYTHON = "${config['default_python_version']}"
                             UV_CONFIG_FILE=createUnixUvConfig()
                             UV_FROZEN='1'
                         }
@@ -142,7 +156,7 @@ def call(){
                             equals expected: true, actual: params.RUN_CHECKS
                         }
                         environment{
-                            UV_PYTHON='3.12'
+                            UV_PYTHON = "${config['default_python_version']}"
                             UV_FROZEN='1'
                         }
                         stages{
@@ -632,33 +646,22 @@ def call(){
                                 axes: [
                                     [
                                         name: 'PYTHON_VERSION',
-                                        values: ['3.10', '3.11', '3.12', '3.13', '3.14', '3.14t']
+                                        values: config['supporting']['pythonVersions']
                                     ],
                                     [
                                         name: 'OS',
-                                        values: ['linux','macos','windows']
+                                        values: config['supporting']['os']
                                     ],
                                     [
                                         name: 'ARCHITECTURE',
-                                        values: ['x86_64', 'arm64']
+                                        values: config['supporting']['architectures']
                                     ],
                                     [
                                         name: 'PACKAGE_TYPE',
                                         values: ['wheel', 'sdist'],
                                     ]
                                 ],
-                                excludes: [
-                                    [
-                                        [
-                                            name: 'OS',
-                                            values: 'windows'
-                                        ],
-                                        [
-                                            name: 'ARCHITECTURE',
-                                            values: 'arm64',
-                                        ]
-                                    ]
-                                ],
+                                excludes: config['supporting']['exclusions'],
                                 when: {entry -> "INCLUDE_${entry.OS}-${entry.ARCHITECTURE}".toUpperCase() && params["INCLUDE_${entry.OS}-${entry.ARCHITECTURE}".toUpperCase()]},
                                 stages: [
                                     { entry ->
