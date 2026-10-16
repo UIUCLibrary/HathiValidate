@@ -443,8 +443,8 @@ def call(){
                                                 [
                                                     "Tox Environment: ${toxEnv}",
                                                     {
-                                                        timeout(60){
-                                                            node('docker && linux'){
+                                                        node('docker && linux'){
+                                                            timeout(60){
                                                                 checkout scm
                                                                 withEnv(["UV_CONFIG_FILE=${createUnixUvConfig()}"]){
                                                                     try{
@@ -533,8 +533,8 @@ def call(){
                                                 [
                                                     "Tox Environment: ${toxEnv}",
                                                     {
-                                                        timeout(60){
-                                                            node('docker && windows'){
+                                                        node('docker && windows'){
+                                                            timeout(60){
                                                                 checkout scm
                                                                 withEnv(["UV_CONFIG_FILE=${createWindowUVConfig()}", "TOX_UV_PATH=${WORKSPACE}\\venv\\Scripts\\uv.exe"]){
                                                                     try{
